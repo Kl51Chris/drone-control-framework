@@ -1,0 +1,25 @@
+# Python virtual environments
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Simulation/runtime cache
+cache/
+
+# Generated logs
+logs/
+hover_thrust_logs/
+
+# Third-party repositories
+models/mujoco_menagerie/
+
+# Environment variables / secrets
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
