@@ -23,3 +23,9 @@ models/mujoco_menagerie/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# ROS2 generated files
+ros2_ws/src/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
