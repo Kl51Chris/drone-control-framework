@@ -1,3 +1,7 @@
+"""
+altitude hover runner used in mujoco
+TODO: change the structure of altitudePD so that this code can work functionally
+"""
 import csv
 import time
 from datetime import datetime
