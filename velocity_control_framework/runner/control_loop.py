@@ -39,9 +39,8 @@ def run_control_loop(
         while True:
             now = time.monotonic()
 
-            if duration_s is not None:
-                if now - start_time >= duration_s:
-                    break
+            if duration_s is not None and now - start_time >= duration_s:
+                break
 
             state = state_provider.get_state()
             reference = reference_provider()
