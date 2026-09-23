@@ -634,7 +634,7 @@ The current active architecture supports:
 * standalone experiments
 * automated framework tests
 
-No controller implementation is currently bundled in the active package.
+The active package includes the configurable `OuterLoopPIDController`.
 Obsolete controller, runner, experiment, and related test code is isolated
 under `legacy/`.
 

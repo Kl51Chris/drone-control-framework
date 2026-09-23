@@ -1,3 +1,15 @@
 """Active controller implementations."""
 
-__all__: list[str] = []
+from .outer_loop_pid import (
+    HorizontalCommandMapping,
+    OuterLoopPIDConfig,
+    OuterLoopPIDController,
+    PIDConfig,
+)
+
+__all__ = [
+    "HorizontalCommandMapping",
+    "OuterLoopPIDConfig",
+    "OuterLoopPIDController",
+    "PIDConfig",
+]

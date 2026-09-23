@@ -212,8 +212,8 @@ Crazyflie-specific command units and sends a manual setpoint with `rate=True`.
 
 ## Controllers
 
-The active package currently defines the controller contract but does not
-bundle a controller implementation. Controllers must return
+The active package includes `OuterLoopPIDController`, a configurable
+four-channel position, altitude, and heading controller. Controllers return
 `BodyRateThrustCommand` and remain independent of backend-specific APIs and
 units. Earlier velocity/altitude controllers and their runners are retained
 under `legacy/` for historical reference.

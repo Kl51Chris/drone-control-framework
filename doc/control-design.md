@@ -21,9 +21,9 @@ DroneState + Reference + dt
 ```
 
 A controller maps the current state, desired reference, and update interval to
-a `BodyRateThrustCommand`. No active controller implementation is currently
-bundled with the framework; obsolete controller implementations are retained
-under `legacy/`.
+a `BodyRateThrustCommand`. The active `OuterLoopPIDController` implements this
+boundary with independent horizontal-x, horizontal-y, altitude, and heading
+feedback channels. Obsolete controller implementations remain under `legacy/`.
 
 ## State and Reference Conventions
 
