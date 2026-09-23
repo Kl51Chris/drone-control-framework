@@ -10,8 +10,6 @@ The repository currently includes:
 
 * Crazyflie hardware integration through `cflib`
 * Flow Deck / ZRanger-based state feedback
-* Horizontal velocity control
-* Altitude PID control
 * Circular and vertical flight references
 * Hardware-independent controller interfaces
 * Crazyflie-specific command and state backends
@@ -33,7 +31,7 @@ Reference Generator
 DroneState --> Controller
                   |
                   v
-         AttitudeThrustCommand
+         BodyRateThrustCommand
                   |
                   v
             CommandAdapter
@@ -90,12 +88,12 @@ velocity_control_framework/
 * `interfaces/`
 
   * shared data structures and controller contracts
-  * includes `DroneState`, `Reference`, and `AttitudeThrustCommand`
+  * includes `DroneState`, `Reference`, and `BodyRateThrustCommand`
 
 * `controllers/`
 
-  * reusable control implementations
-  * currently includes the velocity-altitude PID controller
+  * location for reusable active control implementations
+  * obsolete controllers are retained under `legacy/`
 
 * `references/`
 
@@ -190,11 +188,11 @@ timestamp
 
 ### Controller Output
 
-Controllers produce an `AttitudeThrustCommand`:
+Controllers produce a `BodyRateThrustCommand`:
 
 ```text
-roll
-pitch
+roll_rate
+pitch_rate
 yaw_rate
 thrust
 ```
@@ -202,45 +200,23 @@ thrust
 Framework-side units are:
 
 ```text
-roll      rad
-pitch     rad
-yaw_rate  rad/s
-thrust    normalized [0, 1]
+roll_rate   body x-axis angular-rate reference, rad/s
+pitch_rate  body y-axis angular-rate reference, rad/s
+yaw_rate    body z-axis angular-rate reference, rad/s
+thrust      normalized collective thrust [0.0, 1.0]
 ```
 
-The Crazyflie backend converts these values into Crazyflie-specific command units.
+The angular-rate fields are body-axis references, not Euler attitude angles or
+Euler-angle derivatives. The Crazyflie backend converts these values into
+Crazyflie-specific command units and sends a manual setpoint with `rate=True`.
 
-## Current Controller
+## Controllers
 
-The main active controller is the velocity-altitude PID controller.
-
-Its responsibilities are:
-
-```text
-horizontal velocity error
-        |
-        v
-desired horizontal acceleration
-        |
-        v
-roll / pitch command
-```
-
-and:
-
-```text
-altitude + vertical velocity error
-        |
-        v
-vertical PID control
-        |
-        v
-collective thrust
-```
-
-Yaw-rate commands are currently passed through from the reference to the Crazyflie command interface.
-
-More detailed control equations and design assumptions will be documented separately.
+The active package currently defines the controller contract but does not
+bundle a controller implementation. Controllers must return
+`BodyRateThrustCommand` and remain independent of backend-specific APIs and
+units. Earlier velocity/altitude controllers and their runners are retained
+under `legacy/` for historical reference.
 
 ## Running Tests
 

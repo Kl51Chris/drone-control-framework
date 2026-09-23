@@ -13,11 +13,11 @@ from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
     CrazyflieStateProvider,
 )
-from velocity_control_framework.controllers import (
+from legacy.controllers import (
     VelocityAltitudePIDConfig,
     VelocityAltitudePIDController,
 )
-from velocity_control_framework.runner import (
+from legacy.runners import (
     CircularVelocityAltitudePIDProgram,
 )
 from velocity_control_framework.references import (

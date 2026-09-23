@@ -27,7 +27,7 @@ def _positive_finite(value: float, name: str) -> float:
 @dataclass(slots=True)
 class AttitudeThrustCommand:
     """
-    Attitude and collective-thrust command produced by a controller.
+    Legacy angular-rate and collective-thrust controller command.
 
     Coordinate and unit convention:
         roll:
@@ -64,6 +64,16 @@ class AttitudeThrustCommand:
             raise ValueError(
                 "thrust must be within the normalized range [0.0, 1.0]"
             )
+
+    @property
+    def roll_rate(self) -> float:
+        """Expose the legacy roll field to body-rate adapters."""
+        return self.roll
+
+    @property
+    def pitch_rate(self) -> float:
+        """Expose the legacy pitch field to body-rate adapters."""
+        return self.pitch
 
     @classmethod
     def zero(cls) -> AttitudeThrustCommand:

@@ -1,4 +1,4 @@
-# Body-Rate Control Proposal
+# Historical Body-Rate Control Proposal
 
 ## Status
 

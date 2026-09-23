@@ -1,11 +1,3 @@
-from .dummy_controller import DummyController
-from .velocity_altitude_pid import (
-    VelocityAltitudePIDConfig,
-    VelocityAltitudePIDController,
-)
+"""Active controller implementations."""
 
-__all__ = [
-    "DummyController",
-    "VelocityAltitudePIDConfig",
-    "VelocityAltitudePIDController",
-]
+__all__: list[str] = []

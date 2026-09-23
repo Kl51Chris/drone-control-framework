@@ -3,16 +3,16 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from velocity_control_framework.interfaces import AttitudeThrustCommand
+from velocity_control_framework.interfaces import BodyRateThrustCommand
 
 
 class CrazyflieCommandAdapter:
     """
-    Convert AttitudeThrustCommand into Crazyflie commander calls.
+    Convert BodyRateThrustCommand into Crazyflie commander calls.
 
     Controller-side units:
-        roll: radians/second
-        pitch: radians/second
+        roll_rate: radians/second
+        pitch_rate: radians/second
         yaw_rate: radians/second
         thrust: normalized [0.0, 1.0]
 
@@ -25,11 +25,11 @@ class CrazyflieCommandAdapter:
 
     def send(
         self,
-        command: AttitudeThrustCommand,
+        command: BodyRateThrustCommand,
     ) -> None:
         """Send one body-rate and thrust setpoint to Crazyflie."""
-        roll_rate = self._convert_roll_rate(command.roll)
-        pitch_rate = self._convert_pitch_rate(command.pitch)
+        roll_rate = self._convert_roll_rate(command.roll_rate)
+        pitch_rate = self._convert_pitch_rate(command.pitch_rate)
         yaw_rate = self._convert_yaw_rate(
             command.yaw_rate
         )

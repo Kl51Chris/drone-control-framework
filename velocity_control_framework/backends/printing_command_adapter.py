@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from velocity_control_framework.interfaces import AttitudeThrustCommand
+from velocity_control_framework.interfaces import BodyRateThrustCommand
 
 
 class PrintingCommandAdapter:
@@ -12,12 +12,12 @@ class PrintingCommandAdapter:
 
     def send(
         self,
-        command: AttitudeThrustCommand,
+        command: BodyRateThrustCommand,
     ) -> None:
         print(
             "command:"
-            f" roll={command.roll:.4f},"
-            f" pitch={command.pitch:.4f},"
+            f" roll_rate={command.roll_rate:.4f},"
+            f" pitch_rate={command.pitch_rate:.4f},"
             f" yaw_rate={command.yaw_rate:.4f},"
             f" thrust={command.thrust:.4f}"
         )

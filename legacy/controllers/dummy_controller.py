@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from velocity_control_framework.interfaces import (
+from legacy.interfaces import (
     AttitudeThrustCommand,
+)
+from velocity_control_framework.interfaces import (
     DroneState,
     Reference,
 )

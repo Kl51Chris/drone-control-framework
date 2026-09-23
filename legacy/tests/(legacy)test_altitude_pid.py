@@ -9,8 +9,10 @@ from velocity_control_framework.controllers import (
     AltitudePIDConfig,
     AltitudePIDController,
 )
-from velocity_control_framework.interfaces import (
+from legacy.interfaces import (
     AttitudeThrustCommand,
+)
+from velocity_control_framework.interfaces import (
     DroneState,
     Reference,
 )

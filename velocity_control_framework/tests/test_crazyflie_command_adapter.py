@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from velocity_control_framework.backends import CrazyflieCommandAdapter
-from velocity_control_framework.interfaces import AttitudeThrustCommand
+from velocity_control_framework.interfaces import BodyRateThrustCommand
 
 
 class FakeCommander:
@@ -40,9 +40,9 @@ def test_crazyflie_command_conversion() -> None:
     cf = FakeCrazyflie()
     adapter = CrazyflieCommandAdapter(cf)
 
-    command = AttitudeThrustCommand(
-        roll=math.radians(10.0),
-        pitch=math.radians(-5.0),
+    command = BodyRateThrustCommand(
+        roll_rate=math.radians(10.0),
+        pitch_rate=math.radians(-5.0),
         yaw_rate=math.radians(30.0),
         thrust=0.5,
     )

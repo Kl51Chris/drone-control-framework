@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from velocity_control_framework.interfaces import AttitudeThrustCommand
+from velocity_control_framework.interfaces import BodyRateThrustCommand
 
 
 class CommandAdapter(Protocol):
@@ -15,7 +15,7 @@ class CommandAdapter(Protocol):
 
     def send(
         self,
-        command: AttitudeThrustCommand,
+        command: BodyRateThrustCommand,
     ) -> None:
         """Send one controller command to the backend."""
         ...

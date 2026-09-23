@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from velocity_control_framework.controllers import DummyController
+from legacy.controllers import DummyController
+from legacy.interfaces import AttitudeThrustCommand
 from velocity_control_framework.interfaces import (
-    AttitudeThrustCommand,
     DroneState,
     Reference,
 )

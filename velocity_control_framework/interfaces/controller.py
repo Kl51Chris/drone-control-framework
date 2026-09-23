@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from .attitude_thrust_command import AttitudeThrustCommand
+from .body_rate_thrust_command import BodyRateThrustCommand
 from .drone_state import DroneState
 from .reference import Reference
 
@@ -25,9 +25,9 @@ class Controller(Protocol):
         state: DroneState,
         reference: Reference,
         dt: float,
-    ) -> AttitudeThrustCommand:
+    ) -> BodyRateThrustCommand:
         """
-        Compute one attitude-thrust command.
+        Compute one body-rate and collective-thrust command.
 
         Args:
             state:
@@ -40,7 +40,7 @@ class Controller(Protocol):
                 Elapsed controller-update time in seconds.
 
         Returns:
-            AttitudeThrustCommand:
-                Desired roll, pitch, yaw rate, and collective thrust.
+            BodyRateThrustCommand:
+                Desired body-axis angular rates and collective thrust.
         """
         ...

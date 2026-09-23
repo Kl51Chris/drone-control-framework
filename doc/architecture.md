@@ -32,7 +32,7 @@ Reference Generator
 DroneState --> Controller
                   |
                   v
-         AttitudeThrustCommand
+         BodyRateThrustCommand
                   |
                   v
             CommandAdapter
@@ -72,7 +72,7 @@ MeasuredState ---------/
                            +--> Controller
                                    |
                                    v
-                          AttitudeThrustCommand
+                          BodyRateThrustCommand
                                    |
                                    v
                             CommandAdapter
@@ -167,7 +167,7 @@ Current core interfaces are:
 ```text
 DroneState
 Reference
-AttitudeThrustCommand
+BodyRateThrustCommand
 Controller
 ```
 
@@ -272,7 +272,7 @@ Reference
 dt
     |
     v
-AttitudeThrustCommand
+BodyRateThrustCommand
 ```
 
 Conceptually:
@@ -285,7 +285,7 @@ Controller.update(
 )
 ```
 
-returns an `AttitudeThrustCommand`.
+returns a `BodyRateThrustCommand`.
 
 Controllers are pure control components.
 
@@ -311,15 +311,15 @@ This boundary allows the same controller logic to be used with different hardwar
 
 ---
 
-## 8. AttitudeThrustCommand
+## 8. BodyRateThrustCommand
 
-`AttitudeThrustCommand` is the hardware-independent control output produced by controllers.
+`BodyRateThrustCommand` is the hardware-independent control output produced by controllers.
 
 The current command representation is:
 
 ```text
-roll
-pitch
+roll_rate
+pitch_rate
 yaw_rate
 thrust
 ```
@@ -327,13 +327,16 @@ thrust
 Framework-side units are:
 
 ```text
-roll        radians
-pitch       radians
-yaw_rate    radians/second
-thrust      normalized [0, 1]
+roll_rate   body x-axis angular-rate reference, radians/second
+pitch_rate  body y-axis angular-rate reference, radians/second
+yaw_rate    body z-axis angular-rate reference, radians/second
+thrust      normalized collective thrust [0.0, 1.0]
 ```
 
 These units are deliberately independent of the Crazyflie API.
+
+The rate fields are body-axis angular-rate references. They are not Euler
+attitude angles and are not generally Euler-angle derivatives.
 
 Controllers should always produce commands using framework units.
 
@@ -388,25 +391,26 @@ Controllers should consume only `DroneState`, not raw hardware measurements.
 
 ## 11. CommandAdapter
 
-A command adapter converts `AttitudeThrustCommand` into hardware-specific commands.
+A command adapter converts `BodyRateThrustCommand` into hardware-specific commands.
 
 For the Crazyflie backend, the current conversion includes:
 
 ```text
-roll:
-    radians -> degrees
+roll_rate:
+    radians/second -> degrees/second
 
-pitch:
-    radians -> degrees
+pitch_rate:
+    radians/second -> degrees/second
 
 yaw_rate:
     radians/second -> degrees/second
 
 thrust:
-    normalized [0, 1] -> uint16
+    normalized [0, 1] -> Crazyflie command encoding
 ```
 
 The adapter then sends the converted command through the Crazyflie commander interface.
+For manual Crazyflie setpoints it selects body-rate mode with `rate=True`.
 
 Any hardware-specific:
 
@@ -507,7 +511,7 @@ For example:
 ```text
 Circular Reference
         +
-VelocityAltitudePIDController
+Controller implementation
         +
 CrazyflieStateProvider
         +
@@ -606,7 +610,7 @@ Changes to public interfaces such as:
 ```text
 DroneState
 Reference
-AttitudeThrustCommand
+BodyRateThrustCommand
 Controller
 StateProvider
 CommandAdapter
@@ -623,13 +627,16 @@ Related tests and documentation should be updated together.
 The current active architecture supports:
 
 * reusable controller interfaces
-* velocity and altitude control
 * hardware-independent command representation
 * Crazyflie-specific state and command backends
 * reusable reference generators
 * reusable runner infrastructure
 * standalone experiments
 * automated framework tests
+
+No controller implementation is currently bundled in the active package.
+Obsolete controller, runner, experiment, and related test code is isolated
+under `legacy/`.
 
 The architecture is still evolving.
 
@@ -657,6 +664,7 @@ AGENTS.md
 
 `README.md` provides the project overview.
 
-`control-design.md` documents control equations, coordinate conventions, state assumptions, and individual controller designs.
+`control-design.md` documents the active control boundary, coordinate
+conventions, state assumptions, and command semantics.
 
 `AGENTS.md` defines development rules and constraints for coding agents working inside the repository.
