@@ -11,18 +11,20 @@ class FakeCommander:
         self.last_setpoint = None
         self.stop_called = False
 
-    def send_setpoint(
+    def send_setpoint_manual(
         self,
         roll: float,
         pitch: float,
         yaw_rate: float,
-        thrust: int,
+        thrust: float,
+        rate: bool,
     ) -> None:
         self.last_setpoint = (
             roll,
             pitch,
             yaw_rate,
             thrust,
+            rate,
         )
 
     def send_stop_setpoint(self) -> None:
@@ -49,14 +51,15 @@ def test_crazyflie_command_conversion() -> None:
 
     assert cf.commander.last_setpoint is not None
 
-    roll, pitch, yaw_rate, thrust = (
+    roll_rate, pitch_rate, yaw_rate, thrust, rate = (
         cf.commander.last_setpoint
     )
 
-    assert math.isclose(roll, 10.0)
-    assert math.isclose(pitch, -5.0)
+    assert math.isclose(roll_rate, 10.0)
+    assert math.isclose(pitch_rate, -5.0)
     assert math.isclose(yaw_rate, 30.0)
-    assert thrust in (32767, 32768)
+    assert math.isclose(thrust, 50.0)
+    assert rate is True
 
 
 def test_crazyflie_stop() -> None:

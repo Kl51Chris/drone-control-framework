@@ -70,7 +70,8 @@ def run_vertical_flight(
     """
     Execute one idle-takeoff-hover-landing sequence.
 
-    All flight commands use AttitudeThrustCommand and send_setpoint().
+    All flight commands use AttitudeThrustCommand and body-rate manual
+    setpoints.
     """
     state_provider = CrazyflieStateProvider(
         crazyflie
@@ -200,8 +201,8 @@ def run_vertical_flight(
                     f" [{flight_state.name:11}]"
                     f" vx={state.velocity[0]:+.3f}"
                     f" vy={state.velocity[1]:+.3f}"
-                    f" roll_cmd={math.degrees(command.roll):+.2f}deg"
-                    f" pitch_cmd={math.degrees(command.pitch):+.2f}deg"
+                    f" roll_rate_cmd={math.degrees(command.roll):+.2f}deg/s"
+                    f" pitch_rate_cmd={math.degrees(command.pitch):+.2f}deg/s"
                     f" roll={math.degrees(state.roll):+.2f}deg"
                     f" pitch={math.degrees(state.pitch):+.2f}deg"
                     f" z={state.position[2]:+.3f}"

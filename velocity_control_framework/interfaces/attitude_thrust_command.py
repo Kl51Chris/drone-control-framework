@@ -31,10 +31,10 @@ class AttitudeThrustCommand:
 
     Coordinate and unit convention:
         roll:
-            Desired roll angle in radians.
+            Desired roll rate in radians/second.
 
         pitch:
-            Desired pitch angle in radians.
+            Desired pitch rate in radians/second.
 
         yaw_rate:
             Desired yaw rate in radians/second.
@@ -43,7 +43,7 @@ class AttitudeThrustCommand:
             Normalized collective-thrust command in the range [0.0, 1.0].
 
     This class is hardware independent. Conversion to Crazyflie
-    send_setpoint() units is handled by the hardware adapter.
+    commander units is handled by the hardware adapter.
     """
 
     roll: float
@@ -68,7 +68,7 @@ class AttitudeThrustCommand:
     @classmethod
     def zero(cls) -> AttitudeThrustCommand:
         """
-        Create a zero-attitude, zero-thrust command.
+        Create a zero-body-rate, zero-thrust command.
 
         This is not a hover command. It represents no motor thrust.
         """
@@ -90,7 +90,7 @@ class AttitudeThrustCommand:
         """
         Return a safety-limited copy of the command.
 
-        Angle and yaw-rate limits must be positive. Thrust limits use
+        Angular-rate limits must be positive. Thrust limits use
         normalized collective-thrust units.
         """
         max_roll = _positive_finite(max_roll, "max_roll")

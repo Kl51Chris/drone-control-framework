@@ -267,7 +267,7 @@ class VelocityAltitudePIDController:
             + cos_yaw * ay_world
         )
 
-        # Crazyflie attitude convention:
+        # Crazyflie roll/pitch command convention:
         # negative pitch produces forward acceleration;
         # negative roll produces leftward acceleration.
         pitch_command = math.atan2(
