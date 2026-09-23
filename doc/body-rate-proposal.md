@@ -162,11 +162,19 @@ These equations are illustrative only and are not part of the current implementa
 
 ## 5. State Requirements
 
-The current `DroneState` includes attitude angles but does not expose measured body angular rates.
+The current `DroneState` includes attitude angles and body angular rates:
+
+```text
+p
+q
+r
+```
+
+These are body-frame rates about body x, y, and z, not Euler angle derivatives.
 
 A basic attitude-to-rate controller can be implemented using attitude feedback alone.
 
-However, more advanced rate-feedback controllers may require measured:
+More advanced rate-feedback controllers may use:
 
 ```text
 roll_rate
@@ -182,9 +190,7 @@ q
 r
 ```
 
-If such controllers are implemented, the state interface may need to be extended.
-
-That change should be treated as a public-interface modification and reviewed separately.
+The presence of these state fields does not change the current controller law.
 
 ---
 

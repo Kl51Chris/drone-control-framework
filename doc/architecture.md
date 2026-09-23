@@ -64,7 +64,9 @@ A complete control-loop view is therefore:
                        Reference
                            |
                            |
-Hardware --> StateProvider --> DroneState
+EstimatedState --------\
+                        -> StateEstimator -> DroneState -> Controller
+MeasuredState ---------/
                            |       |
                            |       v
                            +--> Controller
@@ -173,7 +175,10 @@ Controller
 
 ## 5. DroneState
 
-`DroneState` represents the vehicle state available to controllers.
+`DroneState` represents the unified, source-agnostic vehicle state available to
+controllers. `EstimatedState` contains state from a source-specific estimator,
+while `MeasuredState` contains optional direct or external measurements.
+`StateEstimator` owns the responsibility for selecting or combining them.
 
 The current state representation includes:
 
@@ -184,6 +189,9 @@ roll
 pitch
 yaw
 timestamp
+p
+q
+r
 ```
 
 The public framework convention is:
@@ -197,7 +205,14 @@ pitch       radians
 yaw         radians
 
 timestamp   seconds
+
+p           body-frame roll rate about body x, radians/second
+q           body-frame pitch rate about body y, radians/second
+r           body-frame yaw rate about body z, radians/second
 ```
+
+Body rates `p`, `q`, and `r` are not generally the Euler angle derivatives
+`roll_dot`, `pitch_dot`, and `yaw_dot`.
 
 Hardware-specific measurement formats must be converted into this representation before being exposed to controllers.
 
@@ -341,19 +356,21 @@ CommandAdapter
 
 ## 10. StateProvider
 
-A state provider obtains vehicle measurements and converts them into `DroneState`.
+A state provider obtains source-specific vehicle state and routes it through a
+`StateEstimator` to produce `DroneState`.
 
 Conceptually:
 
 ```text
-Hardware measurements
-        |
-        v
-   StateProvider
-        |
-        v
-     DroneState
+EstimatedState --------\
+                        -> StateEstimator -> DroneState
+MeasuredState ---------/
 ```
+
+The current `PassthroughStateEstimator` accepts both inputs but intentionally
+ignores `MeasuredState` and copies `EstimatedState` into `DroneState`. It is not
+sensor fusion; it preserves a stable controller interface for future MoCap or
+other measurement integration.
 
 Hardware-specific details belong here.
 

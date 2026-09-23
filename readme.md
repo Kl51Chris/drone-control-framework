@@ -45,13 +45,9 @@ DroneState --> Controller
 State feedback flows from the hardware through a state provider:
 
 ```text
-Hardware
-   |
-   v
-StateProvider
-   |
-   v
-DroneState
+Crazyflie/onboard estimator -> EstimatedState --\
+                                                   -> StateEstimator -> DroneState
+External/direct measurement -> MeasuredState -----/
 ```
 
 The framework is designed so that:
@@ -149,7 +145,15 @@ The framework currently uses the following main abstractions.
 
 ### Drone State
 
-`DroneState` represents the estimated vehicle state used by controllers.
+`EstimatedState` represents source-specific state from the Crazyflie/onboard
+estimator. `MeasuredState` represents optional direct or external measurements
+and allows fields to be unavailable. `StateEstimator` is the boundary that
+selects or combines those sources into `DroneState`, the unified state used by
+controllers.
+
+The initial `PassthroughStateEstimator` intentionally constructs `DroneState`
+only from `EstimatedState`; it accepts but ignores `MeasuredState`. This is
+temporary plumbing for future measurement integration, not sensor fusion.
 
 It currently contains:
 
@@ -160,9 +164,15 @@ roll
 pitch
 yaw
 timestamp
+p
+q
+r
 ```
 
-Positions are represented in meters, velocities in meters per second, and attitude angles in radians.
+Positions are represented in meters, velocities in meters per second, attitude
+angles in radians, and body angular rates in radians per second. `p`, `q`, and
+`r` are rotations about the body x, y, and z axes; they are not generally equal
+to roll, pitch, and yaw Euler-angle derivatives.
 
 ### Reference
 

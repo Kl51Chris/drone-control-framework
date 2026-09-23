@@ -202,6 +202,9 @@ roll
 pitch
 yaw
 timestamp
+p
+q
+r
 ```
 
 Conceptually:
@@ -217,7 +220,15 @@ x =
 \end{bmatrix}
 $$
 
-The current state does not include measured body angular rates.
+The unified state also carries body angular rates:
+
+$$
+p,\ q,\ r
+$$
+
+These are rotations about the body x, y, and z axes in radians/second. They are
+not generally equal to the Euler angle derivatives
+$\dot{\phi}, \dot{\theta}, \dot{\psi}$.
 
 This is sufficient for:
 
@@ -865,17 +876,11 @@ Poor time-scale separation can cause oscillation or conflicting control action.
 
 The current control design has several known limitations.
 
-### No Explicit Body-Rate State
+### State Source Selection Is Currently Passthrough
 
-`DroneState` currently does not expose measured angular rates.
-
-This limits direct implementation of controllers that require:
-
-$$
-p,\ q,\ r
-$$
-
-feedback.
+The initial state estimator constructs the controller-facing `DroneState`
+entirely from onboard `EstimatedState`. It accepts `MeasuredState` but does not
+yet select or fuse any external measurements.
 
 ### Yaw Is Mostly Open at the Framework Level
 

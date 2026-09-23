@@ -6,7 +6,13 @@ from typing import Any
 
 import numpy as np
 
-from velocity_control_framework.interfaces import DroneState
+from velocity_control_framework.estimators import PassthroughStateEstimator
+from velocity_control_framework.interfaces import (
+    DroneState,
+    EstimatedState,
+    MeasuredState,
+    StateEstimator,
+)
 
 
 class CrazyflieStateProvider:
@@ -16,7 +22,8 @@ class CrazyflieStateProvider:
     The provider owns:
         - Crazyflie estimator-state log configuration
         - Crazyflie log callbacks
-        - conversion into DroneState
+        - conversion into source-specific EstimatedState
+        - routing through StateEstimator into DroneState
         - thread-safe storage of the latest state
         - propagation of logging errors to the caller
 
@@ -41,13 +48,25 @@ class CrazyflieStateProvider:
             Crazyflie estimator yaw angle, converted from degrees
             to radians.
 
+        p, q, r:
+            Crazyflie estimator body-frame angular rates about body x,
+            y, and z, converted from milliradians/second to
+            radians/second. These are not Euler angle derivatives.
+
         timestamp:
             Host monotonic time at which the latest complete state
             was assembled, in seconds.
     """
 
-    def __init__(self, crazyflie: Any) -> None:
+    def __init__(
+        self,
+        crazyflie: Any,
+        state_estimator: StateEstimator | None = None,
+    ) -> None:
         self._cf = crazyflie
+        self._state_estimator = (
+            state_estimator or PassthroughStateEstimator()
+        )
 
         self._lock = threading.Lock()
         self._state_ready = threading.Event()
@@ -57,10 +76,12 @@ class CrazyflieStateProvider:
 
         self._translation_log_config: Any | None = None
         self._attitude_log_config: Any | None = None
+        self._body_rate_log_config: Any | None = None
 
         self._latest_position: np.ndarray | None = None
         self._latest_velocity: np.ndarray | None = None
         self._latest_attitude: np.ndarray | None = None
+        self._latest_body_rates: np.ndarray | None = None
 
         self._running = False
 
@@ -81,6 +102,7 @@ class CrazyflieStateProvider:
             self._latest_position = None
             self._latest_velocity = None
             self._latest_attitude = None
+            self._latest_body_rates = None
         self._state_ready.clear()
         
         self._translation_log_config = (
@@ -89,12 +111,18 @@ class CrazyflieStateProvider:
         self._attitude_log_config = (
             self._create_attitude_log_config()
         )
+        self._body_rate_log_config = (
+            self._create_body_rate_log_config()
+        )
 
         self._cf.log.add_config(
             self._translation_log_config
         )
         self._cf.log.add_config(
             self._attitude_log_config
+        )
+        self._cf.log.add_config(
+            self._body_rate_log_config
         )
 
         self._translation_log_config.data_received_cb.add_callback(
@@ -110,10 +138,17 @@ class CrazyflieStateProvider:
         self._attitude_log_config.error_cb.add_callback(
             self._on_log_error
         )
+        self._body_rate_log_config.data_received_cb.add_callback(
+            self._on_body_rate_log_data
+        )
+        self._body_rate_log_config.error_cb.add_callback(
+            self._on_log_error
+        )
 
         try:
             self._translation_log_config.start()
             self._attitude_log_config.start()
+            self._body_rate_log_config.start()
             self._running = True
 
             state_ready = self._state_ready.wait(
@@ -173,6 +208,9 @@ class CrazyflieStateProvider:
                 pitch=state.pitch,
                 yaw=state.yaw,
                 timestamp=state.timestamp,
+                p=state.p,
+                q=state.q,
+                r=state.r,
             )
 
     def stop(self) -> None:
@@ -180,6 +218,7 @@ class CrazyflieStateProvider:
         configs = (
             self._translation_log_config,
             self._attitude_log_config,
+            self._body_rate_log_config,
         )
 
         for config in configs:
@@ -268,6 +307,22 @@ class CrazyflieStateProvider:
 
         return config
 
+    @staticmethod
+    def _create_body_rate_log_config() -> Any:
+        """Create the estimator body-angular-rate log configuration."""
+        from cflib.crazyflie.log import LogConfig
+
+        config = LogConfig(
+            name="EstimatorBodyRates",
+            period_in_ms=10,
+        )
+
+        config.add_variable("stateEstimateZ.rateRoll", "int16_t")
+        config.add_variable("stateEstimateZ.ratePitch", "int16_t")
+        config.add_variable("stateEstimateZ.rateYaw", "int16_t")
+
+        return config
+
     def _on_translation_log_data(
         self,
         timestamp: int,
@@ -337,9 +392,33 @@ class CrazyflieStateProvider:
             self._latest_attitude = attitude
             self._try_build_state_locked()
 
+    def _on_body_rate_log_data(
+        self,
+        timestamp: int,
+        data: dict[str, float],
+        log_config: Any,
+    ) -> None:
+        """Store p/q/r from the compressed estimator log packet."""
+        del timestamp
+        del log_config
+
+        milliradians_to_radians = 1.0e-3
+        body_rates = np.array(
+            [
+                data["stateEstimateZ.rateRoll"],
+                data["stateEstimateZ.ratePitch"],
+                data["stateEstimateZ.rateYaw"],
+            ],
+            dtype=np.float64,
+        ) * milliradians_to_radians
+
+        with self._lock:
+            self._latest_body_rates = body_rates
+            self._try_build_state_locked()
+
     def _try_build_state_locked(self) -> None:
         """
-        Build a complete DroneState when all required components exist.
+        Build a complete state when all estimated components exist.
 
         This method must only be called while self._lock is held.
         """
@@ -352,13 +431,28 @@ class CrazyflieStateProvider:
         if self._latest_attitude is None:
             return
 
-        self._latest_state = DroneState(
+        if self._latest_body_rates is None:
+            return
+
+        estimated_state = EstimatedState(
             position=self._latest_position.copy(),
             velocity=self._latest_velocity.copy(),
             roll=float(self._latest_attitude[0]),
             pitch=float(self._latest_attitude[1]),
             yaw=float(self._latest_attitude[2]),
             timestamp=time.monotonic(),
+            p=float(self._latest_body_rates[0]),
+            q=float(self._latest_body_rates[1]),
+            r=float(self._latest_body_rates[2]),
+        )
+
+        # No direct/external measurements are connected yet. The explicit
+        # empty object prevents missing data from being fabricated and keeps
+        # the future source-selection boundary visible.
+        measured_state = MeasuredState()
+        self._latest_state = self._state_estimator.estimate(
+            estimated_state=estimated_state,
+            measured_state=measured_state,
         )
         self._state_ready.set()
     def _on_log_error(

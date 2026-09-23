@@ -3,43 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
 
-
-Vector3 = NDArray[np.float64]
-
-
-def _vector3(value: ArrayLike, name: str) -> Vector3:
-    """Convert an input to a finite float64 vector with shape (3,)."""
-    array = np.asarray(value, dtype=np.float64)
-
-    if array.shape != (3,):
-        raise ValueError(
-            f"{name} must have shape (3,), got {array.shape}"
-        )
-
-    if not np.all(np.isfinite(array)):
-        raise ValueError(
-            f"{name} must contain only finite values"
-        )
-
-    return array.copy()
-
-
-def _finite_float(value: float, name: str) -> float:
-    """Convert an input to a finite float."""
-    result = float(value)
-
-    if not np.isfinite(result):
-        raise ValueError(f"{name} must be finite")
-
-    return result
+from ._state_validation import Vector3, finite_float, vector3
 
 
 @dataclass(slots=True)
 class DroneState:
     """
-    Estimated drone state used by all controllers.
+    Unified best-current drone state used by all controllers.
+
+    This type is source-agnostic. A StateEstimator selects or combines
+    source-specific EstimatedState and MeasuredState values to produce it.
 
     Coordinate and unit convention:
         position:
@@ -57,6 +31,11 @@ class DroneState:
         yaw:
             Estimated world-frame yaw angle in radians.
 
+        p, q, r:
+            Body-frame angular rates about the body x, y, and z axes,
+            respectively, in radians/second. These are not generally equal
+            to the Euler angle derivatives roll_dot, pitch_dot, yaw_dot.
+
         timestamp:
             Measurement time in seconds.
     """
@@ -70,32 +49,41 @@ class DroneState:
 
     timestamp: float = 0.0
 
+    # Defaults preserve compatibility with existing call sites that predate
+    # body-rate feedback. State acquisition should provide real values.
+    p: float = 0.0
+    q: float = 0.0
+    r: float = 0.0
+
     def __post_init__(self) -> None:
-        self.position = _vector3(
+        self.position = vector3(
             self.position,
             "position",
         )
-        self.velocity = _vector3(
+        self.velocity = vector3(
             self.velocity,
             "velocity",
         )
 
-        self.roll = _finite_float(
+        self.roll = finite_float(
             self.roll,
             "roll",
         )
-        self.pitch = _finite_float(
+        self.pitch = finite_float(
             self.pitch,
             "pitch",
         )
-        self.yaw = _finite_float(
+        self.yaw = finite_float(
             self.yaw,
             "yaw",
         )
-        self.timestamp = _finite_float(
+        self.timestamp = finite_float(
             self.timestamp,
             "timestamp",
         )
+        self.p = finite_float(self.p, "p")
+        self.q = finite_float(self.q, "q")
+        self.r = finite_float(self.r, "r")
 
     @classmethod
     def zero(
@@ -116,4 +104,7 @@ class DroneState:
             pitch=0.0,
             yaw=0.0,
             timestamp=timestamp,
+            p=0.0,
+            q=0.0,
+            r=0.0,
         )

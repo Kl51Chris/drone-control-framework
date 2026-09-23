@@ -34,6 +34,9 @@ class FakeStateProvider:
             pitch=0.0,
             yaw=0.0,
             timestamp=1.0,
+            p=0.1,
+            q=-0.2,
+            r=0.3,
         )
 
     def stop(self) -> None:
@@ -97,6 +100,7 @@ def test_complete_control_pipeline() -> None:
     assert command.pitch == 0.0
     assert command.yaw_rate == 0.0
     assert command.thrust == 0.0
+    assert (state.p, state.q, state.r) == (0.1, -0.2, 0.3)
 
     assert command_adapter.stopped
     assert state_provider.stopped
