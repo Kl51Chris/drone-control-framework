@@ -68,6 +68,13 @@ class ValidationExperimentConfig:
     horizontal_rate_limit_rad_s: float | None = None
     heading_rate_limit_rad_s: float | None = None
     altitude_feedback_limit: float | None = None
+    roll_attitude_kp: float | None = None
+    pitch_attitude_kp: float | None = None
+    yaw_attitude_kp: float | None = None
+    roll_attitude_to_roll_rate_sign: int | None = None
+    pitch_attitude_to_pitch_rate_sign: int | None = None
+    yaw_attitude_to_yaw_rate_sign: int | None = None
+    attitude_rate_limit_rad_s: float | None = None
 
     horizontal_x_gains: PIDGains = field(default_factory=PIDGains)
     horizontal_y_gains: PIDGains = field(default_factory=PIDGains)
@@ -81,6 +88,9 @@ class ValidationExperimentConfig:
     arming_wait_s: float = 1.0
 
     polarity_offset_m: float | None = None
+    ramp_start_thrust: float | None = None
+    ramp_duration_s: float | None = None
+    hold_duration_s: float | None = None
     trajectory_radius_m: float | None = None
     trajectory_period_s: float | None = None
 
@@ -90,6 +100,107 @@ class ValidationExperimentConfig:
     def validate(self) -> None:
         """Reject placeholders and incomplete stage configurations."""
         self._validate_finite_values()
+
+        if self.stage is ValidationStage.EQUILIBRIUM_THRUST:
+            if not self.physical_test_authorized:
+                raise ValueError(
+                    "physical_test_authorized must be True for Stage 2"
+                )
+            required_values = {
+                "roll_attitude_kp": self.roll_attitude_kp,
+                "pitch_attitude_kp": self.pitch_attitude_kp,
+                "yaw_attitude_kp": self.yaw_attitude_kp,
+                "roll_attitude_to_roll_rate_sign": (
+                    self.roll_attitude_to_roll_rate_sign
+                ),
+                "pitch_attitude_to_pitch_rate_sign": (
+                    self.pitch_attitude_to_pitch_rate_sign
+                ),
+                "yaw_attitude_to_yaw_rate_sign": (
+                    self.yaw_attitude_to_yaw_rate_sign
+                ),
+                "attitude_rate_limit_rad_s": self.attitude_rate_limit_rad_s,
+                "heading_rate_limit_rad_s": self.heading_rate_limit_rad_s,
+                "ramp_start_thrust": self.ramp_start_thrust,
+                "equilibrium_thrust": self.equilibrium_thrust,
+                "ramp_duration_s": self.ramp_duration_s,
+                "hold_duration_s": self.hold_duration_s,
+                "min_thrust": self.min_thrust,
+                "max_thrust": self.max_thrust,
+            }
+            missing = [
+                name for name, value in required_values.items() if value is None
+            ]
+            if missing:
+                raise ValueError(
+                    "Stage 2 requires explicit values for: " + ", ".join(missing)
+                )
+            assert self.roll_attitude_kp is not None
+            assert self.pitch_attitude_kp is not None
+            assert self.yaw_attitude_kp is not None
+            assert self.roll_attitude_to_roll_rate_sign is not None
+            assert self.pitch_attitude_to_pitch_rate_sign is not None
+            assert self.yaw_attitude_to_yaw_rate_sign is not None
+            assert self.attitude_rate_limit_rad_s is not None
+            assert self.heading_rate_limit_rad_s is not None
+            assert self.ramp_start_thrust is not None
+            assert self.equilibrium_thrust is not None
+            assert self.ramp_duration_s is not None
+            assert self.hold_duration_s is not None
+            assert self.min_thrust is not None
+            assert self.max_thrust is not None
+            for name, gain in (
+                ("roll_attitude_kp", self.roll_attitude_kp),
+                ("pitch_attitude_kp", self.pitch_attitude_kp),
+                ("yaw_attitude_kp", self.yaw_attitude_kp),
+            ):
+                if gain <= 0.0:
+                    raise ValueError(f"{name} must be positive")
+            for name, sign in (
+                (
+                    "roll_attitude_to_roll_rate_sign",
+                    self.roll_attitude_to_roll_rate_sign,
+                ),
+                (
+                    "pitch_attitude_to_pitch_rate_sign",
+                    self.pitch_attitude_to_pitch_rate_sign,
+                ),
+                (
+                    "yaw_attitude_to_yaw_rate_sign",
+                    self.yaw_attitude_to_yaw_rate_sign,
+                ),
+            ):
+                if sign not in (-1, 1):
+                    raise ValueError(f"{name} must be either -1 or 1")
+            if self.attitude_rate_limit_rad_s <= 0.0:
+                raise ValueError("attitude_rate_limit_rad_s must be positive")
+            if self.attitude_rate_limit_rad_s > MAX_POLARITY_RATE_RAD_S:
+                raise ValueError(
+                    "Stage 2 attitude rate limit exceeds its safety cap"
+                )
+            if self.heading_rate_limit_rad_s <= 0.0:
+                raise ValueError("heading_rate_limit_rad_s must be positive")
+            if self.heading_rate_limit_rad_s > MAX_POLARITY_RATE_RAD_S:
+                raise ValueError(
+                    "Stage 2 heading rate limit exceeds its safety cap"
+                )
+            if self.control_frequency_hz <= 0.0:
+                raise ValueError("control_frequency_hz must be positive")
+            if not 0.0 <= self.min_thrust <= self.max_thrust <= 1.0:
+                raise ValueError("thrust limits must satisfy 0 <= min <= max <= 1")
+            if not self.min_thrust <= self.ramp_start_thrust <= self.max_thrust:
+                raise ValueError("ramp_start_thrust must be within thrust limits")
+            if not self.min_thrust <= self.equilibrium_thrust <= self.max_thrust:
+                raise ValueError("equilibrium_thrust must be within thrust limits")
+            if self.ramp_start_thrust >= self.equilibrium_thrust:
+                raise ValueError(
+                    "ramp_start_thrust must be less than equilibrium_thrust"
+                )
+            if self.ramp_duration_s <= 0.0:
+                raise ValueError("ramp_duration_s must be positive")
+            if self.hold_duration_s < 0.0:
+                raise ValueError("hold_duration_s must be nonnegative")
+            return
 
         if self.horizontal_mapping is None:
             raise ValueError("horizontal_mapping must be configured explicitly")
@@ -170,13 +281,7 @@ class ValidationExperimentConfig:
                 "physical_test_authorized must be True for physical stages"
             )
 
-        if self.stage is ValidationStage.EQUILIBRIUM_THRUST:
-            if not self._all_gains_zero():
-                raise ValueError("Stage 2 requires all feedback gains to be zero")
-            if self.equilibrium_thrust <= 0.0:
-                raise ValueError("Stage 2 requires positive equilibrium_thrust")
-
-        elif self.stage is ValidationStage.HORIZONTAL_STABILIZATION:
+        if self.stage is ValidationStage.HORIZONTAL_STABILIZATION:
             self._require_p_only_horizontal()
             if not self.altitude_gains.is_zero or not self.heading_gains.is_zero:
                 raise ValueError("Stage 3 permits only horizontal feedback")
@@ -208,6 +313,16 @@ class ValidationExperimentConfig:
 
     def controller_config(self) -> OuterLoopPIDConfig:
         self.validate()
+
+        if self.stage is ValidationStage.EQUILIBRIUM_THRUST:
+            # Stage 2 generates commands locally; this controller is not used.
+            return OuterLoopPIDConfig(
+                horizontal_mapping=HorizontalCommandMapping(
+                    body_x_to_pitch_rate_sign=1,
+                    body_y_to_roll_rate_sign=1,
+                )
+            )
+
         assert self.horizontal_mapping is not None
 
         if self.stage is ValidationStage.HORIZONTAL_POLARITY:
@@ -304,7 +419,14 @@ class ValidationExperimentConfig:
             "horizontal_rate_limit_rad_s",
             "heading_rate_limit_rad_s",
             "altitude_feedback_limit",
+            "roll_attitude_kp",
+            "pitch_attitude_kp",
+            "yaw_attitude_kp",
+            "attitude_rate_limit_rad_s",
             "polarity_offset_m",
+            "ramp_start_thrust",
+            "ramp_duration_s",
+            "hold_duration_s",
             "trajectory_radius_m",
             "trajectory_period_s",
         ):
@@ -384,7 +506,10 @@ class OuterLoopPIDValidationProgram:
     def initialize(self, initial_state: DroneState, start_time: float) -> None:
         self._controller.reset()
         self._start_time = float(start_time)
-        if self._config.stage is ValidationStage.HORIZONTAL_POLARITY:
+        if self._config.stage in (
+            ValidationStage.HORIZONTAL_POLARITY,
+            ValidationStage.EQUILIBRIUM_THRUST,
+        ):
             self._neutral_position = tuple(
                 float(value) for value in initial_state.position
             )
@@ -396,6 +521,12 @@ class OuterLoopPIDValidationProgram:
             self._neutral_yaw = self._config.fixed_yaw
 
     def is_complete(self, current_time: float) -> bool:
+        if self._config.stage is ValidationStage.EQUILIBRIUM_THRUST:
+            assert self._config.ramp_duration_s is not None
+            assert self._config.hold_duration_s is not None
+            return self._elapsed(current_time) >= (
+                self._config.ramp_duration_s + self._config.hold_duration_s
+            )
         return self._elapsed(current_time) >= self._config.duration_s
 
     def get_phase_name(self, current_time: float) -> str:
@@ -409,8 +540,81 @@ class OuterLoopPIDValidationProgram:
         dt: float,
     ) -> tuple[Reference, BodyRateThrustCommand]:
         reference = self._reference(current_time)
-        command = self._controller.update(state, reference, dt)
+        if self._config.stage is ValidationStage.EQUILIBRIUM_THRUST:
+            command = self._stage_two_command(state, current_time)
+        else:
+            command = self._controller.update(state, reference, dt)
         return reference, command
+
+    def _stage_two_command(
+        self,
+        state: DroneState,
+        current_time: float,
+    ) -> BodyRateThrustCommand:
+        assert self._neutral_yaw is not None
+        assert self._config.roll_attitude_kp is not None
+        assert self._config.pitch_attitude_kp is not None
+        assert self._config.yaw_attitude_kp is not None
+        assert self._config.roll_attitude_to_roll_rate_sign is not None
+        assert self._config.pitch_attitude_to_pitch_rate_sign is not None
+        assert self._config.yaw_attitude_to_yaw_rate_sign is not None
+        assert self._config.attitude_rate_limit_rad_s is not None
+        assert self._config.heading_rate_limit_rad_s is not None
+
+        roll_rate = self._clamp_symmetric(
+            self._config.roll_attitude_to_roll_rate_sign
+            * self._config.roll_attitude_kp
+            * (0.0 - state.roll),
+            self._config.attitude_rate_limit_rad_s,
+        )
+        pitch_rate = self._clamp_symmetric(
+            self._config.pitch_attitude_to_pitch_rate_sign
+            * self._config.pitch_attitude_kp
+            * (0.0 - state.pitch),
+            self._config.attitude_rate_limit_rad_s,
+        )
+        yaw_error = math.atan2(
+            math.sin(self._neutral_yaw - state.yaw),
+            math.cos(self._neutral_yaw - state.yaw),
+        )
+        yaw_rate = self._clamp_symmetric(
+            self._config.yaw_attitude_to_yaw_rate_sign
+            * self._config.yaw_attitude_kp
+            * yaw_error,
+            self._config.heading_rate_limit_rad_s,
+        )
+        return BodyRateThrustCommand(
+            roll_rate=roll_rate,
+            pitch_rate=pitch_rate,
+            yaw_rate=yaw_rate,
+            thrust=self._stage_two_thrust(current_time),
+        )
+
+    @staticmethod
+    def _clamp_symmetric(value: float, limit: float) -> float:
+        return max(-limit, min(value, limit))
+
+    def _stage_two_thrust(self, current_time: float) -> float:
+        elapsed = self._elapsed(current_time)
+        assert self._config.ramp_start_thrust is not None
+        assert self._config.equilibrium_thrust is not None
+        assert self._config.ramp_duration_s is not None
+        assert self._config.min_thrust is not None
+        assert self._config.max_thrust is not None
+
+        if elapsed < self._config.ramp_duration_s:
+            alpha = elapsed / self._config.ramp_duration_s
+            thrust = self._config.ramp_start_thrust + alpha * (
+                self._config.equilibrium_thrust
+                - self._config.ramp_start_thrust
+            )
+        else:
+            thrust = self._config.equilibrium_thrust
+
+        return max(
+            self._config.min_thrust,
+            min(thrust, self._config.max_thrust),
+        )
 
     def _reference(self, current_time: float) -> Reference:
         elapsed = self._elapsed(current_time)
@@ -468,33 +672,30 @@ URI: Final = "radio://0/80/2M"
 # Intentionally no runnable physical defaults. Replace None with a reviewed
 # ValidationExperimentConfig before running this module.
 EXPERIMENT_CONFIG = ValidationExperimentConfig(
-    stage=ValidationStage.HORIZONTAL_POLARITY,
+    stage=ValidationStage.EQUILIBRIUM_THRUST,
 
-    horizontal_mapping=HorizontalCommandMapping(
-        body_x_to_pitch_rate_sign=1,   # provisional, verify in Stage 1
-        body_y_to_roll_rate_sign=1,    # provisional, verify in Stage 1
-    ),
+    roll_attitude_to_roll_rate_sign=1,
+    pitch_attitude_to_pitch_rate_sign=1,
+    yaw_attitude_to_yaw_rate_sign=1,
 
-    horizontal_x_gains=PIDGains(
-        kp=0.5,
-        ki=0.0,
-        kd=0.0,
-    ),
-    horizontal_y_gains=PIDGains(
-        kp=0.5,
-        ki=0.0,
-        kd=0.0,
-    ),
+    roll_attitude_kp=1.0,
+    pitch_attitude_kp=1.0,
+    yaw_attitude_kp=0.2,
 
-    horizontal_rate_limit_rad_s=0.10,
-    polarity_offset_m=0.02,
+    attitude_rate_limit_rad_s=0.1,
+    heading_rate_limit_rad_s=0.03,
 
-    duration_s=15.0,
+    ramp_start_thrust=0.30,
+    equilibrium_thrust=0.38,
+    ramp_duration_s=3.0,
+    hold_duration_s=0.5,
+
+    min_thrust=0.0,
+    max_thrust=0.42,
+
     control_frequency_hz=50.0,
-
     physical_test_authorized=True,
 )
-
 
 def build_stage_zero_config() -> ValidationExperimentConfig:
     """Build the non-flying, zero-output command-pipeline configuration."""
@@ -550,6 +751,13 @@ def select_experiment_config(
                     "rate limit, polarity offset, duration/runner frequency, "
                     "and physical_test_authorized=True"
                 )
+            elif stage is ValidationStage.EQUILIBRIUM_THRUST:
+                required = (
+                    "roll/pitch/yaw attitude P gains, roll/pitch and yaw rate "
+                    "limits, ramp start thrust, equilibrium thrust, ramp/hold "
+                    "durations, thrust limits, control frequency, and "
+                    "physical_test_authorized=True"
+                )
             else:
                 required = (
                     "reviewed PID gains, horizontal mapping signs, equilibrium "
@@ -578,12 +786,19 @@ def log_step(
     command: BodyRateThrustCommand,
     dt: float,
 ) -> None:
+    attitude_text = ""
+    if phase.startswith("STAGE_2_"):
+        attitude_text = (
+            f" attitude=({state.roll:+.3f},{state.pitch:+.3f},"
+            f"{state.yaw:+.3f})rad"
+        )
     print(
         f"[{elapsed:7.2f}s] [{phase}] dt={dt * 1000.0:5.1f}ms"
         f" pos=({state.position[0]:+.3f},{state.position[1]:+.3f},"
         f"{state.position[2]:+.3f})"
         f" ref=({reference.position[0]:+.3f},{reference.position[1]:+.3f},"
         f"{reference.position[2]:+.3f})"
+        f"{attitude_text}"
         f" rates=({command.roll_rate:+.3f},{command.pitch_rate:+.3f},"
         f"{command.yaw_rate:+.3f})rad/s thrust={command.thrust:.4f}"
     )
