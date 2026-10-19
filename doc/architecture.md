@@ -1,26 +1,17 @@
 # Software Architecture
 
-## 1. Purpose
+## 1. Purpose and Design Boundaries
 
-This document defines the software architecture of the Drone Control Framework.
+The Drone Control Framework separates reference generation, reusable control
+algorithms, state acquisition and estimation, hardware-specific command
+conversion, timing and execution, and experiment-specific validation logic.
 
-The primary design goal is to separate:
+The current implementation is centered on `OuterLoopPIDController`. Other
+controller families can implement the common interface in the future, but LQR,
+MPC, and DeePC are not active controller implementations. Historical code under
+`legacy/` is not part of the active dependency graph.
 
-* trajectory generation
-* control algorithms
-* vehicle state estimation
-* hardware-specific command conversion
-* execution and experiment configuration
-
-This separation allows controllers, references, and hardware backends to evolve independently without requiring the entire flight stack to be rewritten.
-
-The framework is intended to support multiple control approaches, including PID, LQR, MPC, and other future controllers, while preserving a common software interface.
-
----
-
-## 2. High-Level Control Architecture
-
-The main control data flow is:
+## 2. Control Architecture
 
 ```text
 Reference Generator
@@ -29,642 +20,227 @@ Reference Generator
      Reference
         |
         v
-DroneState --> Controller
-                  |
-                  v
-         BodyRateThrustCommand
-                  |
-                  v
-            CommandAdapter
-                  |
-                  v
-              Hardware
-```
-
-State feedback flows in the opposite direction:
-
-```text
-Hardware
-   |
-   v
-StateProvider
-   |
-   v
-DroneState
-```
-
-The runner coordinates these components and determines when each update occurs.
-
-A complete control-loop view is therefore:
-
-```text
-                   Reference Generator
-                           |
-                           v
-                       Reference
-                           |
-                           |
-EstimatedState --------\
-                        -> StateEstimator -> DroneState -> Controller
-MeasuredState ---------/
-                           |       |
-                           |       v
-                           +--> Controller
-                                   |
-                                   v
-                          BodyRateThrustCommand
-                                   |
-                                   v
-                            CommandAdapter
-                                   |
-                                   v
-                               Hardware
-```
-
----
-
-## 3. Repository-Level Structure
-
-The repository is divided into four main categories:
-
-```text
-drone-control-framework/
-├── velocity_control_framework/
-├── experiments/
-├── tools/
-├── legacy/
-└── docs/
-```
-
-Each directory has a distinct responsibility.
-
-### `velocity_control_framework/`
-
-Contains reusable control-system infrastructure.
-
-Code in this directory should represent components that can be reused across multiple experiments.
-
-The framework is currently divided into:
-
-```text
-velocity_control_framework/
-├── interfaces/
-├── controllers/
-├── references/
-├── backends/
-├── runner/
-├── logger/
-└── tests/
-```
-
-### `experiments/`
-
-Contains runnable flight experiments and experiment-specific configuration.
-
-Experiments may select:
-
-* a controller
-* controller parameters
-* a reference generator
-* a hardware backend
-* experiment duration
-* flight sequence configuration
-
-Experiments should assemble reusable framework components rather than implement reusable controller logic directly.
-
-### `tools/`
-
-Contains diagnostic, hardware-test, inspection, and simulation utilities.
-
-Typical examples include:
-
-* Crazyradio scanning
-* Crazyflie connection checks
-* firmware parameter inspection
-* motor and thrust tests
-* simulation inspection utilities
-
-Tools are not part of the normal control-loop architecture.
-
-### `legacy/`
-
-Contains older implementations preserved for historical reference.
-
-New framework code must not depend on modules under `legacy/`.
-
-Legacy code may be inspected when useful, but it should not become part of the active dependency graph.
-
----
-
-## 4. Interfaces
-
-The `interfaces/` package defines the data contracts shared between framework components.
-
-These interfaces form the most important architectural boundary in the project.
-
-Current core interfaces are:
-
-```text
-DroneState
-Reference
-BodyRateThrustCommand
-Controller
-```
-
----
-
-## 5. DroneState
-
-`DroneState` represents the unified, source-agnostic vehicle state available to
-controllers. `EstimatedState` contains state from a source-specific estimator,
-while `MeasuredState` contains optional direct or external measurements.
-`StateEstimator` owns the responsibility for selecting or combining them.
-
-The current state representation includes:
-
-```text
-position
-velocity
-roll
-pitch
-yaw
-timestamp
-p
-q
-r
-```
-
-The public framework convention is:
-
-```text
-position    world frame, meters
-velocity    world frame, meters/second
-
-roll        radians
-pitch       radians
-yaw         radians
-
-timestamp   seconds
-
-p           body-frame roll rate about body x, radians/second
-q           body-frame pitch rate about body y, radians/second
-r           body-frame yaw rate about body z, radians/second
-```
-
-Body rates `p`, `q`, and `r` are not generally the Euler angle derivatives
-`roll_dot`, `pitch_dot`, and `yaw_dot`.
-
-Hardware-specific measurement formats must be converted into this representation before being exposed to controllers.
-
-Controllers should not need to know whether the state originated from:
-
-* Crazyflie onboard estimation
-* Flow Deck
-* ZRanger
-* motion capture
-* simulation
-* another future state source
-
-The state provider is responsible for performing this conversion.
-
----
-
-## 6. Reference
-
-`Reference` represents the desired vehicle motion.
-
-The current reference interface contains:
-
-```text
-position
-velocity
-yaw
-yaw_rate
-timestamp
-```
-
-A reference generator determines how these values evolve over time.
-
-Examples include:
-
-* hover
-* vertical takeoff and landing
-* circular velocity trajectories
-* future position trajectories
-
-Reference generators should describe desired motion only.
-
-They must not depend on a specific controller implementation.
-
-For example, a circular reference should not need to know whether the active controller is PID, LQR, or MPC.
-
----
-
-## 7. Controller
-
-Controllers implement the common controller interface:
-
-```text
-DroneState
-+
-Reference
-+
-dt
-    |
-    v
-BodyRateThrustCommand
-```
-
-Conceptually:
-
-```text
-Controller.update(
-    state,
-    reference,
-    dt
-)
-```
-
-returns a `BodyRateThrustCommand`.
-
-Controllers are pure control components.
-
-A controller may:
-
-* compute feedback errors
-* maintain internal controller states
-* integrate errors
-* solve optimization problems
-* apply controller-specific limits
-
-A controller must not:
-
-* directly call Crazyflie APIs
-* directly access Crazyradio
-* open hardware connections
-* depend on experiment scripts
-* depend on legacy implementations
-
-Hardware communication belongs outside the controller layer.
-
-This boundary allows the same controller logic to be used with different hardware or simulation backends.
-
----
-
-## 8. BodyRateThrustCommand
-
-`BodyRateThrustCommand` is the hardware-independent control output produced by controllers.
-
-The current command representation is:
-
-```text
-roll_rate
-pitch_rate
-yaw_rate
-thrust
-```
-
-Framework-side units are:
-
-```text
-roll_rate   body x-axis angular-rate reference, radians/second
-pitch_rate  body y-axis angular-rate reference, radians/second
-yaw_rate    body z-axis angular-rate reference, radians/second
-thrust      normalized collective thrust [0.0, 1.0]
-```
-
-These units are deliberately independent of the Crazyflie API.
-
-The rate fields are body-axis angular-rate references. They are not Euler
-attitude angles and are not generally Euler-angle derivatives.
-
-Controllers should always produce commands using framework units.
-
-They must not perform Crazyflie-specific conversion.
-
----
-
-## 9. Backends
-
-The `backends/` package forms the boundary between the reusable control framework and hardware-specific implementation.
-
-There are currently two major backend responsibilities:
-
-```text
-StateProvider
-CommandAdapter
-```
-
----
-
-## 10. StateProvider
-
-A state provider obtains source-specific vehicle state and routes it through a
-`StateEstimator` to produce `DroneState`.
-
-Conceptually:
-
-```text
-EstimatedState --------\
-                        -> StateEstimator -> DroneState
-MeasuredState ---------/
-```
-
-The current `PassthroughStateEstimator` accepts both inputs but intentionally
-ignores `MeasuredState` and copies `EstimatedState` into `DroneState`. It is not
-sensor fusion; it preserves a stable controller interface for future MoCap or
-other measurement integration.
-
-Hardware-specific details belong here.
-
-Examples include:
-
-* Crazyflie log variable names
-* sensor availability
-* estimator output conventions
-* unit conversion
-* future motion-capture integration
-
-Controllers should consume only `DroneState`, not raw hardware measurements.
-
----
-
-## 11. CommandAdapter
-
-A command adapter converts `BodyRateThrustCommand` into hardware-specific commands.
-
-For the Crazyflie backend, the current conversion includes:
-
-```text
-roll_rate:
-    radians/second -> degrees/second
-
-pitch_rate:
-    radians/second -> degrees/second
-
-yaw_rate:
-    radians/second -> degrees/second
-
-thrust:
-    normalized [0, 1] -> Crazyflie command encoding
-```
-
-The adapter then sends the converted command through the Crazyflie commander interface.
-For manual Crazyflie setpoints it selects body-rate mode with `rate=True`.
-
-Any hardware-specific:
-
-* unit conversion
-* sign convention
-* command encoding
-* API call
-
-belongs in the backend adapter.
-
-These details must not leak into controllers.
-
----
-
-## 12. References
-
-The `references/` package contains reusable reference generators.
-
-Reference generators determine desired motion as a function of time or flight state.
-
-Conceptually:
-
-```text
-time / experiment state
+     Controller <----- DroneState
         |
         v
-Reference Generator
+BodyRateThrustCommand
         |
         v
-     Reference
-```
-
-Reference generators should remain controller-independent.
-
-A controller may decide how to track a reference, but the reference generator should only specify what motion is desired.
-
----
-
-## 13. Runner Layer
-
-The runner layer coordinates execution of the control system.
-
-Its responsibilities include:
-
-* obtaining the current state
-* obtaining or updating the current reference
-* computing controller update timing
-* calling the controller
-* sending the resulting command
-* controlling flight-loop sequencing
-* stopping safely when execution ends
-
-Conceptually:
-
-```text
-while experiment is running:
-
-    state = state_provider.get_state()
-
-    reference = reference_generator(...)
-
-    command = controller.update(
-        state,
-        reference,
-        dt,
-    )
-
-    command_adapter.send(command)
-```
-
-The runner is orchestration code.
-
-It should not contain controller mathematics that belong in `controllers/`.
-
-It should also avoid containing experiment-specific trajectory definitions that belong in `references/` or `experiments/`.
-
-The exact boundary between reusable runner infrastructure and experiment entry points should remain explicit as the repository evolves.
-
----
-
-## 14. Experiments
-
-Experiments assemble existing framework components into runnable configurations.
-
-An experiment may choose:
-
-```text
-Reference Generator
-Controller
-Controller Configuration
-StateProvider
-CommandAdapter
-Runner Configuration
-```
-
-For example:
-
-```text
-Circular Reference
-        +
-Controller implementation
-        +
-CrazyflieStateProvider
-        +
 CrazyflieCommandAdapter
         |
         v
-Circular Flight Experiment
+Crazyflie firmware body-rate controller
+        |
+        v
+Motor mixing / motors
 ```
 
-Experiment files should generally be thin.
+The PC-side controller computes desired body-frame angular rates and collective
+thrust. It does not compute individual motor commands or close the inner
+body-rate loop. `CrazyflieCommandAdapter` owns hardware conversion and
+transmission. With `rate=True`, the firmware closes the body-rate stabilization
+loop and performs motor mixing.
 
-They should configure and launch reusable components rather than duplicate framework implementation.
-
----
-
-## 15. Dependency Direction
-
-The intended dependency direction is:
+## 3. Repository Responsibilities
 
 ```text
-experiments
-    |
-    v
-runner
-    |
-    +------> controllers
-    |
-    +------> references
-    |
-    +------> backends
-                |
-                v
-             hardware
+velocity_control_framework/
+├── interfaces/     shared state, reference, command, and protocol definitions
+├── controllers/    reusable control laws
+├── estimators/     StateEstimator implementations
+├── references/     reusable reference generators
+├── backends/       state acquisition and command transmission
+├── runner/         reusable timing and lifecycle coordination
+├── logger/         logging package
+└── tests/          automated framework and experiment tests
 ```
 
-Shared components depend on interfaces:
+`experiments/` assembles these components and may contain validation-specific
+logic. `tools/` contains diagnostics outside the normal control path. `legacy/`
+preserves historical implementations. Detailed documentation is under `doc/`.
+
+## 4. Shared Interfaces
+
+### State types and estimator boundary
 
 ```text
-controllers ----\
-references ------> interfaces
-backends -------/
-runner --------/
+Crazyflie estimator/logging -> EstimatedState --\
+                                                   -> StateEstimator -> DroneState
+Direct/external source      -> MeasuredState -----/
 ```
 
-The interfaces package should remain near the center of the architecture and should avoid depending on higher-level components.
+`EstimatedState` is a complete source-specific estimated state. `MeasuredState`
+represents optional direct or external measurements, so every field may be
+`None`. Both use world-frame position and velocity in SI units, Euler attitude
+angles in radians, body rates in radians per second, and seconds for timestamps.
 
-New dependencies should generally point inward toward shared interfaces, not outward toward hardware or experiment-specific code.
-
----
-
-## 16. Architectural Invariants
-
-The following rules should be preserved unless an explicit architectural decision changes them.
-
-### Controller Independence
-
-Controllers must not directly communicate with Crazyflie hardware.
-
-### Hardware Isolation
-
-Crazyflie-specific APIs, units, and command encoding belong in backend components.
-
-### Reference Independence
-
-Reference generators must not depend on a specific controller implementation.
-
-### Experiment Separation
-
-Experiment files configure reusable components but should not become the location of reusable control logic.
-
-### Legacy Isolation
-
-Active framework code must not depend on `legacy/`.
-
-### Shared Units
-
-Framework interfaces should use consistent hardware-independent units.
-
-Current conventions include:
+`StateEstimator.estimate(estimated_state, measured_state)` produces the unified
+`DroneState` consumed by controllers. `DroneState` contains:
 
 ```text
-distance        meters
-velocity        meters/second
-angles          radians
-angular rates   radians/second
-time            seconds
-thrust          normalized [0, 1]
+position       world-frame [x, y, z], m
+velocity       world-frame [vx, vy, vz], m/s
+roll/pitch/yaw Euler attitude angles, rad
+p/q/r          angular rates about body x/y/z, rad/s
+timestamp      s
 ```
 
-Hardware adapters are responsible for converting these values when required.
+The active `PassthroughStateEstimator` copies all fields from `EstimatedState`
+and intentionally ignores `MeasuredState`. It is an interface bridge, not a
+sensor-fusion algorithm.
 
-### Explicit Interface Changes
+### StateProvider
 
-Changes to public interfaces such as:
+`StateProvider` owns `start()`, `get_state()`, and `stop()`.
+`CrazyflieStateProvider` configures three 10 ms log blocks for translation,
+attitude, and body rates; combines the latest complete values; converts attitude
+degrees to radians and body-rate milliradians per second to radians per second;
+creates `EstimatedState`; supplies an empty `MeasuredState`; and invokes its
+`StateEstimator`. It stores and returns thread-safe copies of the latest
+`DroneState` and propagates logging errors.
+
+### Reference
+
+`Reference` contains desired world-frame position and velocity, desired yaw and
+yaw rate, and a timestamp. Reusable generators live in `references/`;
+experiments may generate stage-specific references. Reference generation
+specifies desired motion and remains separate from controller mathematics.
+
+### Controller and command
+
+A `Controller` implements:
 
 ```text
-DroneState
-Reference
-BodyRateThrustCommand
-Controller
-StateProvider
-CommandAdapter
+DroneState + Reference + dt -> BodyRateThrustCommand
 ```
 
-should be treated as architectural changes.
+It also provides `reset()` for internal state. `BodyRateThrustCommand` carries
+roll-, pitch-, and yaw-rate references in radians per second and normalized
+collective thrust in `[0.0, 1.0]`. Its constructor rejects non-finite fields and
+out-of-range thrust. Its `clipped()` helper returns a copy limited by positive
+per-axis rate limits and validated thrust bounds; callers must invoke it
+explicitly.
 
-Related tests and documentation should be updated together.
+### CommandAdapter
 
----
-
-## 17. Current Architecture Status
-
-The current active architecture supports:
-
-* reusable controller interfaces
-* hardware-independent command representation
-* Crazyflie-specific state and command backends
-* reusable reference generators
-* reusable runner infrastructure
-* standalone experiments
-* automated framework tests
-
-The active package includes the configurable `OuterLoopPIDController`.
-Obsolete controller, runner, experiment, and related test code is isolated
-under `legacy/`.
-
-The architecture is still evolving.
-
-Current areas under development include:
-
-* clearer separation between reusable runners and experiment entry points
-* yaw and yaw-rate control behavior
-* additional state-feedback sources
-* motion-capture integration
-* additional controller types
-
-Future changes should preserve the separation between control logic, hardware integration, and experiment configuration wherever practical.
-
----
-
-## 18. Related Documentation
-
-See also:
+`CommandAdapter` defines `send(command)` and `stop()`. The active
+`CrazyflieCommandAdapter` converts rates from radians per second to degrees per
+second, clamps normalized thrust to `[0, 1]`, converts it to `[0, 100]`, and
+calls:
 
 ```text
-README.md
-docs/control-design.md
-AGENTS.md
+send_setpoint_manual(roll_rate, pitch_rate, yaw_rate, thrust, rate=True)
 ```
 
-`README.md` provides the project overview.
+`stop()` sends the Crazyflie stop setpoint. `PrintingCommandAdapter` supports
+non-hardware inspection.
 
-`control-design.md` documents the active control boundary, coordinate
-conventions, state assumptions, and command semantics.
+## 5. Runner and Experiment Architecture
 
-`AGENTS.md` defines development rules and constraints for coding agents working inside the repository.
+There are two reusable execution paths.
+
+`run_control_loop()` validates loop frequency and optional duration, starts
+state acquisition, resets the controller, samples state and a callable reference
+provider, calculates `dt` from a monotonic clock, updates the controller, sends
+commands, and maintains a nominal period. In `finally`, it stops command output
+and state acquisition.
+
+`UniversalRunner` delegates reference/controller coordination to a
+`FlightProgram`. Its lifecycle is:
+
+1. Start the state provider and wait, with a configured timeout, for a state.
+2. Request arming and wait for the configured arming interval.
+3. Initialize the flight program with the initial state and monotonic start
+   time.
+4. At the configured control frequency, ask for the phase, acquire state,
+   calculate `dt`, obtain `(Reference, command)`, transmit the command, and
+   optionally invoke a lower-frequency logging callback.
+5. Drop missed deadlines instead of executing catch-up iterations.
+6. Exit when the program reports completion or on interruption/error.
+7. In `finally`, stop command output, request disarming if armed, and stop state
+   acquisition if started.
+
+The runner does not select gains, create trajectories, or calculate commands.
+`OuterLoopPIDValidationProgram` supplies those experiment-specific duties.
+
+## 6. Staged Validation Architecture
+
+`experiments/outer_loop_pid_validation.py` defines these exact stages:
+
+| Value | `ValidationStage` | Purpose encoded by the experiment |
+|---:|---|---|
+| 0 | `SOFTWARE_PIPELINE` | Zero-gain, zero-thrust command-pipeline check |
+| 1 | `HORIZONTAL_POLARITY` | Small body-axis position offsets for mapping checks |
+| 2 | `EQUILIBRIUM_THRUST` | Attitude-held thrust ramp and hold |
+| 3 | `HORIZONTAL_STABILIZATION` | P-only horizontal feedback with equilibrium thrust |
+| 4 | `HORIZONTAL_ALTITUDE` | Horizontal and altitude feedback |
+| 5 | `HEADING` | Adds heading feedback, initially P-only |
+| 6 | `FIXED_HOVER` | Fixed position and heading reference |
+| 7 | `SLOW_TRAJECTORY` | Bounded, slow circular position reference |
+
+Stages other than Stage 2 build an `OuterLoopPIDConfig` and invoke the generic
+`OuterLoopPIDController`. Stage 2 is deliberately different: the experiment
+program directly applies roll, pitch, and yaw attitude P feedback, rate limits,
+and a thrust ramp. The `OuterLoopPIDController` instance created for Stage 2 has
+inactive channels and is not used to generate the command. This Stage 2 law is
+experiment-specific, not part of the reusable controller.
+
+The experiment program owns initial-reference capture, polarity and trajectory
+reference selection, stage duration/completion, and Stage 2 command generation.
+The framework retains reusable state, command, backend, controller, and runner
+components.
+
+## 7. Implemented Safety Mechanisms
+
+The code implements:
+
+* finite-value and shape validation in public state, reference, command, and
+  controller configuration types;
+* normalized command-thrust validation and configurable controller thrust
+  clamping;
+* per-channel PID output saturation;
+* `BodyRateThrustCommand.clipped()` for explicit downstream limiting;
+* stage requirements for gains, mappings, limits, duration, and stage-specific
+  fields;
+* `physical_test_authorized=True` for physical Stages 1–7;
+* Stage 1 caps of 0.05 m for offsets and 10 deg/s for horizontal rate;
+* Stage 2 caps of 10 deg/s for attitude and heading rates, plus ordered and
+  bounded thrust-ramp values;
+* Stage 7 caps of 0.25 m radius and a minimum 10 s trajectory period;
+* CLI/configuration stage matching before a physical run;
+* first-state timeout and orderly stop, disarm request, and state shutdown.
+
+These mechanisms reduce configuration and command risk; they do not prove the
+vehicle is safe in every condition. The implementation does not show a general
+geofence, independent watchdog, automatic state-bound abort, battery abort, or
+collision avoidance, so this document does not claim those features. The
+authorization flag records deliberate configuration intent; it is not a
+substitute for a physical test procedure.
+
+## 8. Implementation and Validation Status
+
+The interfaces, passthrough estimator, Crazyflie backends, runner,
+`OuterLoopPIDController`, and staged experiment are implemented. Automated tests
+cover representative state and adapter conversions, PID transformations and
+limits, estimator behavior, validation configuration, and Stage 2 equations and
+timing.
+
+The repository does not contain a durable hardware-results record establishing
+stable hover, full staged completion, or trajectory-tracking performance.
+Configured physical experiments and automated software tests must not be
+described as successful flight validation. Hardware polarity, equilibrium
+thrust, gains, and performance remain subject to controlled physical
+verification and documentation.
+
+## 9. Architectural Invariants
+
+* Controllers do not call Crazyflie APIs or open hardware connections.
+* Backends own hardware APIs, encodings, and unit conversion.
+* Reference generators do not depend on a controller implementation.
+* Controllers consume `DroneState`, not raw log variables.
+* Framework angular rates use radians per second; adapters convert as needed.
+* Different physical command levels use distinct types.
+* Active framework code does not depend on `legacy/`.
+
+See [`control-design.md`](control-design.md) for the implemented control laws and
+[`../readme.md`](../readme.md) for the project overview.
