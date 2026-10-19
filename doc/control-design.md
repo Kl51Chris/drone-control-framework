@@ -1,256 +1,405 @@
 # Control Design
 
-## 1. Active Control Boundary
+## 1. Control System Overview
 
-```text
-DroneState + Reference + dt
-           |
-           v
-  OuterLoopPIDController
-           |
-           v
- BodyRateThrustCommand
-```
+### 1.1 Control Objectives and Scope
 
-`dt` is elapsed update time in seconds and must be finite and positive.
-`reset()` clears every PID channel's integral and previous error.
+The framework supports interchangeable offboard controllers for Crazyflie
+position and trajectory tracking. At the shared control boundary, an offboard
+controller maps the current vehicle state and desired reference to commanded
+body angular rates and normalized collective thrust. Crazyflie firmware closes
+the onboard body-rate loops and performs motor mixing; the offboard command is
+not a direct motor command.
 
-`DroneState.roll`, `.pitch`, and `.yaw` are Euler attitude angles in radians.
-`DroneState.p`, `.q`, and `.r` are angular rates about the body x, y, and z axes
-in radians per second. Except in special attitudes, body rates are not equal to
-Euler-angle derivatives. Command rates are desired body-axis rates; they are
-neither attitude-angle nor Euler-angle-derivative commands.
+`OuterLoopPIDController` is the currently implemented reusable controller. LQR,
+MPC, and DeePC are planned future controllers and are not implemented. See
+[`architecture.md`](architecture.md) for software architecture, component
+boundaries, state acquisition, hardware adaptation, and execution flow.
 
-The controller uses `Reference.position` and `Reference.yaw`. It does not use
-the available desired velocity or yaw-rate feed-forward fields.
+### 1.2 State, Reference, and Command Definitions
 
-## 2. Position Error and Horizontal Coordinates
-
-Let the world/inertial horizontal position error be
+The common `DroneState` representation provides
 
 ```math
-e_x^I = x_{ref} - x, \qquad e_y^I = y_{ref} - y.
+\mathbf{s} =
+\begin{bmatrix}
+p_x & p_y & p_z &
+v_x & v_y & v_z &
+\phi & \theta & \psi &
+p & q & r
+\end{bmatrix}^{\mathsf T}.
 ```
 
-Using measured yaw `psi`, the implementation rotates it by `R(-psi)`:
+Position `(p_x, p_y, p_z)` and velocity `(v_x, v_y, v_z)` are world-frame
+quantities. Attitude is represented by roll, pitch, and yaw Euler angles
+`(phi, theta, psi)`. The values `(p, q, r)` are measured or estimated angular
+rates about the body x, y, and z axes. Body rates are not generally equal to
+the Euler-angle derivatives `(phi_dot, theta_dot, psi_dot)`.
+
+`DroneState` is a common software representation, not a mandated mathematical
+state vector for every controller. A controller may select or derive the state
+variables appropriate to its formulation. The representation also includes a
+timestamp in seconds, which is omitted from the vector above because it is
+sample metadata rather than a dynamic state.
+
+The common `Reference` is
 
 ```math
-\begin{bmatrix} e_x^B \\ e_y^B \end{bmatrix}
+\mathbf{r}_{ref} =
+\begin{bmatrix}
+\mathbf{p}_{ref} &
+\mathbf{v}_{ref} &
+\psi_{ref} &
+\dot{\psi}_{ref}
+\end{bmatrix}^{\mathsf T},
+```
+
+where `position = p_ref` and `velocity = v_ref` are desired world-frame
+three-vectors, `yaw = psi_ref` is desired world-frame yaw, and
+`yaw_rate = psi_ref_dot` is desired yaw rate. `Reference` also carries a
+timestamp in seconds. The current PID controller uses position and yaw but does
+not use the velocity or yaw-rate fields.
+
+The shared controller output is
+
+```math
+\mathbf{u} =
+\begin{bmatrix}
+p_{cmd} & q_{cmd} & r_{cmd} & T_{cmd}
+\end{bmatrix}^{\mathsf T}.
+```
+
+The first three elements are desired body angular rates; `T_cmd` is normalized
+collective thrust. Crazyflie firmware interprets the rate references through
+its lower-level stabilization and motor-mixing logic.
+
+| Quantity | Convention | Unit |
+|---|---|---|
+| Position `p`, reference `p_ref` | World frame | m |
+| Velocity `v`, reference `v_ref` | World frame | m/s |
+| Euler attitude `(phi, theta, psi)` | Roll, pitch, world-frame yaw | rad |
+| State body rates `(p, q, r)` | About body x, y, z | rad/s |
+| Command rates `(p_cmd, q_cmd, r_cmd)` | About body x, y, z | rad/s |
+| Normalized thrust `T_cmd` | Collective command in `[0, 1]` | dimensionless |
+| Timestamps and controller `dt` | Time | s |
+
+## 2. Outer-Loop PID Controller [Implemented]
+
+### 2.1 Controller Overview and Block Diagram
+
+`OuterLoopPIDController` is a four-channel feedback controller. It forms
+horizontal position errors in the body frame, altitude error in the world
+vertical coordinate, and wrapped yaw error. Four independent PID channels then
+produce horizontal control outputs, altitude thrust feedback, and a body-axis
+yaw-rate command.
+
+```mermaid
+flowchart TB
+    REF["Reference<br/>p_ref, ψ_ref"]
+    STATE["DroneState<br/>p, ψ"]
+
+    SUM(("Σ"))
+    ROT["R(-ψ)"]
+
+    XPID["PID_x"]
+    YPID["PID_y"]
+    ZPID["PID_z"]
+    YAWPID["PID_ψ"]
+
+    XMAP["s_x"]
+    YMAP["s_y"]
+
+    TSUM(("Σ"))
+
+    TEQ["T_eq"]
+
+    OUT["BodyRateThrustCommand"]
+
+    REF -->|"+"| SUM
+    STATE -->|"−"| SUM
+
+    SUM -->|"e_xy"| ROT
+    SUM -->|"e_z"| ZPID
+    SUM -->|"e_ψ (wrapped)"| YAWPID
+
+    ROT -->|"e_x^b"| XPID
+    ROT -->|"e_y^b"| YPID
+
+    XPID --> XMAP
+    YPID --> YMAP
+
+    XMAP -->|"q_cmd"| OUT
+    YMAP -->|"p_cmd"| OUT
+
+    ZPID -->|"ΔT"| TSUM
+    TEQ -->|"+"| TSUM
+    TSUM -->|"T_cmd"| OUT
+
+    YAWPID -->|"r_cmd"| OUT
+
+    classDef sum fill:#fff,stroke:#222,stroke-width:2px;
+    classDef control fill:#fff,stroke:#222,stroke-width:1.5px;
+    class SUM,TSUM sum;
+    class ROT,XPID,YPID,ZPID,YAWPID,XMAP,YMAP control;
+```
+
+The controller input `dt` must be finite and positive. Calling `reset()` clears
+the integral and previous-error state of all four PID channels.
+
+### 2.2 Position Error and Coordinate Transformation
+
+World-frame horizontal tracking errors are
+
+```math
+e_x^W = p_{x,ref} - p_x,
+\qquad
+e_y^W = p_{y,ref} - p_y.
+```
+
+Using the current measured yaw `psi`, the implementation rotates them into the
+horizontal body frame with `R(-psi)`:
+
+```math
+\begin{bmatrix}
+e_x^B \\
+e_y^B
+\end{bmatrix}
 =
 \begin{bmatrix}
 \cos\psi & \sin\psi \\
 -\sin\psi & \cos\psi
 \end{bmatrix}
-\begin{bmatrix} e_x^I \\ e_y^I \end{bmatrix}.
+\begin{bmatrix}
+e_x^W \\
+e_y^W
+\end{bmatrix}.
 ```
 
 Equivalently,
 
 ```math
-e_x^B = \cos\psi\,e_x^I + \sin\psi\,e_y^I,
+e_x^B = \cos\psi\,e_x^W + \sin\psi\,e_y^W,
+\qquad
+e_y^B = -\sin\psi\,e_x^W + \cos\psi\,e_y^W.
 ```
 
+This matches `_inertial_to_body_error()` in the implementation. Expressing the
+horizontal errors in body coordinates allows the two horizontal channels to
+map consistently to roll- and pitch-rate commands as vehicle heading changes.
+Only yaw enters this planar transformation; roll and pitch do not.
+
+### 2.3 Four-Channel PID Control Law
+
+For channel
+
 ```math
-e_y^B = -\sin\psi\,e_x^I + \cos\psi\,e_y^I.
+i \in \{x_B, y_B, z, \psi\},
 ```
 
-Only yaw enters this planar transform; roll and pitch do not.
-
-## 3. Implemented PID Numerics
-
-Four independent PID instances process body-horizontal X, body-horizontal Y,
-altitude, and heading error. Each has gains `(K_p, K_i, K_d)` and configured
-output bounds `[u_min, u_max]`.
-
-For update `k`, the derivative is computed from error:
+the unsaturated PID output is
 
 ```math
-d_k =
+u_{i,k}^{*}
+= K_{p,i} e_{i,k}
++ K_{i,i} I_{i,k}^{*}
++ K_{d,i} d_{i,k}.
+```
+
+The channel errors are
+
+```math
+e_{x_B}=e_x^B, \qquad
+e_{y_B}=e_y^B, \qquad
+e_z=p_{z,ref}-p_z,
+```
+
+with the wrapped heading error defined in Section 2.6.
+
+For a nonzero integral gain, the candidate integral uses rectangular
+integration:
+
+```math
+I_{i,k}^{*}=I_{i,k-1}+e_{i,k}\Delta t.
+```
+
+When `K_i = 0`, the stored integral is left unchanged. The derivative is taken
+from successive errors:
+
+```math
+d_{i,k}=
 \begin{cases}
-0, & k=0 \text{ or } K_d=0,\\
-(e_k-e_{k-1})/\Delta t, & \text{otherwise}.
+0, & \text{first update or }K_{d,i}=0,\\
+\dfrac{e_{i,k}-e_{i,k-1}}{\Delta t}, & \text{otherwise}.
 \end{cases}
 ```
 
-When `K_i != 0`, a rectangular-rule candidate integral is
+The implementation does not apply derivative filtering, setpoint weighting, or
+measured-rate feedback. Each channel has independent gains, limits, integral
+state, and previous error.
+
+### 2.4 Horizontal Command Mapping
+
+Let the horizontal PID outputs be
 
 ```math
-I_k^* = I_{k-1} + e_k\Delta t.
-```
-
-When `K_i = 0`, the stored integral is unchanged. The candidate and returned
-outputs are
-
-```math
-u_k^* = K_p e_k + K_i I_k^* + K_d d_k,
+u_x = PID_{x_B}(e_x^B),
 \qquad
-u_k = \operatorname{clamp}(u_k^*, u_{min}, u_{max}).
+u_y = PID_{y_B}(e_y^B).
 ```
 
-Conditional-integration anti-windup commits `I_k = I_k^*` if the candidate is
-unsaturated, or if integral drive `K_i e_k` would move an over-limit output
-downward or an under-limit output upward. Otherwise it keeps the old integral.
-Previous error is updated on every call, including saturated calls. There is no
-separate integral clamp, derivative filter, setpoint weighting, or
-back-calculation term.
-
-## 4. Horizontal Channels and Body-Rate Mapping
+The fixed axis association and configurable polarity mapping are
 
 ```math
-u_x = PID_x(e_x^B), \qquad u_y = PID_y(e_y^B).
+q_{cmd}=s_x u_x,
+\qquad
+p_{cmd}=s_y u_y,
 ```
 
-The implemented mapping is
-
-```math
-q_{cmd} = s_x u_x, \qquad p_{cmd} = s_y u_y,
-```
-
-where `q_cmd` is `pitch_rate`, `p_cmd` is `roll_rate`,
+where `q_cmd` is the pitch-rate command, `p_cmd` is the roll-rate command,
 `s_x = body_x_to_pitch_rate_sign`, and
-`s_y = body_y_to_roll_rate_sign`. Thus body X maps to pitch rate and body Y to
-roll rate. Each sign must be `-1` or `+1`.
+`s_y = body_y_to_roll_rate_sign`. Thus body-X output always maps to pitch rate,
+and body-Y output always maps to roll rate. Each configured sign must be either
+`-1` or `+1`.
 
-These polarities are explicit configuration, not established universal hardware
-signs. Tests verify application of configured signs; they do not physically
-verify the correct signs for a vehicle.
+The implementation and unit tests verify the axis association and application
+of configured signs. The repository does not record sufficient experimental
+evidence to declare either polarity universally or physically validated for a
+particular vehicle.
 
-## 5. Altitude and Collective Thrust
+### 2.5 Altitude and Thrust Control
 
-```math
-e_z = z_{ref} - z, \qquad u_z = PID_z(e_z).
-```
-
-The equilibrium-thrust feed-forward and feedback are combined as
+The altitude channel operates on
 
 ```math
-T_{command} = \operatorname{clamp}
-\left(T_{equilibrium} + u_z, T_{min}, T_{max}\right).
+e_z=p_{z,ref}-p_z,
+\qquad
+T_{feedback}=PID_z(e_z).
 ```
 
-All thrust values are normalized to `[0, 1]`, with
-`T_min <= T_equilibrium <= T_max`. The altitude PID limits `u_z` before the
-overall thrust clamp. Normalized thrust is a command magnitude, not force in
-newtons or a world-frame vertical force. `BodyRateThrustCommand.zero()` means
-zero motor thrust, not hover thrust.
-
-## 6. Heading Channel
-
-Heading error is wrapped using the exact implementation:
+It combines the PID correction with equilibrium-thrust feed-forward:
 
 ```math
-e_\psi = \operatorname{atan2}
-\left(\sin(\psi_{ref}-\psi), \cos(\psi_{ref}-\psi)\right).
+T_{cmd}=\operatorname{clamp}
+\left(
+T_{equilibrium}+T_{feedback},
+T_{min},
+T_{max}
+\right).
 ```
 
-This selects the principal error in `[-pi, pi]`, subject to the usual `atan2`
-endpoint representation. The output is
+`T_equilibrium` is the normalized collective command intended to balance the
+nominal vehicle at the operating condition; the altitude channel adjusts around
+it. Configuration requires
+`0 <= T_min <= T_equilibrium <= T_max <= 1`. The altitude PID output is first
+limited by its own channel bounds, and the combined command is then clamped to
+the overall thrust limits.
+
+Normalized thrust is dimensionless command magnitude, not force in newtons and
+not a world-frame vertical-force command.
+
+### 2.6 Heading Control
+
+The yaw error is wrapped to the principal interval using
 
 ```math
-r_{cmd} = PID_\psi(e_\psi).
+e_{\psi}=\operatorname{atan2}
+\left(
+\sin(\psi_{ref}-\psi),
+\cos(\psi_{ref}-\psi)
+\right).
 ```
 
-The controller neither adds `Reference.yaw_rate` nor feeds back
+The heading channel produces
+
+```math
+r_{cmd}=PID_{\psi}(e_{\psi}),
+```
+
+which is a commanded angular rate about body z. The input error is formed from
+Euler yaw angles, but the output is a body-axis rate command; it is not a
+commanded Euler yaw derivative. The controller does not add
+`Reference.yaw_rate` feed-forward and does not feed back measured body rate
 `DroneState.r`.
 
-## 7. Crazyflie Backend and Onboard Responsibilities
+### 2.7 Saturation and Anti-Windup
 
-The adapter converts each framework angular rate independently:
-
-```math
-\omega_{deg/s} = \omega_{rad/s}\frac{180}{\pi}.
-```
-
-It clamps normalized thrust to `[0, 1]`, multiplies by 100, and calls:
-
-```text
-send_setpoint_manual(
-    roll_rate_deg_s,
-    pitch_rate_deg_s,
-    yaw_rate_deg_s,
-    thrust_percent,
-    rate=True,
-)
-```
-
-It currently introduces no additional angular-rate sign inversion. Crazyflie
-firmware retains responsibility for body-rate stabilization, motor mixing, and
-motor actuation. The PC-side law does not directly command torque, angular
-acceleration, or individual motors.
-
-## 8. Stage 2 Equilibrium-Thrust Experiment
-
-Stage 2 (`ValidationStage.EQUILIBRIUM_THRUST`) is an experiment-specific law in
-`experiments/outer_loop_pid_validation.py`. It does **not** use the generic
-`OuterLoopPIDController` to generate commands.
-
-Initialization captures yaw `psi_0` and position for reference/logging.
-Horizontal position, altitude, velocity, and body rates do not contribute to
-the Stage 2 command. Direct attitude P feedback is:
+Each PID channel applies its configured output limits:
 
 ```math
-p_{cmd} = \operatorname{sat}_{L_{att}}
-\left[s_{roll}K_{p,roll}(0-\phi)\right],
+u_{i,k}=\operatorname{clamp}
+\left(u_{i,k}^{*},u_{i,min},u_{i,max}\right).
 ```
 
-```math
-q_{cmd} = \operatorname{sat}_{L_{att}}
-\left[s_{pitch}K_{p,pitch}(0-\theta)\right],
-```
+The implementation uses conditional integration. The candidate integral
+`I_{i,k}^{*}` is committed when the candidate output is unsaturated. When saturated,
+it is committed only if the current integral drive `K_i e_i,k` would move an
+above-maximum output downward or a below-minimum output upward. Otherwise the
+stored integral remains unchanged:
 
 ```math
-e_{\psi,2} = \operatorname{atan2}
-\left(\sin(\psi_0-\psi),\cos(\psi_0-\psi)\right),
-```
-
-```math
-r_{cmd} = \operatorname{sat}_{L_{yaw}}
-\left[s_{yaw}K_{p,yaw}e_{\psi,2}\right].
-```
-
-Here `sat_L(v) = max(-L, min(v, L))`. Configurable polarities `s_roll`,
-`s_pitch`, and `s_yaw` must be `-1` or `+1`. Roll and pitch share
-`attitude_rate_limit_rad_s`; yaw uses `heading_rate_limit_rad_s`. Gains must be
-positive, and both limits are configuration-capped at 10 deg/s. Configured
-signs are not claimed as physically verified signs.
-
-For elapsed time `t`, initial thrust `T_0`, equilibrium thrust `T_eq`, and ramp
-duration `t_r`, the ramp before final bounds is
-
-```math
-T(t) =
+I_{i,k}=
 \begin{cases}
-T_0 + \dfrac{t}{t_r}(T_{eq}-T_0), & 0 \le t < t_r,\\
-T_{eq}, & t \ge t_r.
+I_{i,k}^{*}, & u_{i,k}^{*}=u_{i,k},\\
+I_{i,k}^{*}, & u_{i,k}^{*}>u_{i,max}\ \text{and}\ K_{i,i}e_{i,k}<0,\\
+I_{i,k}^{*}, & u_{i,k}^{*}<u_{i,min}\ \text{and}\ K_{i,i}e_{i,k}>0,\\
+I_{i,k-1}, & \text{otherwise}.
 \end{cases}
 ```
 
-The transmitted value is
+This update occurs only when `K_i != 0`. Previous error is stored on every
+update, including saturated updates. There is no separate integral-state clamp
+or back-calculation term.
 
-```math
-T_{command}(t) = \operatorname{clamp}(T(t), T_{min}, T_{max}).
-```
+Horizontal and heading commands inherit their respective PID channel limits.
+Altitude feedback is PID-limited before equilibrium thrust is added, after
+which `T_cmd` receives the additional `[T_min, T_max]` saturation described in
+Section 2.5.
 
-Validation requires `T_min <= T_0 < T_eq <= T_max`, positive ramp duration,
-and nonnegative hold duration. Completion occurs at
+### 2.8 Implementation and Validation Status
 
-```math
-t \ge t_r + t_{hold}.
-```
+The four-channel `OuterLoopPIDController`, coordinate transformation, mapping,
+PID state updates, saturation, conditional-integration anti-windup, equilibrium
+thrust addition, and heading wrapping are implemented. Automated tests cover
+representative zero-error behavior, altitude correction and feed-forward,
+heading wrapping, world-to-body rotation, configured mapping, saturation, and
+operation with zero integral gain.
 
-The program therefore ramps for `t_r`, holds `T_eq` for `t_hold`, and then lets
-`UniversalRunner` execute its normal stop/disarm/shutdown sequence.
+Unit tests establish software behavior, not flight performance. The repository
+does not contain durable results demonstrating physically verified mapping
+polarities, stable hover, or successful trajectory tracking; those remain to be
+validated and recorded on hardware.
 
-## 9. Validation Status
+Stage 2 of the staged experiment uses a separate, experiment-specific roll,
+pitch, and yaw attitude P controller with rate limiting and an equilibrium-
+thrust ramp. It is not part of `OuterLoopPIDController`. Its authoritative
+implementation is
+[`experiments/outer_loop_pid_validation.py`](../experiments/outer_loop_pid_validation.py),
+principally `OuterLoopPIDValidationProgram._stage_two_command()` and
+`_stage_two_thrust()`.
 
-Automated tests cover representative world-to-body rotation, heading wrapping,
-channel saturation, equilibrium feed-forward, configured sign application,
-adapter conversion, estimator behavior, validation constraints, and Stage 2
-attitude feedback, ramp, hold, and completion.
+## 3. LQR Controller [Planned]
 
-These tests establish software behavior, not aerodynamic performance. The
-repository contains no durable evidence that the configured polarities,
-equilibrium thrust, gains, stable hover, or trajectory tracking have been
-successfully validated on hardware. The staged pipeline exists to perform that
-work progressively; results should be recorded before physical behaviors are
-claimed as validated.
+Linear-quadratic regulation is intended to use a linearized model and quadratic
+state/input objectives while preserving the common controller input/output
+boundary. The operating point, internal
+state selection, model derivation, cost design, constraint handling, and
+reference-tracking formulation remain unresolved. The internal mathematical
+state need not equal the complete `DroneState` representation. **Status: Not
+implemented.**
+
+## 4. MPC Controller [Planned]
+
+Model predictive control is intended to optimize predicted tracking behavior
+and control effort over a finite horizon while returning a
+`BodyRateThrustCommand` through the common interface. The prediction model,
+internal state, horizon, objective, constraints, estimator coupling, and
+real-time solution strategy remain unresolved. **Status: Not implemented.**
+
+## 5. DeePC Controller [Planned]
+
+Data-enabled predictive control is intended to compute constrained predictive
+commands from recorded input/output behavior while using the same external
+controller interface. Required excitation data, signal selection, data quality
+criteria, regularization, constraints, horizon, and online optimization method
+remain unresolved. Its internal variables need not match those of PID, LQR, or
+MPC. **Status: Not implemented.**

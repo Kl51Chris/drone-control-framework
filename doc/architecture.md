@@ -13,26 +13,55 @@ MPC, and DeePC are not active controller implementations. Historical code under
 
 ## 2. Control Architecture
 
-```text
-Reference Generator
-        |
-        v
-     Reference
-        |
-        v
-     Controller <----- DroneState
-        |
-        v
-BodyRateThrustCommand
-        |
-        v
-CrazyflieCommandAdapter
-        |
-        v
-Crazyflie firmware body-rate controller
-        |
-        v
-Motor mixing / motors
+```mermaid
+flowchart TD
+
+    subgraph SENSORS["State Acquisition"]
+        direction LR
+        IMU["Crazyflie Sensors<br/>Onboard Estimator"]
+        MOTIVE["Motive / OptiTrack<br/>(Future Integration)"]
+    end
+
+    subgraph FRAMEWORK["Our Control Framework"]
+        direction TB
+
+        SP["CrazyflieStateProvider"]
+        ME["External Measurement Provider<br/>(Future)"]
+        SE["StateEstimator<br/>(Current: Passthrough)"]
+
+        RG["Reference Generator"]
+        CTRL["Controller<br/>(Current: OuterLoopPID)"]
+        CA["CrazyflieCommandAdapter"]
+    end
+
+    subgraph FIRMWARE["Crazyflie Firmware"]
+        direction TB
+        RATE["Body-Rate PID"]
+        MIX["Motor Mixing"]
+        MOTORS["Motors"]
+    end
+
+    IMU --> SP
+    MOTIVE -.-> ME
+
+    SP -->|"EstimatedState"| SE
+    ME -.->|"MeasuredState"| SE
+
+    SE -->|"DroneState"| CTRL
+    RG -->|"Reference"| CTRL
+
+    CTRL -->|"BodyRateThrustCommand"| CA
+
+    CA -->|"Body-Rate Setpoint"| RATE
+    RATE --> MIX
+    MIX --> MOTORS
+
+    style SENSORS fill:#eef4ff,stroke:#5681b5
+    style FRAMEWORK fill:#eaf7ee,stroke:#50966a
+    style FIRMWARE fill:#fff3e5,stroke:#c18b48
+
+    style MOTIVE stroke-dasharray:5 5
+    style ME stroke-dasharray:5 5
 ```
 
 The PC-side controller computes desired body-frame angular rates and collective
