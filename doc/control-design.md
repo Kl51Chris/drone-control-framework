@@ -57,8 +57,10 @@ The common `Reference` is
 where `position = p_ref` and `velocity = v_ref` are desired world-frame
 three-vectors, `yaw = psi_ref` is desired world-frame yaw, and
 `yaw_rate = psi_ref_dot` is desired yaw rate. `Reference` also carries a
-timestamp in seconds. The current PID controller uses position and yaw but does
-not use the velocity or yaw-rate fields.
+timestamp in seconds. The cascaded PID uses position, velocity, and yaw;
+vertical reference velocity is used when its configuration enables reference
+velocity tracking. The current production candidate uses zero-reference
+vertical-velocity damping and does not add yaw-rate feed-forward.
 
 The shared controller output is
 
@@ -356,6 +358,27 @@ tolerances. This is a landing-state proxy, not independent proof of physical
 touchdown; the available state interface has no dedicated contact signal.
 These mechanisms remain experiment-specific and are not evidence of
 hardware-validated free-flight safety.
+
+## 2.9 Software responsibilities and extensions
+
+`experiments/run_flight.py` is the small assembly point and CLI: it selects the
+production controller configuration and reference provider.
+`ProductionFlightProgram` owns the fixed-hover phase profile and lifecycle
+checks. `UniversalRunner` owns state-provider startup, monotonic timing,
+control-loop scheduling, command transmission, logging callbacks, stop, and
+cleanup. The controller only computes a command from `DroneState`, `Reference`,
+and `dt`; it does not arm, land, or call cflib. A reference provider only
+generates desired values. The state provider acquires the latest state, and the
+command adapter owns conversion to Crazyflie packet units.
+
+To prototype MPC or DeePC, implement the existing controller interface and
+return `BodyRateThrustCommand`; keep horizons, gains, constraints, and other
+parameters in a configuration object; add explicit selection in the experiment
+entry point; then add unit, interface, and offline-history tests before any
+hardware test. Do not implement a second control loop. To add a trajectory,
+implement the existing `Reference`-producing provider without changing the
+controller or `UniversalRunner`; `references/circular_flight_reference.py` is
+the current example.
 
 ## 3. LQR Controller [Planned]
 

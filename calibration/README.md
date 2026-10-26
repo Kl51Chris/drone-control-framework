@@ -77,6 +77,11 @@ The Stage 5D XY/Z candidate currently uses altitude `Kp=0.06`, `Kv=0.06`
 (zero-reference velocity damping), equilibrium thrust `0.425`, XY `Kp=0.4`,
 `Kd=0.8`, bounded acceleration `0.4 m/s²`, and bounded tilt `0.08 rad`.
 
+For a new student, calibration is primarily an offline evidence and analysis
+environment. Start with the production entry point in
+[`doc/getting-started.md`](../doc/getting-started.md); use these calibration
+hardware commands only when a stage-specific procedure has been reviewed.
+
 ## Offline tests and analysis
 
 Run the complete calibration suite from the repository root:
@@ -132,6 +137,12 @@ body_y_acceleration_to_roll_sign  = -1
 The separate attitude-loop `pitch_command_sign=-1` handles the cflib packet
 convention and is not duplicated in the XY mapping.
 
+The recorded development sequence also includes lightweight altitude dynamics
+identification and PD candidate evaluation, followed by numerical equivalence
+tests between the calibration and production cascaded controllers. These are
+offline/controller-history results; they do not establish a final plant model
+or final gains.
+
 ## Validation status
 
 Validated in hardware:
@@ -143,14 +154,30 @@ Validated in hardware:
 - Bounded custom Cascaded PID attitude/altitude/XY response with no horizontal
   safety abort in the reviewed XY runs.
 
+The initial production fixed-hover result on October 26, 2026 connected and
+armed successfully, ran the approximately 50 Hz UniversalRunner loop, and
+executed takeoff and hover references. It ended with:
+
+```text
+status = LANDING_FAILED
+final_height_above_initialized_ground_m ≈ 0.1227
+final_vertical_velocity_m_s ≈ 0.0031
+final_normalized_thrust ≈ 0.4175
+```
+
+This is a diagnostic hardware result, not proof of stable or robust flight or
+of physical touchdown.
+
 Still experimental or incomplete:
 
 - Final altitude/vertical damping and landing behavior; the latest runs remain
   touchdown-confirmation failures.
 - Complete custom XY/Z takeoff-hover-land success under changing battery,
   ground-effect, and estimator conditions.
-- Transfer of this experimentally supported architecture into the frozen
-  production `OuterLoopPIDController`; that integration is a later task.
+- Final production tuning and reliable touchdown sensing. The production
+  controller now has numerical-equivalence coverage against the calibration
+  cascaded controller, but that software result does not replace hardware
+  validation.
 
 No completed log alone certifies stability or safety. Review the detailed Stage
 documents above before any powered experiment.
