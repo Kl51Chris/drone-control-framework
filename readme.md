@@ -23,8 +23,8 @@ The active framework includes:
   ignores `MeasuredState` (it does not perform sensor fusion);
 * `CrazyflieStateProvider`, which acquires position, velocity, attitude, and
   body rates from Crazyflie logs and routes them through a `StateEstimator`;
-* `OuterLoopPIDController`, with four independent PID feedback channels for
-  body-frame horizontal X, body-frame horizontal Y, altitude, and heading/yaw;
+* `OuterLoopPIDController`, with cascaded world-frame XY position/velocity,
+  roll/pitch attitude, altitude, and heading feedback;
 * reusable circular and vertical reference generators, plus experiment-specific
   fixed, polarity-check, and slow-trajectory references;
 * backend-independent control-loop and generic hardware-runner infrastructure;
@@ -108,8 +108,9 @@ timestamp      s
 
 Body rates `p`, `q`, and `r` are not generally the derivatives of the Euler
 angles. `Reference` contains desired world-frame position and velocity, yaw,
-yaw rate, and timestamp. The active PID controller currently uses desired
-position and yaw; it does not use the reference velocity or yaw-rate fields.
+yaw rate, and timestamp. The cascaded PID uses XY reference velocity and can
+optionally use vertical reference velocity. Heading remains wrapped yaw-error
+feedback without yaw-rate feed-forward.
 
 ## Active Controller
 
@@ -119,11 +120,14 @@ position and yaw; it does not use the reference velocity or yaw-rate fields.
 DroneState + Reference + dt -> BodyRateThrustCommand
 ```
 
-It rotates horizontal world-frame position error into the current body frame,
-runs independent PID channels for body X and body Y, maps body X to pitch rate
-and body Y to roll rate using explicitly configured signs, applies altitude
-feedback around an equilibrium-thrust feed-forward, and maps wrapped heading
-error to yaw rate. Each channel has configured output limits. See
+It forms bounded world-frame XY acceleration requests from position/velocity
+errors, rotates them into the body frame, maps body-X/body-Y acceleration to
+bounded pitch/roll references, and closes attitude-P loops into body-rate
+commands. It applies altitude PD feedback around equilibrium-thrust
+feed-forward and maps wrapped heading error to yaw rate. The experimentally
+identified acceleration-to-attitude signs are configurable; the Stage 5
+candidate uses `-1` for both axes. Existing staged-validation runners retain an
+explicit legacy direct-rate mapping mode. See
 [`doc/control-design.md`](doc/control-design.md) for the implemented equations,
 numerical PID behavior, coordinate conventions, and Stage 2 experiment law.
 
@@ -137,14 +141,15 @@ Automated tests exercise the PID transformations, saturation and representative
 outputs; the passthrough-estimator behavior; Crazyflie conversions; and staged
 validation configuration, references, Stage 2 feedback, ramp, and completion.
 These tests validate software behavior and do not constitute flight validation.
+The calibration toolkit separately records the hardware evidence used for the
+cascaded structure and physical mapping signs.
 
 The validation pipeline contains stages 0 through 7, progressing from a
 zero-output software pipeline check through polarity, equilibrium-thrust,
 stabilization, hover, and slow-trajectory experiments. Physical stages require
-operator authorization and reviewed configuration. No durable result artifact
-in the repository establishes successful stable hover, trajectory tracking, or
-completion of all hardware stages; those behaviors remain to be physically
-verified and recorded.
+operator authorization and reviewed configuration. Calibration demonstrated
+bounded custom XY/Z hover, but reliable landing and final production tuning
+remain experimental.
 
 Additional state-source integration and sensor fusion remain future work. LQR,
 MPC, and DeePC are possible future controller families, but no active

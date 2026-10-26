@@ -87,82 +87,49 @@ its lower-level stabilization and motor-mixing logic.
 
 ### 2.1 Controller Overview and Block Diagram
 
-`OuterLoopPIDController` is a four-channel feedback controller. It forms
-horizontal position errors in the body frame, altitude error in the world
-vertical coordinate, and wrapped yaw error. Four independent PID channels then
-produce horizontal control outputs, altitude thrust feedback, and a body-axis
-yaw-rate command.
+`OuterLoopPIDController` implements the cascade migrated from the calibration
+toolkit. World-frame XY position/velocity feedback produces a bounded desired
+horizontal acceleration. `R(-psi)` rotates that vector into body coordinates;
+experimentally identified signs map body-X acceleration to pitch reference and
+body-Y acceleration to roll reference. Roll/pitch attitude-P feedback produces
+body-rate commands. Altitude PD acts around equilibrium thrust, and wrapped
+heading feedback produces yaw rate.
 
-```mermaid
-flowchart TB
-    REF["Reference<br/>p_ref, ψ_ref"]
-    STATE["DroneState<br/>p, ψ"]
-
-    SUM(("Σ"))
-    ROT["R(-ψ)"]
-
-    XPID["PID_x"]
-    YPID["PID_y"]
-    ZPID["PID_z"]
-    YAWPID["PID_ψ"]
-
-    XMAP["s_x"]
-    YMAP["s_y"]
-
-    TSUM(("Σ"))
-
-    TEQ["T_eq"]
-
-    OUT["BodyRateThrustCommand"]
-
-    REF -->|"+"| SUM
-    STATE -->|"−"| SUM
-
-    SUM -->|"e_xy"| ROT
-    SUM -->|"e_z"| ZPID
-    SUM -->|"e_ψ (wrapped)"| YAWPID
-
-    ROT -->|"e_x^b"| XPID
-    ROT -->|"e_y^b"| YPID
-
-    XPID --> XMAP
-    YPID --> YMAP
-
-    XMAP -->|"q_cmd"| OUT
-    YMAP -->|"p_cmd"| OUT
-
-    ZPID -->|"ΔT"| TSUM
-    TEQ -->|"+"| TSUM
-    TSUM -->|"T_cmd"| OUT
-
-    YAWPID -->|"r_cmd"| OUT
-
-    classDef sum fill:#fff,stroke:#222,stroke-width:2px;
-    classDef control fill:#fff,stroke:#222,stroke-width:1.5px;
-    class SUM,TSUM sum;
-    class ROT,XPID,YPID,ZPID,YAWPID,XMAP,YMAP control;
-```
-
-The controller input `dt` must be finite and positive. Calling `reset()` clears
-the integral and previous-error state of all four PID channels.
+The firmware body-rate PID and mixer remain downstream. The controller owns no
+takeoff, landing, arming, or flight-state logic. `HorizontalCommandMapping`
+retains the former direct position-to-rate behavior solely for existing staged
+validation runners; new cascaded configurations use
+`HorizontalAccelerationMapping`.
 
 ### 2.2 Position Error and Coordinate Transformation
 
-World-frame horizontal tracking errors are
+World-frame horizontal position and velocity errors are
 
 ```math
 e_x^W = p_{x,ref} - p_x,
 \qquad
-e_y^W = p_{y,ref} - p_y.
+e_y^W = p_{y,ref} - p_y,
+\qquad
+e_{v,x}^W=v_{x,ref}-v_x,
+\qquad
+e_{v,y}^W=v_{y,ref}-v_y.
 ```
 
-Using the current measured yaw `psi`, the implementation rotates them into the
-horizontal body frame with `R(-psi)`:
+The horizontal channels produce world-frame acceleration requests
+
+```math
+a_x^W=K_{p,x}e_x^W+K_{i,x}I_x+K_{d,x}e_{v,x}^W,
+\qquad
+a_y^W=K_{p,y}e_y^W+K_{i,y}I_y+K_{d,y}e_{v,y}^W.
+```
+
+After vector-magnitude limiting, acceleration is rotated into the horizontal
+body frame with `R(-psi)`:
 
 ```math
 \begin{bmatrix}
-e_x^B \\
-e_y^B
+a_x^B \\
+a_y^B
 \end{bmatrix}
 =
 \begin{bmatrix}
@@ -170,30 +137,27 @@ e_y^B
 -\sin\psi & \cos\psi
 \end{bmatrix}
 \begin{bmatrix}
-e_x^W \\
-e_y^W
+a_x^W \\
+a_y^W
 \end{bmatrix}.
 ```
 
 Equivalently,
 
 ```math
-e_x^B = \cos\psi\,e_x^W + \sin\psi\,e_y^W,
+a_x^B = \cos\psi\,a_x^W + \sin\psi\,a_y^W,
 \qquad
-e_y^B = -\sin\psi\,e_x^W + \cos\psi\,e_y^W.
+a_y^B = -\sin\psi\,a_x^W + \cos\psi\,a_y^W.
 ```
 
-This matches `_inertial_to_body_error()` in the implementation. Expressing the
-horizontal errors in body coordinates allows the two horizontal channels to
-map consistently to roll- and pitch-rate commands as vehicle heading changes.
-Only yaw enters this planar transformation; roll and pitch do not.
+Only yaw enters this planar transformation.
 
-### 2.3 Four-Channel PID Control Law
+### 2.3 PID/PD Channel Behavior
 
 For channel
 
 ```math
-i \in \{x_B, y_B, z, \psi\},
+i \in \{x_W, y_W, z, \psi\},
 ```
 
 the unsaturated PID output is
@@ -205,15 +169,9 @@ u_{i,k}^{*}
 + K_{d,i} d_{i,k}.
 ```
 
-The channel errors are
-
-```math
-e_{x_B}=e_x^B, \qquad
-e_{y_B}=e_y^B, \qquad
-e_z=p_{z,ref}-p_z,
-```
-
-with the wrapped heading error defined in Section 2.6.
+For cascaded XY and altitude, `d_i` is the corresponding measured velocity
+error. Heading retains successive wrapped-error differentiation if a nonzero
+heading `kd` is configured.
 
 For a nonzero integral gain, the candidate integral uses rectangular
 integration:
@@ -222,8 +180,9 @@ integration:
 I_{i,k}^{*}=I_{i,k-1}+e_{i,k}\Delta t.
 ```
 
-When `K_i = 0`, the stored integral is left unchanged. The derivative is taken
-from successive errors:
+When `K_i = 0`, the stored integral is left unchanged. When an explicit
+velocity error is not supplied, the derivative is taken from successive
+errors:
 
 ```math
 d_{i,k}=
@@ -233,38 +192,30 @@ d_{i,k}=
 \end{cases}
 ```
 
-The implementation does not apply derivative filtering, setpoint weighting, or
-measured-rate feedback. Each channel has independent gains, limits, integral
-state, and previous error.
+The implementation does not apply derivative filtering or setpoint weighting.
 
-### 2.4 Horizontal Command Mapping
+### 2.4 Acceleration, Attitude, and Body-Rate Mapping
 
-Let the horizontal PID outputs be
+Body acceleration maps to bounded attitude references as
 
 ```math
-u_x = PID_{x_B}(e_x^B),
+\theta_{ref}=s_x\operatorname{atan2}(a_x^B,g),
 \qquad
-u_y = PID_{y_B}(e_y^B).
+\phi_{ref}=s_y\operatorname{atan2}(a_y^B,g).
 ```
 
-The fixed axis association and configurable polarity mapping are
+Hardware identification supports `s_x=-1` and `s_y=-1`. The attitude loop is
 
 ```math
-q_{cmd}=s_x u_x,
+p_{cmd}=s_{\phi}K_{\phi}(\phi_{ref}-\phi),
 \qquad
-p_{cmd}=s_y u_y,
+q_{cmd}=s_{\theta}K_{\theta}(\theta_{ref}-\theta),
 ```
 
-where `q_cmd` is the pitch-rate command, `p_cmd` is the roll-rate command,
-`s_x = body_x_to_pitch_rate_sign`, and
-`s_y = body_y_to_roll_rate_sign`. Thus body-X output always maps to pitch rate,
-and body-Y output always maps to roll rate. Each configured sign must be either
-`-1` or `+1`.
-
-The implementation and unit tests verify the axis association and application
-of configured signs. The repository does not record sufficient experimental
-evidence to declare either polarity universally or physically validated for a
-particular vehicle.
+with independent rate limits. The Stage 5 command convention uses
+`s_phi=+1` and `s_theta=-1`; the latter accounts for the existing cflib command
+path. These command signs are deliberately separate from the experimentally
+measured physical acceleration-to-attitude signs.
 
 ### 2.5 Altitude and Thrust Control
 
@@ -273,8 +224,13 @@ The altitude channel operates on
 ```math
 e_z=p_{z,ref}-p_z,
 \qquad
-T_{feedback}=PID_z(e_z).
+e_{v,z}=v_{z,desired}-v_z,
+\qquad
+T_{feedback}=K_{p,z}e_z+K_{i,z}I_z+K_{d,z}e_{v,z}.
 ```
+
+By default `v_z,desired=0` implements zero-reference velocity damping. A
+configuration flag can instead track `Reference.velocity[2]`.
 
 It combines the PID correction with equilibrium-thrust feed-forward:
 
@@ -290,9 +246,10 @@ T_{max}
 `T_equilibrium` is the normalized collective command intended to balance the
 nominal vehicle at the operating condition; the altitude channel adjusts around
 it. Configuration requires
-`0 <= T_min <= T_equilibrium <= T_max <= 1`. The altitude PID output is first
-limited by its own channel bounds, and the combined command is then clamped to
-the overall thrust limits.
+`0 <= T_min <= T_equilibrium <= T_max <= 1`. The altitude correction limits
+are intersected with available upward/downward thrust authority before the PID
+is constructed. Conditional integration therefore cannot wind up against a
+tighter final thrust bound.
 
 Normalized thrust is dimensionless command magnitude, not force in newtons and
 not a world-frame vertical-force command.
@@ -350,24 +307,26 @@ This update occurs only when `K_i != 0`. Previous error is stored on every
 update, including saturated updates. There is no separate integral-state clamp
 or back-calculation term.
 
-Horizontal and heading commands inherit their respective PID channel limits.
-Altitude feedback is PID-limited before equilibrium thrust is added, after
-which `T_cmd` receives the additional `[T_min, T_max]` saturation described in
-Section 2.5.
+In cascaded mode, horizontal acceleration is limited by vector magnitude after
+the two world-frame components are combined; it is not clipped per axis first.
+This preserves the requested acceleration direction. Roll/pitch references are
+vector-limited, and attitude body-rate commands have independent limits.
+Heading inherits its PID limits. Altitude uses the effective correction limits
+described in Section 2.5. The hardware-tested candidate has zero integral gain
+in XY and altitude.
 
 ### 2.8 Implementation and Validation Status
 
-The four-channel `OuterLoopPIDController`, coordinate transformation, mapping,
-PID state updates, saturation, conditional-integration anti-windup, equilibrium
-thrust addition, and heading wrapping are implemented. Automated tests cover
-representative zero-error behavior, altitude correction and feed-forward,
-heading wrapping, world-to-body rotation, configured mapping, saturation, and
-operation with zero integral gain.
+The cascaded controller, measured-velocity PD feedback, world-to-body
+transformation, identified physical mappings, attitude P loop, saturation,
+conditional-integration anti-windup, equilibrium thrust, and heading wrapping
+are implemented. Automated tests cover both restoring directions, yaw rotation,
+attitude command conventions, altitude damping, limits, and legacy-runner
+compatibility.
 
-Unit tests establish software behavior, not flight performance. The repository
-does not contain durable results demonstrating physically verified mapping
-polarities, stable hover, or successful trajectory tracking; those remain to be
-validated and recorded on hardware.
+Calibration hardware runs support the two physical mapping signs and bounded
+XY/Z hover behavior. They do not establish final tuning or reliable touchdown;
+the Stage 5 candidate factory is therefore an explicit experimental example.
 
 Stage 2 of the staged experiment uses a separate, experiment-specific roll,
 pitch, and yaw attitude P controller with rate limiting and an equilibrium-
@@ -377,8 +336,8 @@ implementation is
 principally `OuterLoopPIDValidationProgram._stage_two_command()` and
 `_stage_two_thrust()`.
 
-Stage 6 uses `OuterLoopPIDController` for fixed-position tracking and adds an
-experiment-specific roll/pitch attitude-feedback wrapper:
+The frozen Stage 6 runner uses the legacy `HorizontalCommandMapping` mode and
+adds an experiment-specific roll/pitch attitude-feedback wrapper:
 
 ```math
 p_{cmd}=\operatorname{sat}_{L_{att}}
