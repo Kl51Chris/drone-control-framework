@@ -38,7 +38,9 @@ class AttitudeSettings:
     pitch_kp: float = 4.0
     yaw_kp: float = 2.0
     roll_sign: int = -1
-    pitch_sign: int = -1
+    # cflib.send_setpoint_manual() negates pitch before packing the packet.
+    # +1 here yields negative feedback in the firmware's legacy pitch frame.
+    pitch_sign: int = 1
     yaw_sign: int = -1
     max_rate_rad_s: float = 0.35
 

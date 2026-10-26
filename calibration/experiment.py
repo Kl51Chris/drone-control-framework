@@ -15,6 +15,8 @@ from .state import AltitudeState, validate_fresh_state
 
 class Mode(str, Enum):
     PREFLIGHT = "preflight"
+    STATE_MONITOR = "state-monitor"
+    ATTITUDE_SIGN_MONITOR = "attitude-sign-monitor"
     HOVER_BASELINE = "hover-baseline"
     P_ONLY = "p-only"
     PID = "pid"
@@ -22,7 +24,7 @@ class Mode(str, Enum):
 
     @property
     def is_flight(self) -> bool:
-        return self is not Mode.PREFLIGHT
+        return self not in (Mode.PREFLIGHT, Mode.STATE_MONITOR, Mode.ATTITUDE_SIGN_MONITOR)
 
 
 class Hardware(Protocol):
@@ -64,6 +66,8 @@ class CalibrationRunner:
         self.clock, self.sleeper = clock, sleeper
 
     def run(self) -> None:
+        if self.mode in (Mode.STATE_MONITOR, Mode.ATTITUDE_SIGN_MONITOR):
+            raise ValueError("monitor modes must use their non-flight monitor runner")
         if self.mode is Mode.PREFLIGHT:
             state = self.hardware.state()
             validate_fresh_state(state, self.clock(), self.config.safety.max_state_age_s)

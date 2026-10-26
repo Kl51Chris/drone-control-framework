@@ -11,6 +11,9 @@ changed.
 - `CrazyflieCommandAdapter` converts rates to deg/s, clamps thrust to `[0, 1]`,
   converts it to `[0, 100]`, and calls
   `send_setpoint_manual(roll, pitch, yaw, thrust, rate=True)`.
+- Installed cflib then negates pitch while packing the generic manual packet and
+  maps thrust percentage to uint16 range 10001--60000. Thus a true motor stop is
+  the separate stop-setpoint, not a manual setpoint containing 0 percent.
 - These commands retain the Crazyflie firmware body-rate loops and motor mixer;
   they are not individual motor or world-force commands.
 

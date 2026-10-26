@@ -1,5 +1,5 @@
 {
-  "attitude": {"max_rate_rad_s": 0.35, "pitch_kp": 4.0, "pitch_sign": -1, "roll_kp": 4.0, "roll_sign": -1, "yaw_kp": 2.0, "yaw_sign": -1},
+  "attitude": {"max_rate_rad_s": 0.35, "pitch_kp": 4.0, "pitch_sign": 1, "roll_kp": 4.0, "roll_sign": -1, "yaw_kp": 2.0, "yaw_sign": -1},
   "control_frequency_hz": 50.0,
   "equilibrium_thrust": 0.3,
   "external_altitude_udp_port": null,

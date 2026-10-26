@@ -92,3 +92,19 @@ def test_arm_failure_still_executes_flight_shutdown():
     assert hardware.stop_calls == 1
     assert hardware.disarm_calls == 1
     assert logger.closed[0] == "invalid"
+
+
+def test_state_monitor_cannot_fall_through_to_flight_runner():
+    hardware = FakeHardware()
+    with pytest.raises(ValueError, match="non-flight monitor runner"):
+        CalibrationRunner(hardware, CalibrationConfig(), Mode.STATE_MONITOR, FakeLogger()).run()
+    assert hardware.arm_calls == 0
+    assert hardware.send_calls == []
+
+
+def test_guided_monitor_cannot_fall_through_to_flight_runner():
+    hardware = FakeHardware()
+    with pytest.raises(ValueError, match="non-flight monitor runner"):
+        CalibrationRunner(hardware, CalibrationConfig(), Mode.ATTITUDE_SIGN_MONITOR, FakeLogger()).run()
+    assert hardware.arm_calls == 0
+    assert hardware.send_calls == []

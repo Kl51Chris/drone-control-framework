@@ -10,6 +10,7 @@ configuration, PID, state machine, telemetry, analysis, and shutdown lifecycle.
 pytest calibration/tests -v
 python -m calibration analyze calibration/runs/<run>
 python -m calibration export calibration/runs/<run> calibration/validated.json
+python -m calibration verify-control calibration/runs/<state-monitor-run> --config calibration/default_config.json
 ```
 
 Each run contains `metadata.json` and `telemetry.csv`. Analysis adds
@@ -31,6 +32,28 @@ record that determination outside this automatic export.
    python -m calibration run preflight --config calibration/default_config.json
    ```
 
+   Then record the onboard estimator for 20 seconds at approximately 50 Hz:
+
+   ```bash
+   python -m calibration run state-monitor --config calibration/default_config.json
+   ```
+
+   State monitor never arms or sends a flight setpoint. It always uses onboard
+   `stateEstimate.z`/`vz`, even if the configuration includes an external UDP
+   port. Ctrl-C safely finishes the partial artifact. The run produces
+   `state_telemetry.csv`, `metrics.json`, and `state_response.svg`.
+
+   For the guided 30-second physical attitude-sign check, keep the propellers
+   removed and follow the six synchronized five-second terminal prompts:
+
+   ```bash
+   python -m calibration run attitude-sign-monitor --config calibration/default_config.json
+   ```
+
+   The guided monitor is also read-only: it never arms or transmits a setpoint.
+   Every telemetry row contains its phase marker, physical action, expected axis,
+   and expected sign. It writes `attitude_sign_summary.json` automatically.
+
 3. Review the saved metadata, state source, signs, thrust bounds, attitude gains,
    altitude ceiling, and timeout values. Defaults are **not hardware validated**.
 4. If using an external measurement, set `external_altitude_udp_port`. Send UDP
@@ -45,7 +68,8 @@ record that determination outside this automatic export.
      --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
    ```
 
-Available modes are `preflight`, `hover-baseline`, `p-only`, `pid`, and
+Available modes are `preflight`, `state-monitor`, `attitude-sign-monitor`,
+`hover-baseline`, `p-only`, `pid`, and
 `takeoff-hover-land`. The explicit confirmation is required for every flight
 process. There is no automatic repeat or gain search. Press Ctrl-C to trigger the
 same stop-setpoint and disarm cleanup used for faults.

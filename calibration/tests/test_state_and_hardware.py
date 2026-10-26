@@ -43,11 +43,13 @@ def test_default_attitude_signs_drive_angles_toward_level_and_initial_yaw():
     state = AltitudeState(0, 0, roll_rad=0.05, pitch_rad=-0.05, yaw_rad=0.2, timestamp_s=1)
     roll, pitch, yaw = attitude_rates(state, initial_yaw=0.1, settings=AttitudeSettings())
     assert roll < 0
-    assert pitch > 0
+    # cflib negates API-facing pitch before the firmware sees it.
+    assert pitch < 0
+    assert -pitch > 0
     assert yaw < 0
 
 
 def test_attitude_rate_outputs_remain_radians_per_second_and_are_limited():
     state = AltitudeState(0, 0, roll_rad=1, pitch_rad=-1, yaw_rad=1, timestamp_s=1)
     settings = AttitudeSettings(max_rate_rad_s=0.2)
-    assert attitude_rates(state, initial_yaw=0, settings=settings) == (-0.2, 0.2, -0.2)
+    assert attitude_rates(state, initial_yaw=0, settings=settings) == (-0.2, -0.2, -0.2)
