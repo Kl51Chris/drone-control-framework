@@ -1,215 +1,171 @@
-# Independent altitude PID calibration
+# Calibration Toolkit
 
-This package is independent of `UniversalRunner` and the staged experiments. It
-reuses the verified Crazyflie command and state adapters, but owns its own
-configuration, PID, state machine, telemetry, analysis, and shutdown lifecycle.
+The `calibration/` package is an independent, reproducible toolkit for
+measuring and validating Crazyflie state estimation, command conventions, and
+custom outer-loop control. It is deliberately separate from the production
+control framework: it does not modify `velocity_control_framework/`,
+`UniversalRunner`, or the frozen `OuterLoopPIDController`.
 
-## Offline use
+The toolkit owns its configurations, flight state machines, telemetry logs,
+offline replay, analysis, safety checks, and shutdown handling. A hardware run
+always requires explicit per-run confirmation and is never repeated
+automatically.
+
+## Start here
+
+- [Stage 5B first-flight procedure](STAGE5B_FIRST_FLIGHT.md)
+- [Stage 5C altitude-PD analysis](STAGE5C_ALTITUDE_PD.md)
+- [Stage 5D pitch identification](STAGE5D_PITCH_IDENTIFICATION.md)
+- [Stage 5D roll identification](STAGE5D_ROLL_IDENTIFICATION.md)
+- [Stage 5D XY readiness and acceptance criteria](STAGE5D_XY_READINESS.md)
+- [Project inspection notes](INSPECTION.md)
+
+Raw runs are stored under `calibration/runs/` and are intentionally excluded
+from Git. Generated replay CSV/SVG/JSON files under `stage5_analysis/` are also
+ignored; checked-in Markdown reports and analysis scripts remain the
+reproducible record.
+
+## Cascaded PID architecture
+
+`CascadedPIDController` is the unified calibration controller. Its stages are
+configuration-gated:
+
+1. Altitude position and measured vertical-velocity feedback, with optional
+   integral action and anti-windup (Stage 5C).
+2. Roll, pitch, and yaw attitude feedback, retaining the Crazyflie firmware's
+   onboard body-rate PID and motor mixer.
+3. World-frame XY position/velocity PD, rotated into body coordinates and
+   mapped to bounded roll/pitch attitude references (Stage 5D).
+
+Every update returns the existing `BodyRateThrustCommand` units, ordering, and
+adapter semantics. XY has no integral term. Offline replay uses recorded states
+as exogenous inputs; it is controller-arithmetic replay, not a closed-loop
+plant simulation and cannot establish flight stability.
+
+## Important modules
+
+| Module | Purpose |
+|---|---|
+| `cascaded_pid.py` | Unified configurable altitude, attitude, heading, and XY controller. |
+| `cascaded_flight.py` | Hardware runner, fixed profiles, estimator gates, safety checks, logging, landing, and shutdown. |
+| `cascaded_replay.py` | Replays Cascaded PID commands through recorded telemetry. |
+| `cascaded_analysis.py` | Post-flight metrics, saturation summaries, and response plots. |
+| `hardware.py` | Crazyflie/cflib connection, state provider, command adapter, battery snapshot, and emergency stop. |
+| `flight_support.py` | Shared battery metadata and run-directory reporting. |
+| `pid.py`, `pid_replay.py` | Standalone altitude-PID arithmetic and replay tools. |
+| `pitch_response_analysis.py`, `roll_response_analysis.py` | Bipolar physical attitude-to-acceleration identification. |
+| `altitude_pd_analysis.py`, `vertical_system_id.py` | Focused altitude response and lightweight vertical-model analysis. |
+| `official_hover.py` | Reference experiment using the firmware hover controller; not the custom PID. |
+| `state_monitor.py`, `guided_attitude.py`, `motor_free_diagnostic.py` | Readiness, sign, and motor-free diagnostics. |
+| `cli.py` | Offline analysis/replay and explicitly authorized hardware command entry point. |
+
+## Configuration model
+
+The flight configuration (for example `default_config.json` or
+`stage5b_first_flight_config.json`) contains radio URI, control frequency,
+takeoff/hover/landing profile, estimator limits, supervisor limits, and safety
+envelopes.
+
+The controller configuration (for example
+`stage5c_altitude_pd_pole_candidate_config.json` or
+`stage5d_xy_pd_hover_candidate_config.json`) contains controller stage, gains,
+thrust bounds, attitude-rate limits, XY bounds, physical mapping signs, and
+hardware-validation interlocks. Keeping these files separate makes a replay or
+flight profile change auditable without silently changing control law settings.
+
+The Stage 5D XY/Z candidate currently uses altitude `Kp=0.06`, `Kv=0.06`
+(zero-reference velocity damping), equilibrium thrust `0.425`, XY `Kp=0.4`,
+`Kd=0.8`, bounded acceleration `0.4 m/s²`, and bounded tilt `0.08 rad`.
+
+## Offline tests and analysis
+
+Run the complete calibration suite from the repository root:
 
 ```bash
-pytest calibration/tests -v
-python -m calibration analyze calibration/runs/<run>
-python -m calibration analyze-equilibrium calibration/runs/<official-hover-run>
-python -m calibration export calibration/runs/<run> calibration/validated.json
-python -m calibration verify-control calibration/runs/<state-monitor-run> --config calibration/default_config.json
-python -m calibration replay-pid calibration/runs/<official-hover-run> calibration/stage5_replay \
-  --equilibrium-thrust 0.425 --kp 0.10 --ki 0 --kd 0 \
-  --correction-min -0.045 --correction-max 0.025 --min-thrust 0.38 --max-thrust 0.45
-python -m calibration replay-cascaded calibration/runs/<official-hover-run> \
-  calibration/stage5_analysis/cascaded_stage5b \
-  --controller-config calibration/stage5b_offline_config.json
+python3 -m pytest calibration/tests
 ```
 
-Each run contains `metadata.json` and `telemetry.csv`. Analysis adds
-`metrics.json` and a dependency-free `response.svg`. Export refuses incomplete or invalid runs.
-An export maps every altitude setting to the corresponding
-`PIDConfig`/`OuterLoopPIDConfig` field; it does not modify that controller.
-Exports intentionally retain `hardware_validated: false`: software cannot infer
-physical safety or validation from a completed log. A human review must make and
-record that determination outside this automatic export.
-
-`replay-pid` writes every P/I/D term, predicted command, and PID/thrust-clamp
-saturation flag. Recorded measurements are exogenous: this is controller
-arithmetic replay, not a closed-loop plant simulation, and cannot establish
-stability or flight safety.
-
-`CascadedPIDController` is the Stage 5 unified controller. Its output is exactly
-`BodyRateThrustCommand`, leaving body-rate PID and motor mixing onboard. The
-checked-in Stage 5B configuration enables altitude P and level attitude/heading
-feedback only; altitude velocity/integral and horizontal position/velocity
-stages are configuration-gated for 5C and 5D. Both hardware authorization flags
-in that configuration are false, so it is an offline artifact, not a flight file.
-
-The dedicated first-flight path is `cascaded-5b`; it never calls the official
-hover API. It requires the standard explicit confirmation and separate flight
-and controller configurations. Analyze either a completed or aborted artifact
-without reconnecting to hardware:
+Analyze an existing run without reconnecting to hardware:
 
 ```bash
-python -m calibration run cascaded-5b \
-  --config calibration/stage5b_first_flight_config.json \
-  --controller-config calibration/stage5b_offline_config.json \
-  --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
-python -m calibration analyze-cascaded-flight calibration/runs/<cascaded-5b-run>
+python3 -m calibration analyze-cascaded-flight calibration/runs/<run>
+python3 -m calibration analyze-pitch-response calibration/runs/<pitch-response-id-run>
+python3 -m calibration analyze-roll-response calibration/runs/<roll-response-id-run>
+python3 -m calibration analyze-equilibrium calibration/runs/<official-hover-run>
 ```
 
-The prepared Stage 5D XY mode is `cascaded-xy`. Deliberate bipolar hardware
-identification supports negative pitch/body-X and negative roll/body-Y mappings;
-the combined altitude-PD/XY-PD candidate records that reviewed mapping. The
-earlier first-flight candidate remains interlocked for provenance. Offline replay
-remains available:
+Replay controller arithmetic against recorded states:
 
 ```bash
-python -m calibration replay-cascaded-flight \
-  calibration/runs/<cascaded-5b-run> calibration/stage5_analysis/xy-replay \
+python3 -m calibration replay-cascaded-flight \
+  calibration/runs/<run> calibration/stage5_analysis/xy-replay \
   --controller-config calibration/stage5d_xy_pd_hover_candidate_config.json
+python3 -m calibration replay-pid calibration/runs/<official-hover-run> \
+  calibration/stage5_analysis/pid-replay --equilibrium-thrust 0.425
 ```
 
-The remaining body-X/pitch uncertainty has a dedicated, XY-disabled physical
-identification mode. It retains the Stage 5B controller and all flight safety
-limits, waits for a bounded hover condition, then applies fixed ±0.020 rad pitch
-reference pulses separated by neutral recovery periods. See
-`STAGE5D_PITCH_IDENTIFICATION.md`. Each flight still requires the confirmation
-literal; preparation never runs it automatically. Analyze its artifact with:
+Each run contains `metadata.json` and a telemetry CSV. Hardware-flight output
+also prints absolute `[RUN]`, `[LOG]`, and `[RESULT]` paths. Battery voltage is
+captured once before flight when `pm.vbat` is available; firmware percentage is
+recorded only when the firmware exposes `pm.batteryLevel`.
 
-```bash
-python -m calibration analyze-pitch-response calibration/runs/<pitch-response-id-run>
+## Physical polarity identification
+
+The pitch and roll identification modes keep XY feedback disabled and apply the
+same short fixed timeline: neutral assessment, neutral baseline, +0.020 rad
+pulse, neutral recovery, −0.020 rad pulse, neutral recovery, then landing.
+Each pulse is admitted only when displacement and velocity envelope margin is
+sufficient. Analysis compensates for yaw, searches estimator/attitude delay,
+fits local velocity-derived acceleration, and uses a block bootstrap interval.
+Missing pulses, saturation, safety events, or an interval containing zero yield
+`INCONCLUSIVE`; no sign is changed automatically.
+
+Measured local mappings are:
+
+```text
+body-X acceleration / pitch = -8.719 m/s²/rad
+body-Y acceleration / roll  = -9.265 m/s²/rad
+body_x_acceleration_to_pitch_sign = -1
+body_y_acceleration_to_roll_sign  = -1
 ```
 
-## Hardware procedure
+The separate attitude-loop `pitch_command_sign=-1` handles the cflib packet
+convention and is not duplicated in the XY mapping.
 
-1. Remove propellers. Secure the vehicle, inspect frame/motors/deck, charge the
-   battery, clear the area, verify the radio URI, and keep a physical means to
-   disconnect power.
-2. Run the non-flight connectivity/state/supervisor check:
+## Validation status
 
-   ```bash
-   python -m calibration run preflight --config calibration/default_config.json
-   ```
+Validated in hardware:
 
-   Then record the onboard estimator for 20 seconds at approximately 50 Hz:
+- Crazyradio communication, supervisor readiness, Flow Deck/state acquisition,
+  and estimator freshness/continuity checks.
+- Official firmware hover baseline and controlled shutdown behavior.
+- Body-rate/thrust command encoding and measured pitch/roll physical polarity.
+- Bounded custom Cascaded PID attitude/altitude/XY response with no horizontal
+  safety abort in the reviewed XY runs.
 
-   ```bash
-   python -m calibration run state-monitor --config calibration/default_config.json
-   ```
+Still experimental or incomplete:
 
-   State monitor never arms or sends a flight setpoint. It always uses onboard
-   `stateEstimate.z`/`vz`, even if the configuration includes an external UDP
-   port. Ctrl-C safely finishes the partial artifact. The run produces
-   `state_telemetry.csv`, `metrics.json`, and `state_response.svg`.
+- Final altitude/vertical damping and landing behavior; the latest runs remain
+  touchdown-confirmation failures.
+- Complete custom XY/Z takeoff-hover-land success under changing battery,
+  ground-effect, and estimator conditions.
+- Transfer of this experimentally supported architecture into the frozen
+  production `OuterLoopPIDController`; that integration is a later task.
 
-   For the guided 30-second physical attitude-sign check, keep the propellers
-   removed and follow the six synchronized five-second terminal prompts:
+No completed log alone certifies stability or safety. Review the detailed Stage
+documents above before any powered experiment.
 
-   ```bash
-   python -m calibration run attitude-sign-monitor --config calibration/default_config.json
-   ```
+## Explicit hardware command
 
-   The guided monitor is also read-only: it never arms or transmits a setpoint.
-   Every telemetry row contains its phase marker, physical action, expected axis,
-   and expected sign. It writes `attitude_sign_summary.json` automatically.
-
-3. Review the saved metadata, state source, signs, thrust bounds, attitude gains,
-   altitude ceiling, and timeout values. Defaults are **not hardware validated**.
-4. If using an external measurement, set `external_altitude_udp_port`. Send UDP
-   JSON to loopback only, for example `{"altitude_m": 0.42}`. The receive time is
-   the measurement timestamp and velocity is a finite difference. Confirm this
-   stream with props removed; loss or staleness aborts flight.
-5. Install propellers only in an appropriate flight area with an observer and an
-   immediately reachable emergency action. Start exactly one selected trial:
-
-   ```bash
-   python -m calibration run p-only --config my_config.json \
-     --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
-   ```
-
-Available modes are `preflight`, `state-monitor`, `attitude-sign-monitor`,
-`hover-baseline`, `p-only`, `pid`, and
-`takeoff-hover-land`. The explicit confirmation is required for every flight
-process. There is no automatic repeat or gain search. Press Ctrl-C to trigger the
-same stop-setpoint and disarm cleanup used for faults.
-
-All flight modes use takeoff, hover, landing, and settle phases with rate-limited
-altitude references. `hover-baseline` sends equilibrium thrust with attitude hold
-and logs the reference/response without altitude feedback; because it cannot
-guarantee reference tracking, perform it only under a test arrangement reviewed
-for that open-loop risk. `p-only` forcibly disables I and D. `pid` tests the
-configured PID. `takeoff-hover-land` is the final full-profile validation.
-Every mode is one short trial, not an unattended calibration routine.
-
-## Official firmware hover baseline
-
-`official-hover-baseline` is separate from the custom/open-loop
-`hover-baseline`. It sends the official generic hover setpoint directly at
-50 Hz with body-frame `vx=0`, `vy=0`, `yawrate=0`. Firmware interprets
-`zDistance` as an absolute world-frame Z setpoint, so the toolkit captures the
-stationary preflight median Z and adds the configured height-above-ground
-profile. The sequence ramps from 0.05 m to 0.30 m at 0.15 m/s, hovers for
-3 seconds, and ramps down at 0.12 m/s to 0.03 m. It sends the stop packet only
-after measured relative height is at most 0.06 m and |vz| is at most 0.08 m/s
-continuously for 0.5 s. Failure to confirm this within 3 s is a hard abort and
-is not reported as a successful landing.
-
-The direct `send_hover_setpoint()` interface was selected instead of
-`MotionCommander`: it uses the same official firmware hover controller but
-keeps takeoff, telemetry, safety checks, landing, and fault classification in
-one explicit testable state machine. Installed cflib 0.1.34 provides both APIs.
-At runtime the mode requires protocol version 12 or newer, both to avoid the
-legacy hover packet and because this safety state machine depends on the
-supervisor interface.
-
-Run only after reviewing this checklist:
-
-- suitable open test area, charged battery, undamaged and correctly installed
-  propellers, secure Flow Deck, and a second person/observer when possible;
-- correct radio URI and no other client or high-level commander connected;
-- flat, textured, well-lit surface within Flow Deck operating conditions;
-- vehicle level and stationary, with the battery connector immediately
-  reachable;
-- configured 0.30 m target, 0.15/0.12 m/s profile, 1.5 m altitude ceiling,
-  1.5 m/s vertical-speed limit, 0.50 m horizontal displacement, 0.75 m/s
-  horizontal speed, 0.45 rad tilt limit, 150 ms state timeout, and
-  100 ms loop deadline reviewed for the test location;
-- understand that the command below arms and may spin the motors;
-- understand that Ctrl-C sends stop setpoints and disarms, terminating lift
-  immediately. It is not a controlled or safe landing.
-
-Explicitly initiate exactly one flight with:
+After reviewing the applicable procedure and authorizing exactly one run:
 
 ```bash
-python -m calibration run official-hover-baseline \
-  --config calibration/default_config.json \
+python3 -m calibration run cascaded-xy \
+  --config calibration/stage5b_first_flight_config.json \
+  --controller-config calibration/stage5d_xy_pd_hover_candidate_config.json \
   --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
 ```
 
-Before arming, the mode verifies radio connectivity, modern protocol support,
-supervisor armability (and `can_fly` confirmation after arming), Flow Deck detection (`deck.bcFlow`/`deck.bcFlow2`), fresh
-and settled onboard state, level attitude, horizontal position/velocity against
-the flight limits, configured limits, and availability
-of the supervisor emergency-stop API. Normal completion always uses the
-controlled landing profile. A recoverable software fault attempts that profile;
-stale/unsafe state and failed recovery use immediate shutdown.
-
-The stationary preflight component-wise median x/y is the horizontal origin.
-Metadata records that origin, the latest and maximum preflight horizontal
-velocity estimates, and preflight displacement. If a safety check aborts, a
-`safety_event` snapshot is flushed to metadata before shutdown and identifies
-the exact condition, measured components/magnitude, origin, and applicable
-limit. A zero-row telemetry file therefore no longer hides the rejected sample.
-
-Telemetry is stored in `flight_telemetry.csv`, with synchronized reference and
-measured altitude, full position/velocity, attitude, supervisor state, phase,
-timing, and optional `stabilizer.thrust`. That firmware value is logged as
-`onboard_thrust_raw`: it is a raw collective controller value, not normalized
-thrust, force in newtons, or a calibrated equilibrium-thrust result. Analysis
-generates `metrics.json` and `flight_response.svg`; `physically_validated`
-remains false because the software cannot certify flight performance itself.
-
-## Interpretation and limitations
-
-An analyzed result is marked valid only if the process completed and recorded a
-hover phase with enough telemetry. “Valid” means structurally complete, not that
-the gains are safe or performant. Hardware validation can only be claimed from
-reviewed real measurements. The attitude-hold signs are configuration assumptions
-that must be verified for the specific firmware/vehicle with props removed and a
-restrained, low-risk test before free flight.
+The command remains subject to the CLI's supervisor, estimator, mapping, and
+per-run authorization gates. It does not perform automatic retries or gain
+search.
