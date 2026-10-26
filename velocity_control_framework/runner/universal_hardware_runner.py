@@ -186,6 +186,7 @@ class UniversalRunner(
         ],
         arm: Callable[[], None],
         disarm: Callable[[], None],
+        emergency_stop: Callable[[], None] | None = None,
         config: UniversalRunnerConfig | None = None,
         log_callback: LogCallback[
             StateT,
@@ -200,6 +201,7 @@ class UniversalRunner(
 
         self._arm = arm
         self._disarm = disarm
+        self._emergency_stop = emergency_stop
 
         self._config = (
             config
@@ -396,6 +398,15 @@ class UniversalRunner(
             print(
                 "\n[STOP] Keyboard interrupt received"
             )
+
+        except BaseException:
+            if is_armed and self._emergency_stop is not None:
+                try:
+                    self._emergency_stop()
+                    print("[STOP] Emergency stop requested")
+                except BaseException as error:
+                    print(f"[WARN] Emergency stop failed: {error}")
+            raise
 
         finally:
             print(

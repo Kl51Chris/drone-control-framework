@@ -163,6 +163,30 @@ From the repository root:
 pytest velocity_control_framework/tests -v
 ```
 
+## Production Flight Assembly
+
+`experiments/run_flight.py` is the minimal assembly point for the production
+`OuterLoopPIDController`, `stage5_hardware_candidate()` configuration, existing
+reference providers, Crazyflie backends, and `UniversalRunner`. Inspect the
+fixed-hover selection without connecting to hardware with:
+
+```bash
+python3 -m experiments.run_flight
+```
+
+One supervised fixed-hover flight can be requested explicitly with `--execute`.
+Without that switch the command remains inspection-only and never opens a radio
+connection. The flight uses a 0.30 m relative target and
+retains the reviewed Stage 5 estimator, envelope, attitude, velocity, timing,
+supervisor, and emergency-stop checks. Completion of the descent reference is
+followed by `LANDING_CHECK`. At the 15-second maximum duration, success requires
+both low estimated height and low vertical speed; this is explicitly an
+estimator-qualified landing result, not independent physical-touchdown proof.
+An unresolved landing reports `LANDING_FAILED` and uses the emergency-stop and
+cleanup path. The existing
+circular provider is selectable with `--reference circular`, but powered
+circular execution remains interlocked until fixed-hover validation succeeds.
+
 ## Documentation
 
 * [`doc/architecture.md`](doc/architecture.md) describes component boundaries,

@@ -40,7 +40,7 @@ class CircularFlightConfig:
 
     takeoff_height: float = 0.30
 
-    circle_radius: float = 0.25
+    circle_radius: float = 0.15
     circle_revolutions: float = 1.0
 
     armed_idle_duration: float = 0.50
