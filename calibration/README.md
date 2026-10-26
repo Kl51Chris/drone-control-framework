@@ -9,6 +9,7 @@ configuration, PID, state machine, telemetry, analysis, and shutdown lifecycle.
 ```bash
 pytest calibration/tests -v
 python -m calibration analyze calibration/runs/<run>
+python -m calibration analyze-equilibrium calibration/runs/<official-hover-run>
 python -m calibration export calibration/runs/<run> calibration/validated.json
 python -m calibration verify-control calibration/runs/<state-monitor-run> --config calibration/default_config.json
 ```
@@ -81,6 +82,74 @@ guarantee reference tracking, perform it only under a test arrangement reviewed
 for that open-loop risk. `p-only` forcibly disables I and D. `pid` tests the
 configured PID. `takeoff-hover-land` is the final full-profile validation.
 Every mode is one short trial, not an unattended calibration routine.
+
+## Official firmware hover baseline
+
+`official-hover-baseline` is separate from the custom/open-loop
+`hover-baseline`. It sends the official generic hover setpoint directly at
+50 Hz with body-frame `vx=0`, `vy=0`, `yawrate=0`. Firmware interprets
+`zDistance` as an absolute world-frame Z setpoint, so the toolkit captures the
+stationary preflight median Z and adds the configured height-above-ground
+profile. The sequence ramps from 0.05 m to 0.30 m at 0.15 m/s, hovers for
+3 seconds, and ramps down at 0.12 m/s to 0.03 m. It sends the stop packet only
+after measured relative height is at most 0.06 m and |vz| is at most 0.08 m/s
+continuously for 0.5 s. Failure to confirm this within 3 s is a hard abort and
+is not reported as a successful landing.
+
+The direct `send_hover_setpoint()` interface was selected instead of
+`MotionCommander`: it uses the same official firmware hover controller but
+keeps takeoff, telemetry, safety checks, landing, and fault classification in
+one explicit testable state machine. Installed cflib 0.1.34 provides both APIs.
+At runtime the mode requires protocol version 12 or newer, both to avoid the
+legacy hover packet and because this safety state machine depends on the
+supervisor interface.
+
+Run only after reviewing this checklist:
+
+- suitable open test area, charged battery, undamaged and correctly installed
+  propellers, secure Flow Deck, and a second person/observer when possible;
+- correct radio URI and no other client or high-level commander connected;
+- flat, textured, well-lit surface within Flow Deck operating conditions;
+- vehicle level and stationary, with the battery connector immediately
+  reachable;
+- configured 0.30 m target, 0.15/0.12 m/s profile, 1.5 m altitude ceiling,
+  1.5 m/s vertical-speed limit, 0.50 m horizontal displacement, 0.75 m/s
+  horizontal speed, 0.45 rad tilt limit, 150 ms state timeout, and
+  100 ms loop deadline reviewed for the test location;
+- understand that the command below arms and may spin the motors;
+- understand that Ctrl-C sends stop setpoints and disarms, terminating lift
+  immediately. It is not a controlled or safe landing.
+
+Explicitly initiate exactly one flight with:
+
+```bash
+python -m calibration run official-hover-baseline \
+  --config calibration/default_config.json \
+  --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
+```
+
+Before arming, the mode verifies radio connectivity, modern protocol support,
+supervisor armability (and `can_fly` confirmation after arming), Flow Deck detection (`deck.bcFlow`/`deck.bcFlow2`), fresh
+and settled onboard state, level attitude, horizontal position/velocity against
+the flight limits, configured limits, and availability
+of the supervisor emergency-stop API. Normal completion always uses the
+controlled landing profile. A recoverable software fault attempts that profile;
+stale/unsafe state and failed recovery use immediate shutdown.
+
+The stationary preflight component-wise median x/y is the horizontal origin.
+Metadata records that origin, the latest and maximum preflight horizontal
+velocity estimates, and preflight displacement. If a safety check aborts, a
+`safety_event` snapshot is flushed to metadata before shutdown and identifies
+the exact condition, measured components/magnitude, origin, and applicable
+limit. A zero-row telemetry file therefore no longer hides the rejected sample.
+
+Telemetry is stored in `flight_telemetry.csv`, with synchronized reference and
+measured altitude, full position/velocity, attitude, supervisor state, phase,
+timing, and optional `stabilizer.thrust`. That firmware value is logged as
+`onboard_thrust_raw`: it is a raw collective controller value, not normalized
+thrust, force in newtons, or a calibrated equilibrium-thrust result. Analysis
+generates `metrics.json` and `flight_response.svg`; `physically_validated`
+remains false because the software cannot certify flight performance itself.
 
 ## Interpretation and limitations
 

@@ -53,3 +53,67 @@ def test_attitude_rate_outputs_remain_radians_per_second_and_are_limited():
     state = AltitudeState(0, 0, roll_rad=1, pitch_rad=-1, yaw_rad=1, timestamp_s=1)
     settings = AttitudeSettings(max_rate_rad_s=0.2)
     assert attitude_rates(state, initial_yaw=0, settings=settings) == (-0.2, -0.2, -0.2)
+
+
+def test_official_hover_wrapper_uses_zero_horizontal_velocity_and_yaw_rate():
+    calls = []
+    hardware = CrazyflieHardware("test")
+    hardware._cf = SimpleNamespace(commander=SimpleNamespace(
+        send_hover_setpoint=lambda *args: calls.append(args)
+    ))
+    hardware.send_hover_setpoint(0.3)
+    assert calls == [(0.0, 0.0, 0.0, 0.3)]
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("0", False), ("1", True), (0, False), (1, True)],
+)
+def test_flow_deck_parameter_numeric_values(value, expected):
+    hardware = CrazyflieHardware("test")
+    hardware._cf = SimpleNamespace(param=SimpleNamespace(
+        values={"deck": {"bcFlow": "0", "bcFlow2": value}}
+    ))
+    assert hardware.flow_deck_available() is expected
+
+
+@pytest.mark.parametrize("values", [{}, {"deck": {}}, {"deck": {"unrelated": "1"}}])
+def test_flow_deck_missing_parameter_is_not_available(values):
+    hardware = CrazyflieHardware("test")
+    hardware._cf = SimpleNamespace(param=SimpleNamespace(values=values))
+    assert hardware.flow_deck_available() is False
+
+
+def test_flow_deck_parameter_retrieval_failure_is_fail_closed():
+    class BrokenParam:
+        @property
+        def values(self):
+            raise OSError("parameter transport failed")
+
+    hardware = CrazyflieHardware("test")
+    hardware._cf = SimpleNamespace(param=BrokenParam())
+    with pytest.raises(RuntimeError, match="failed to retrieve Flow Deck parameters"):
+        hardware.flow_deck_available()
+
+
+def test_flow_deck_malformed_parameter_is_rejected():
+    hardware = CrazyflieHardware("test")
+    hardware._cf = SimpleNamespace(param=SimpleNamespace(
+        values={"deck": {"bcFlow2": "enabled"}}
+    ))
+    with pytest.raises(RuntimeError, match="invalid numeric value"):
+        hardware.flow_deck_available()
+
+
+def test_parameter_readiness_succeeds_after_asynchronous_update():
+    responses = iter((False, False, True))
+    hardware = CrazyflieHardware("test")
+    hardware._link = SimpleNamespace(is_params_updated=lambda: next(responses))
+    hardware._wait_for_parameters(timeout_s=.1, poll_interval_s=0)
+
+
+def test_parameter_readiness_failure_is_bounded():
+    hardware = CrazyflieHardware("test")
+    hardware._link = SimpleNamespace(is_params_updated=lambda: False)
+    with pytest.raises(RuntimeError, match="timed out waiting"):
+        hardware._wait_for_parameters(timeout_s=0, poll_interval_s=0)

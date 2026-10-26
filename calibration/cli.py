@@ -12,7 +12,9 @@ from .hardware import CrazyflieHardware
 from .guided_attitude import GuidedAttitudeRunner
 from .logger import ExperimentLogger
 from .motor_free_diagnostic import generate_motor_free_report
+from .official_hover import OfficialHoverLogger, OfficialHoverRunner, OfficialHoverSettings
 from .state_monitor import StateMonitorLogger, StateMonitorRunner, StateMonitorSettings
+from .equilibrium_analysis import analyze_equilibrium
 
 
 FLIGHT_CONFIRMATION = "I_UNDERSTAND_PROPELLERS_MAY_SPIN"
@@ -26,6 +28,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--config", default="calibration/default_config.json")
     run.add_argument("--confirm-flight", default="", help=f"required literal: {FLIGHT_CONFIRMATION}")
     report = commands.add_parser("analyze"); report.add_argument("run_directory")
+    equilibrium = commands.add_parser("analyze-equilibrium"); equilibrium.add_argument("run_directory")
     export = commands.add_parser("export"); export.add_argument("run_directory"); export.add_argument("destination")
     verify = commands.add_parser("verify-control"); verify.add_argument("run_directory"); verify.add_argument("--config", default="calibration/default_config.json")
     return root
@@ -35,6 +38,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     if args.command == "analyze":
         print(json.dumps(analyze(args.run_directory), indent=2)); return 0
+    if args.command == "analyze-equilibrium":
+        print(json.dumps(analyze_equilibrium(args.run_directory), indent=2)); return 0
     if args.command == "export":
         print(json.dumps(export_validated(args.run_directory, args.destination), indent=2)); return 0
     if args.command == "verify-control":
@@ -76,6 +81,21 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if report["overall_result"] == "PASS" else 1
         except BaseException as exc:
             logger.close("invalid", f"{type(exc).__name__}: {exc}")
+            raise
+        finally:
+            hardware.close()
+    if mode is Mode.OFFICIAL_HOVER_BASELINE:
+        settings = OfficialHoverSettings()
+        logger = OfficialHoverLogger(config.output_directory, config, settings)
+        hardware = CrazyflieHardware(config.uri, external_altitude_port=None)
+        try:
+            hardware.connect()
+            metrics = OfficialHoverRunner(hardware, config, logger, settings).run()
+            print(json.dumps(metrics, indent=2))
+            print(f"Official hover artifact: {logger.directory}")
+            return 0 if metrics["performance_pass"] else 1
+        except BaseException as exc:
+            logger.close("invalid", f"{type(exc).__name__}: {exc}", "not_started_or_unconfirmed")
             raise
         finally:
             hardware.close()

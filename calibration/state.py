@@ -17,6 +17,10 @@ class AltitudeState:
     yaw_rad: float
     timestamp_s: float
     source: str = "crazyflie"
+    position_x_m: float = 0.0
+    position_y_m: float = 0.0
+    velocity_x_m_s: float = 0.0
+    velocity_y_m_s: float = 0.0
 
 
 def validate_fresh_state(state: AltitudeState, now_s: float, max_age_s: float) -> float:

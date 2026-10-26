@@ -17,6 +17,7 @@ class Mode(str, Enum):
     PREFLIGHT = "preflight"
     STATE_MONITOR = "state-monitor"
     ATTITUDE_SIGN_MONITOR = "attitude-sign-monitor"
+    OFFICIAL_HOVER_BASELINE = "official-hover-baseline"
     HOVER_BASELINE = "hover-baseline"
     P_ONLY = "p-only"
     PID = "pid"
