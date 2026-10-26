@@ -10,7 +10,7 @@ from typing import Any
 from .config import CalibrationConfig
 
 
-FIELDS = ["elapsed_s", "monotonic_s", "phase", "state_source", "state_age_s", "dt_s", "altitude_reference_m", "altitude_m", "vertical_velocity_m_s", "roll_rad", "pitch_rad", "yaw_rad", "error_m", "p_term", "i_term", "d_term", "pid_unsaturated", "pid_output", "thrust_normalized", "thrust_percent", "saturated"]
+FIELDS = ["elapsed_s", "monotonic_s", "phase", "state_source", "state_age_s", "dt_s", "altitude_reference_m", "altitude_m", "vertical_velocity_m_s", "x_m", "y_m", "vx_m_s", "vy_m_s", "horizontal_displacement_m", "horizontal_speed_m_s", "roll_rad", "pitch_rad", "yaw_rad", "error_m", "p_term", "i_term", "d_term", "pid_unsaturated", "pid_output", "thrust_normalized", "thrust_percent", "saturated"]
 
 
 class ExperimentLogger:
@@ -33,6 +33,15 @@ class ExperimentLogger:
     def row(self, values: dict[str, Any]) -> None:
         self._writer.writerow(values)
         self._stream.flush()
+
+    def safety_event(self, condition: str, values: dict[str, Any]) -> None:
+        """Persist fault evidence before shutdown can disrupt the link/process."""
+        self.metadata["safety_event"] = {
+            "condition": condition,
+            "recorded_utc": datetime.now(timezone.utc).isoformat(),
+            **values,
+        }
+        self._write_metadata(self.metadata)
 
     def close(self, status: str, reason: str = "") -> None:
         if self._stream.closed:

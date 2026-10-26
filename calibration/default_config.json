@@ -6,7 +6,8 @@
   "output_directory": "calibration/runs",
   "pid": {"correction_max": 0.12, "correction_min": -0.12, "kd": 0.08, "ki": 0.0, "kp": 0.25},
   "profile": {"hover_duration_s": 5.0, "landing_rate_m_s": 0.12, "settle_duration_s": 1.0, "takeoff_height_m": 0.35, "takeoff_rate_m_s": 0.15},
-  "safety": {"max_altitude_m": 1.5, "max_loop_dt_s": 0.1, "max_state_age_s": 0.15, "max_tilt_rad": 0.45, "max_vertical_speed_m_s": 1.5, "max_thrust": 0.45, "min_thrust": 0.0},
+  "safety": {"max_altitude_m": 1.5, "max_horizontal_displacement_m": 0.5, "max_horizontal_speed_m_s": 0.75, "max_loop_dt_s": 0.1, "max_state_age_s": 0.15, "max_tilt_rad": 0.45, "max_vertical_speed_m_s": 1.5, "max_thrust": 0.45, "min_thrust": 0.0},
+  "custom_attitude_hardware_validated": false,
   "schema_version": 1,
   "uri": "radio://0/80/2M/E7E7E7E7E7"
 }

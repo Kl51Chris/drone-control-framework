@@ -55,6 +55,7 @@ class CrazyflieHardware:
             altitude, velocity, state.roll, state.pitch, state.yaw, timestamp, source,
             float(state.position[0]), float(state.position[1]),
             float(state.velocity[0]), float(state.velocity[1]),
+            float(state.p), float(state.q), float(state.r),
         )
 
     def send_hover_setpoint(self, height_m: float) -> None:
@@ -180,6 +181,9 @@ class CrazyflieHardware:
 
     def send(self, roll_rate: float, pitch_rate: float, yaw_rate: float, thrust: float) -> None:
         self._commands.send(BodyRateThrustCommand(roll_rate, pitch_rate, yaw_rate, thrust))
+
+    def send_command(self, command: BodyRateThrustCommand) -> None:
+        self._commands.send(command)
 
     @staticmethod
     def encode_thrust(thrust: float) -> float:

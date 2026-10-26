@@ -12,6 +12,12 @@ python -m calibration analyze calibration/runs/<run>
 python -m calibration analyze-equilibrium calibration/runs/<official-hover-run>
 python -m calibration export calibration/runs/<run> calibration/validated.json
 python -m calibration verify-control calibration/runs/<state-monitor-run> --config calibration/default_config.json
+python -m calibration replay-pid calibration/runs/<official-hover-run> calibration/stage5_replay \
+  --equilibrium-thrust 0.425 --kp 0.10 --ki 0 --kd 0 \
+  --correction-min -0.045 --correction-max 0.025 --min-thrust 0.38 --max-thrust 0.45
+python -m calibration replay-cascaded calibration/runs/<official-hover-run> \
+  calibration/stage5_analysis/cascaded_stage5b \
+  --controller-config calibration/stage5b_offline_config.json
 ```
 
 Each run contains `metadata.json` and `telemetry.csv`. Analysis adds
@@ -21,6 +27,31 @@ An export maps every altitude setting to the corresponding
 Exports intentionally retain `hardware_validated: false`: software cannot infer
 physical safety or validation from a completed log. A human review must make and
 record that determination outside this automatic export.
+
+`replay-pid` writes every P/I/D term, predicted command, and PID/thrust-clamp
+saturation flag. Recorded measurements are exogenous: this is controller
+arithmetic replay, not a closed-loop plant simulation, and cannot establish
+stability or flight safety.
+
+`CascadedPIDController` is the Stage 5 unified controller. Its output is exactly
+`BodyRateThrustCommand`, leaving body-rate PID and motor mixing onboard. The
+checked-in Stage 5B configuration enables altitude P and level attitude/heading
+feedback only; altitude velocity/integral and horizontal position/velocity
+stages are configuration-gated for 5C and 5D. Both hardware authorization flags
+in that configuration are false, so it is an offline artifact, not a flight file.
+
+The dedicated first-flight path is `cascaded-5b`; it never calls the official
+hover API. It requires the standard explicit confirmation and separate flight
+and controller configurations. Analyze either a completed or aborted artifact
+without reconnecting to hardware:
+
+```bash
+python -m calibration run cascaded-5b \
+  --config calibration/stage5b_first_flight_config.json \
+  --controller-config calibration/stage5b_offline_config.json \
+  --confirm-flight I_UNDERSTAND_PROPELLERS_MAY_SPIN
+python -m calibration analyze-cascaded-flight calibration/runs/<cascaded-5b-run>
+```
 
 ## Hardware procedure
 

@@ -30,6 +30,8 @@ class SafetySettings:
     max_tilt_rad: float = 0.45
     max_altitude_m: float = 1.5
     max_vertical_speed_m_s: float = 1.5
+    max_horizontal_displacement_m: float = 0.50
+    max_horizontal_speed_m_s: float = 0.75
 
 
 @dataclass(slots=True)
@@ -66,6 +68,8 @@ class CalibrationConfig:
     profile: ProfileSettings = field(default_factory=ProfileSettings)
     external_altitude_udp_port: int | None = None
     output_directory: str = "calibration/runs"
+    # Deliberate interlock: motor-free sign checks do not validate powered attitude hold.
+    custom_attitude_hardware_validated: bool = False
 
     def validate(self) -> None:
         if self.schema_version != 1:
@@ -83,7 +87,10 @@ class CalibrationConfig:
             raise ValueError("PID correction_min must not exceed correction_max")
         if self.safety.max_state_age_s <= 0 or self.safety.max_loop_dt_s <= 0:
             raise ValueError("state age and loop dt limits must be positive")
-        if self.safety.max_tilt_rad <= 0 or self.safety.max_altitude_m <= 0 or self.safety.max_vertical_speed_m_s <= 0:
+        if (self.safety.max_tilt_rad <= 0 or self.safety.max_altitude_m <= 0 or
+                self.safety.max_vertical_speed_m_s <= 0 or
+                self.safety.max_horizontal_displacement_m <= 0 or
+                self.safety.max_horizontal_speed_m_s <= 0):
             raise ValueError("state safety limits must be positive")
         if self.attitude.max_rate_rad_s <= 0:
             raise ValueError("attitude max rate must be positive")

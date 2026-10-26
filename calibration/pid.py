@@ -31,6 +31,8 @@ class AltitudePID:
     def update(self, reference_m: float, altitude_m: float, dt_s: float) -> PIDResult:
         if not math.isfinite(dt_s) or dt_s <= 0:
             raise ValueError("dt_s must be finite and positive")
+        if not math.isfinite(reference_m) or not math.isfinite(altitude_m):
+            raise ValueError("reference_m and altitude_m must be finite")
         error = float(reference_m) - float(altitude_m)
         derivative_value = 0.0 if self.previous_error is None else (error - self.previous_error) / dt_s
         candidate_integral = self.integral_state + error * dt_s

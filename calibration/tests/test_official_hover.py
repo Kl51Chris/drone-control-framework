@@ -56,6 +56,11 @@ def test_flight_requires_explicit_cli_authorization():
         main(["run","official-hover-baseline"])
 
 
+def test_custom_flight_requires_powered_attitude_validation_interlock():
+    with pytest.raises(SystemExit, match="custom_attitude_hardware_validated is false"):
+        main(["run", "p-only", "--confirm-flight", "I_UNDERSTAND_PROPELLERS_MAY_SPIN"])
+
+
 def test_normal_official_hover_calls_and_state_machine(tmp_path):
     clock=Clock();config=CalibrationConfig(output_directory=str(tmp_path));hardware=HoverHardware(clock)
     logger=OfficialHoverLogger(tmp_path,config,settings())

@@ -31,3 +31,9 @@ def test_conditional_anti_windup_and_recovery():
 def test_invalid_dt_rejected():
     with pytest.raises(ValueError):
         AltitudePID(PIDSettings()).update(1, 0, 0)
+
+
+@pytest.mark.parametrize(("reference", "altitude"), [(float("nan"), 0), (0, float("inf"))])
+def test_nonfinite_inputs_rejected(reference, altitude):
+    with pytest.raises(ValueError, match="must be finite"):
+        AltitudePID(PIDSettings()).update(reference, altitude, .02)

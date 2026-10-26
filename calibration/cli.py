@@ -15,6 +15,11 @@ from .motor_free_diagnostic import generate_motor_free_report
 from .official_hover import OfficialHoverLogger, OfficialHoverRunner, OfficialHoverSettings
 from .state_monitor import StateMonitorLogger, StateMonitorRunner, StateMonitorSettings
 from .equilibrium_analysis import analyze_equilibrium
+from .pid_replay import replay_official_hover, settings_from_config
+from .cascaded_pid import load_cascaded_config
+from .cascaded_replay import replay_cascaded_official_hover
+from .cascaded_flight import CascadedFlightLogger, CascadedStage5BRunner
+from .cascaded_analysis import analyze_cascaded_flight
 
 
 FLIGHT_CONFIRMATION = "I_UNDERSTAND_PROPELLERS_MAY_SPIN"
@@ -31,6 +36,19 @@ def parser() -> argparse.ArgumentParser:
     equilibrium = commands.add_parser("analyze-equilibrium"); equilibrium.add_argument("run_directory")
     export = commands.add_parser("export"); export.add_argument("run_directory"); export.add_argument("destination")
     verify = commands.add_parser("verify-control"); verify.add_argument("run_directory"); verify.add_argument("--config", default="calibration/default_config.json")
+    replay = commands.add_parser("replay-pid")
+    replay.add_argument("run_directory"); replay.add_argument("output_directory")
+    replay.add_argument("--config", default="calibration/default_config.json")
+    replay.add_argument("--equilibrium-thrust", type=float)
+    replay.add_argument("--kp", type=float); replay.add_argument("--ki", type=float); replay.add_argument("--kd", type=float)
+    replay.add_argument("--correction-min", type=float); replay.add_argument("--correction-max", type=float)
+    replay.add_argument("--min-thrust", type=float); replay.add_argument("--max-thrust", type=float)
+    cascaded = commands.add_parser("replay-cascaded")
+    cascaded.add_argument("run_directory"); cascaded.add_argument("output_directory")
+    cascaded.add_argument("--controller-config", default="calibration/stage5b_offline_config.json")
+    flight_analysis = commands.add_parser("analyze-cascaded-flight")
+    flight_analysis.add_argument("run_directory")
+    run.add_argument("--controller-config", default="calibration/stage5b_offline_config.json")
     return root
 
 
@@ -46,6 +64,23 @@ def main(argv: list[str] | None = None) -> int:
         report = generate_motor_free_report(args.run_directory, args.config)
         print(json.dumps(report, indent=2))
         return 0 if report["overall_offline_result"] == "PASS" else 1
+    if args.command == "replay-pid":
+        config = load_config(args.config)
+        settings = settings_from_config(
+            config, equilibrium_thrust=args.equilibrium_thrust,
+            kp=args.kp, ki=args.ki, kd=args.kd,
+            correction_min=args.correction_min, correction_max=args.correction_max,
+            min_thrust=args.min_thrust, max_thrust=args.max_thrust)
+        print(json.dumps(replay_official_hover(
+            args.run_directory, args.output_directory, settings), indent=2))
+        return 0
+    if args.command == "replay-cascaded":
+        config = load_cascaded_config(args.controller_config)
+        print(json.dumps(replay_cascaded_official_hover(
+            args.run_directory, args.output_directory, config), indent=2))
+        return 0
+    if args.command == "analyze-cascaded-flight":
+        print(json.dumps(analyze_cascaded_flight(args.run_directory), indent=2)); return 0
     mode = Mode(args.mode)
     if mode.is_flight and args.confirm_flight != FLIGHT_CONFIRMATION:
         raise SystemExit(f"Flight refused. Pass --confirm-flight {FLIGHT_CONFIRMATION} after completing the safety checklist.")
@@ -99,6 +134,37 @@ def main(argv: list[str] | None = None) -> int:
             raise
         finally:
             hardware.close()
+    if mode is Mode.CASCADED_5B:
+        controller_config = load_cascaded_config(args.controller_config)
+        logger = CascadedFlightLogger(config.output_directory, config, controller_config)
+        hardware = CrazyflieHardware(config.uri, external_altitude_port=None)
+        runner_started = False
+        try:
+            hardware.connect()
+            runner_started = True
+            CascadedStage5BRunner(hardware, config, controller_config, logger).run()
+            metrics = analyze_cascaded_flight(logger.directory)
+            print(json.dumps(metrics, indent=2)); print(f"Cascaded flight artifact: {logger.directory}")
+            return 0 if metrics["software_execution_status"] == "complete" else 1
+        except BaseException as exc:
+            if not runner_started:
+                # Attempt shutdown before diagnostic disk I/O. During radio loss
+                # these calls are best-effort and cannot guarantee motor stop.
+                hardware.close()
+                logger.diagnostic_event("connection_or_startup_failure", {
+                    "type": type(exc).__name__, "message": str(exc)})
+                logger.close("aborted", f"startup {type(exc).__name__}: {exc}", {
+                    "hardware_close_attempted": True,
+                    "motor_shutdown_guaranteed": False,
+                })
+            raise
+        finally:
+            hardware.close()
+    if mode.is_flight and not config.custom_attitude_hardware_validated:
+        raise SystemExit(
+            "Custom flight refused: custom_attitude_hardware_validated is false. "
+            "Motor-free sign verification is insufficient; record a reviewed powered "
+            "attitude-stabilization validation in the per-run config first.")
     logger = ExperimentLogger(config.output_directory, mode.value, config)
     hardware = CrazyflieHardware(config.uri, config.external_altitude_udp_port)
     try:

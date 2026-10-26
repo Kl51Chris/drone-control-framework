@@ -32,11 +32,13 @@ def test_onboard_state_is_used_when_external_udp_is_disabled():
     hardware._provider = SimpleNamespace(get_state=lambda: SimpleNamespace(
         position=[1, 2, 0.42], velocity=[0, 0, -0.1],
         roll=0.1, pitch=-0.2, yaw=0.3, timestamp=12.0,
+        p=0.01, q=-0.02, r=0.03,
     ))
     state = hardware.state()
     assert state.altitude_m == 0.42
     assert state.vertical_velocity_m_s == -0.1
     assert state.source == "crazyflie"
+    assert (state.body_rate_p_rad_s, state.body_rate_q_rad_s, state.body_rate_r_rad_s) == (0.01, -0.02, 0.03)
 
 
 def test_default_attitude_signs_drive_angles_toward_level_and_initial_yaw():

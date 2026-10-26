@@ -21,6 +21,9 @@ class AltitudeState:
     position_y_m: float = 0.0
     velocity_x_m_s: float = 0.0
     velocity_y_m_s: float = 0.0
+    body_rate_p_rad_s: float = 0.0
+    body_rate_q_rad_s: float = 0.0
+    body_rate_r_rad_s: float = 0.0
 
 
 def validate_fresh_state(state: AltitudeState, now_s: float, max_age_s: float) -> float:

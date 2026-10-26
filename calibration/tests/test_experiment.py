@@ -19,6 +19,7 @@ class FakeHardware:
         self.disarm_calls = 0
         self.send_calls = []
         self.stop_calls = 0
+        self.estop_calls = 0
         self.status = {
             "can_be_armed": True, "can_fly": True, "is_armed": False,
             "is_auto_armed": False, "is_flying": False, "is_tumbled": False,
@@ -43,6 +44,11 @@ class FakeHardware:
 
     def emergency_stop(self):
         self.stop_calls += 1
+
+    def emergency_stop_available(self): return True
+    def flow_deck_available(self): return True
+    def protocol_version(self): return 12
+    def supervisor_emergency_stop(self): self.estop_calls += 1
 
 
 def test_takeoff_hover_landing_transitions():
