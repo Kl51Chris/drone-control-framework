@@ -1,0 +1,12 @@
+{
+  "attitude": {"max_rate_rad_s": 0.35, "pitch_kp": 4.0, "pitch_sign": -1, "roll_kp": 4.0, "roll_sign": -1, "yaw_kp": 2.0, "yaw_sign": -1},
+  "control_frequency_hz": 50.0,
+  "equilibrium_thrust": 0.3,
+  "external_altitude_udp_port": null,
+  "output_directory": "calibration/runs",
+  "pid": {"correction_max": 0.12, "correction_min": -0.12, "kd": 0.08, "ki": 0.0, "kp": 0.25},
+  "profile": {"hover_duration_s": 5.0, "landing_rate_m_s": 0.12, "settle_duration_s": 1.0, "takeoff_height_m": 0.35, "takeoff_rate_m_s": 0.15},
+  "safety": {"max_altitude_m": 1.5, "max_loop_dt_s": 0.1, "max_state_age_s": 0.15, "max_tilt_rad": 0.45, "max_vertical_speed_m_s": 1.5, "max_thrust": 0.45, "min_thrust": 0.0},
+  "schema_version": 1,
+  "uri": "radio://0/80/2M/E7E7E7E7E7"
+}
