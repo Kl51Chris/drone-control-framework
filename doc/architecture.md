@@ -177,10 +177,15 @@ and state acquisition.
 `UniversalRunner` delegates reference/controller coordination to a
 `FlightProgram`. Its lifecycle is:
 
-1. Start the state provider and wait, with a configured timeout, for a state.
-2. Request arming and wait for the configured arming interval.
-3. Initialize the flight program with the initial state and monotonic start
-   time.
+1. Start the state provider and wait, with a configured timeout, for a
+   pre-arming state.
+2. Request arming, wait for the configured arming interval, and acquire a
+   post-arming state immediately afterward.
+3. Initialize the flight program with its selected initialization state and a
+   monotonic start time. Stage 6 selects the post-arming state, verifies that it
+   is newer, finite, and recent, and uses it to establish the fixed horizontal
+   reference and landing altitude. Other validation stages retain their
+   pre-arming initialization behavior.
 4. At the configured control frequency, ask for the phase, acquire state,
    calculate `dt`, obtain `(Reference, command)`, transmit the command, and
    optionally invoke a lower-frequency logging callback.
@@ -204,11 +209,13 @@ The runner does not select gains, create trajectories, or calculate commands.
 | 3 | `HORIZONTAL_STABILIZATION` | P-only horizontal feedback with equilibrium thrust |
 | 4 | `HORIZONTAL_ALTITUDE` | Horizontal and altitude feedback |
 | 5 | `HEADING` | Adds heading feedback, initially P-only |
-| 6 | `FIXED_HOVER` | Fixed position and heading reference |
+| 6 | `FIXED_HOVER` | Smooth takeoff, fixed hover, and measured-state-qualified landing |
 | 7 | `SLOW_TRAJECTORY` | Bounded, slow circular position reference |
 
 Stages other than Stage 2 build an `OuterLoopPIDConfig` and invoke the generic
-`OuterLoopPIDController`. Stage 2 is deliberately different: the experiment
+`OuterLoopPIDController`. Stage 6 wraps that output with experiment-specific
+roll/pitch attitude feedback and final rate limiting. Stage 2 is deliberately
+different: the experiment
 program directly applies roll, pitch, and yaw attitude P feedback, rate limits,
 and a thrust ramp. The `OuterLoopPIDController` instance created for Stage 2 has
 inactive channels and is not used to generate the command. This Stage 2 law is
@@ -235,6 +242,9 @@ The code implements:
 * Stage 1 caps of 0.05 m for offsets and 10 deg/s for horizontal rate;
 * Stage 2 caps of 10 deg/s for attitude and heading rates, plus ordered and
   bounded thrust-ramp values;
+* Stage 6 limits for tilt, tracking error, state age, control-loop delay, total
+  flight duration, and final roll/pitch rate, plus altitude and vertical-speed
+  conditions before normal completion;
 * Stage 7 caps of 0.25 m radius and a minimum 10 s trajectory period;
 * CLI/configuration stage matching before a physical run;
 * first-state timeout and orderly stop, disarm request, and state shutdown.

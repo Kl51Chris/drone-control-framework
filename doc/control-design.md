@@ -377,6 +377,27 @@ implementation is
 principally `OuterLoopPIDValidationProgram._stage_two_command()` and
 `_stage_two_thrust()`.
 
+Stage 6 uses `OuterLoopPIDController` for fixed-position tracking and adds an
+experiment-specific roll/pitch attitude-feedback wrapper:
+
+```math
+p_{cmd}=\operatorname{sat}_{L_{att}}
+\left(p_{PID}+s_{\phi}K_{\phi}(0-\phi)\right),
+\qquad
+q_{cmd}=\operatorname{sat}_{L_{att}}
+\left(q_{PID}+s_{\theta}K_{\theta}(0-\theta)\right).
+```
+
+The wrapper preserves the controller's yaw-rate and thrust outputs. Its final
+roll/pitch saturation is applied after summation; it does not remove or revise
+the reusable PID channels' earlier saturation or anti-windup decisions. Stage 6
+uses smooth altitude references for takeoff and landing, and normal completion
+requires measured altitude and vertical velocity to satisfy configured landing
+tolerances. This is a landing-state proxy, not independent proof of physical
+touchdown; the available state interface has no dedicated contact signal.
+These mechanisms remain experiment-specific and are not evidence of
+hardware-validated free-flight safety.
+
 ## 3. LQR Controller [Planned]
 
 Linear-quadratic regulation is intended to use a linearized model and quadratic

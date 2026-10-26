@@ -243,7 +243,7 @@ class UniversalRunner(
                 "[STATE] Waiting for estimator data"
             )
 
-            initial_state = (
+            pre_arming_state = (
                 self.wait_for_first_state()
             )
 
@@ -263,10 +263,37 @@ class UniversalRunner(
                     self._config.arming_wait_s
                 )
 
+            post_arming_state = (
+                self._state_provider
+                .get_state()
+            )
             start_time = time.monotonic()
 
+            initialization_reporter = getattr(
+                self._flight_program,
+                "report_initialization_states",
+                None,
+            )
+            if initialization_reporter is not None:
+                initialization_reporter(
+                    pre_arming_state=pre_arming_state,
+                    post_arming_state=post_arming_state,
+                )
+
+            initialization_state = pre_arming_state
+            initialization_selector = getattr(
+                self._flight_program,
+                "select_initialization_state",
+                None,
+            )
+            if initialization_selector is not None:
+                initialization_state = initialization_selector(
+                    pre_arming_state=pre_arming_state,
+                    post_arming_state=post_arming_state,
+                )
+
             self._flight_program.initialize(
-                initial_state=initial_state,
+                initial_state=initialization_state,
                 start_time=start_time,
             )
 
