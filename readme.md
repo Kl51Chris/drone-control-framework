@@ -61,6 +61,8 @@ the selected software configuration. Hardware execution requires the explicit
   replay, and hardware-validation records.
 - [Architecture details](doc/architecture.md): framework boundaries and
   runner responsibilities.
+- [Flight logging](doc/flight-logging.md): run layout, schemas, data-source
+  provenance, and experiment integration.
 
 ## Current status
 
@@ -72,8 +74,11 @@ the selected software configuration. Hardware execution requires the explicit
   landing criteria were not met. The final recorded values were approximately
   0.1227 m height above initialized ground, 0.0031 m/s vertical velocity, and
   0.4175 normalized thrust. It is not proof of robust or unattended flight.
-- The circular reference provider is available for software inspection, but
-  powered circular tracking remains interlocked pending validation.
+- The production runner accepts the circular reference for supervised powered
+  execution. Its unchanged 23.5-second takeoff/trajectory/landing profile uses
+  a reference-specific 30-second maximum duration, leaving 6.5 seconds for
+  estimator-qualified landing verification. Fixed hover retains its 15-second
+  maximum duration.
 - PID gains and landing behavior remain experimental. MPC and DeePC are future
   research directions; no implementations are present in the active
   controller package.

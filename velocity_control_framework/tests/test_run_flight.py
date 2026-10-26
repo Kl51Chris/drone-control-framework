@@ -1,24 +1,29 @@
 from __future__ import annotations
 
+import json
+import time
+
 import numpy as np
 import pytest
 import experiments.run_flight as run_flight
 
 from experiments.run_flight import (
     CIRCULAR_REFERENCE,
+    CIRCULAR_MAXIMUM_FLIGHT_DURATION_S,
     CONFIGURATION_NAME,
     CONTROLLER_NAME,
     FIXED_HOVER_REFERENCE,
+    FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S,
     HardSafetyViolation,
     LandingFailed,
     ProductionFlightProgram,
-    ProductionLifecycleBlocked,
+    ProductionSafetyConfig,
     SupervisorArmingError,
     assemble_program,
+    build_run_configuration,
     build_runner,
     main,
     request_supervisor_arming,
-    validate_powered_execution,
 )
 from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
@@ -30,6 +35,7 @@ from velocity_control_framework.controllers import (
     OuterLoopPIDController,
 )
 from velocity_control_framework.interfaces import BodyRateThrustCommand, DroneState
+from velocity_control_framework.logger import FlightLogger
 from velocity_control_framework.references import (
     CircularFlightReference,
     VerticalFlightReference,
@@ -94,6 +100,37 @@ def test_circular_selection_reuses_existing_circular_provider() -> None:
     program.initialize(initial_state(), start_time=10.0)
 
     assert isinstance(program.reference_provider, CircularFlightReference)
+
+
+def test_circular_reference_is_passed_unchanged_to_controller() -> None:
+    expected_command = BodyRateThrustCommand(0.1, -0.2, 0.3, 0.4)
+
+    class CapturingController:
+        def __init__(self) -> None:
+            self.reference = None
+
+        def reset(self) -> None:
+            pass
+
+        def update(self, state, reference, dt):
+            del state, dt
+            self.reference = reference
+            return expected_command
+
+    controller = CapturingController()
+    program = ProductionFlightProgram(controller, CIRCULAR_REFERENCE)
+    program.initialize(initial_state(), start_time=10.0)
+
+    reference, command = program.update(
+        safe_flight_state(timestamp=16.0),
+        current_time=16.0,
+        dt=0.02,
+    )
+
+    assert controller.reference is reference
+    assert command is expected_command
+    assert program.get_phase_name(16.0) == "CIRCLE"
+    assert not np.array_equal(reference.position[:2], initial_state().position[:2])
 
 
 def test_program_calls_controller_once_without_extra_attitude_feedback() -> None:
@@ -246,10 +283,86 @@ def test_firmware_prearm_refusal_is_not_bypassed() -> None:
     assert cf.supervisor.requests == []
 
 
-def test_fixed_execution_is_enabled_but_circular_remains_interlocked() -> None:
-    validate_powered_execution(FIXED_HOVER_REFERENCE)
-    with pytest.raises(ProductionLifecycleBlocked, match="circular tracking"):
-        validate_powered_execution(CIRCULAR_REFERENCE)
+def test_production_safety_uses_two_meter_horizontal_boundary() -> None:
+    safety = ProductionSafetyConfig()
+
+    assert safety.max_horizontal_displacement_m == 2.0
+    assert safety.max_state_age_s == 0.15
+    assert safety.max_control_loop_dt_s == 0.10
+    assert safety.max_altitude_above_ground_m == 1.50
+    assert safety.min_altitude_below_ground_m == -0.10
+    assert safety.max_horizontal_speed_m_s == 0.75
+    assert safety.max_vertical_speed_m_s == 1.50
+    assert safety.max_tilt_rad == 0.45
+    assert safety.maximum_flight_duration_s == 15.0
+    assert safety.max_arming_position_jump_m == 0.15
+    assert safety.landing_altitude_tolerance_m == 0.05
+    assert safety.landing_vertical_speed_tolerance_m_s == 0.05
+
+
+@pytest.mark.parametrize(
+    ("reference_name", "expected_duration"),
+    [
+        (FIXED_HOVER_REFERENCE, FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S),
+        (CIRCULAR_REFERENCE, CIRCULAR_MAXIMUM_FLIGHT_DURATION_S),
+    ],
+)
+def test_maximum_flight_duration_is_reference_specific(
+    reference_name, expected_duration
+) -> None:
+    _, _, program = assemble_program(
+        CONTROLLER_NAME,
+        CONFIGURATION_NAME,
+        reference_name,
+    )
+
+    assert program.safety.maximum_flight_duration_s == expected_duration
+    assert program.safety.max_horizontal_displacement_m == 2.0
+
+
+def test_logging_configuration_records_selected_duration(tmp_path) -> None:
+    _, _, fixed_program = assemble_program(
+        CONTROLLER_NAME, CONFIGURATION_NAME, FIXED_HOVER_REFERENCE
+    )
+    _, _, circular_program = assemble_program(
+        CONTROLLER_NAME, CONFIGURATION_NAME, CIRCULAR_REFERENCE
+    )
+
+    fixed_logging = build_run_configuration("test://fixed", fixed_program)
+    circular_logging = build_run_configuration("test://circular", circular_program)
+
+    assert (
+        fixed_logging.reference_configuration["safety"][
+            "maximum_flight_duration_s"
+        ]
+        == 15.0
+    )
+    assert (
+        circular_logging.reference_configuration["safety"][
+            "maximum_flight_duration_s"
+        ]
+        == 30.0
+    )
+
+    logger = FlightLogger(circular_logging, tmp_path)
+    logger.close()
+    metadata = json.loads((logger.directory / "metadata.json").read_text())
+    assert (
+        metadata["reference"]["configuration"]["safety"][
+            "maximum_flight_duration_s"
+        ]
+        == 30.0
+    )
+
+
+def test_circular_inspection_prints_selected_duration(capsys) -> None:
+    main(["--reference", CIRCULAR_REFERENCE])
+
+    output = capsys.readouterr().out
+    safety_line = next(line for line in output.splitlines() if line.startswith("[SAFETY]"))
+    safety = json.loads(safety_line.removeprefix("[SAFETY] "))
+    assert safety["maximum_flight_duration_s"] == 30.0
+    assert "inspection_only" in output
 
 
 def test_landing_check_succeeds_at_maximum_duration() -> None:
@@ -318,7 +431,7 @@ def safe_flight_state(**changes) -> DroneState:
 @pytest.mark.parametrize(
     ("changes", "message"),
     [
-        ({"position": np.array([1.51, 2.0, 0.2])}, "horizontal displacement"),
+        ({"position": np.array([3.01, 2.0, 0.2])}, "horizontal displacement"),
         ({"position": np.array([1.0, 2.0, 1.7])}, "vertical position"),
         ({"velocity": np.array([0.76, 0.0, 0.0])}, "horizontal velocity"),
         ({"velocity": np.array([0.0, 0.0, 1.51])}, "vertical velocity"),
@@ -445,6 +558,71 @@ def test_hard_failure_requests_emergency_stop_then_cleanup() -> None:
     )
 
     with pytest.raises(HardSafetyViolation, match="test envelope"):
+        runner.run()
+
+    assert events == [
+        "provider_start",
+        "arm",
+        "emergency_stop",
+        "command_stop",
+        "disarm",
+        "provider_stop",
+    ]
+
+
+def test_two_meter_displacement_violation_requests_emergency_stop() -> None:
+    events: list[str] = []
+
+    class Provider:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def start(self):
+            events.append("provider_start")
+
+        def get_state(self):
+            self.calls += 1
+            position = (
+                np.array([1.0, 2.0, 0.1])
+                if self.calls <= 2
+                else np.array([3.01, 2.0, 0.1])
+            )
+            return DroneState(
+                position=position,
+                velocity=np.zeros(3),
+                roll=0.0,
+                pitch=0.0,
+                yaw=0.3,
+                timestamp=time.monotonic() + self.calls * 1.0e-6,
+            )
+
+        def stop(self):
+            events.append("provider_stop")
+
+    class Adapter:
+        def send(self, command):
+            del command
+            events.append("send")
+
+        def stop(self):
+            events.append("command_stop")
+
+    _, _, program = assemble_program(
+        CONTROLLER_NAME,
+        CONFIGURATION_NAME,
+        FIXED_HOVER_REFERENCE,
+    )
+    runner = UniversalRunner(
+        state_provider=Provider(),
+        command_adapter=Adapter(),
+        flight_program=program,
+        arm=lambda: events.append("arm"),
+        disarm=lambda: events.append("disarm"),
+        emergency_stop=lambda: events.append("emergency_stop"),
+        config=UniversalRunnerConfig(arming_wait_s=0.0),
+    )
+
+    with pytest.raises(HardSafetyViolation, match="horizontal displacement"):
         runner.run()
 
     assert events == [
@@ -595,3 +773,17 @@ def test_execute_has_no_interactive_authorization_prompt(monkeypatch) -> None:
     main(["--execute"])
 
     assert len(hardware_calls) == 1
+
+
+def test_execute_accepts_circular_reference(monkeypatch) -> None:
+    hardware_calls = []
+    monkeypatch.setattr(
+        run_flight,
+        "_run_hardware",
+        lambda uri, program: hardware_calls.append((uri, program)),
+    )
+
+    main(["--execute", "--reference", CIRCULAR_REFERENCE])
+
+    assert len(hardware_calls) == 1
+    assert hardware_calls[0][1].reference_name == CIRCULAR_REFERENCE

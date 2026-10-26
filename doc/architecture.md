@@ -188,14 +188,18 @@ and state acquisition.
    pre-arming initialization behavior.
 4. At the configured control frequency, ask for the phase, acquire state,
    calculate `dt`, obtain `(Reference, command)`, transmit the command, and
-   optionally invoke a lower-frequency logging callback.
+   enqueue a standardized flight record and optionally invoke the legacy
+   lower-frequency console/logging callback.
 5. Drop missed deadlines instead of executing catch-up iterations.
 6. Exit when the program reports completion or on interruption/error.
-7. In `finally`, stop command output, request disarming if armed, and stop state
-   acquisition if started.
+7. In `finally`, stop command output, request disarming if armed, stop state
+   acquisition if started, and drain/finalize the run logger with a terminal
+   status.
 
 The runner does not select gains, create trajectories, or calculate commands.
 `OuterLoopPIDValidationProgram` supplies those experiment-specific duties.
+Asynchronous source telemetry and controller-step records are described in
+[Flight logging](flight-logging.md).
 
 ## 6. Staged Validation Architecture
 

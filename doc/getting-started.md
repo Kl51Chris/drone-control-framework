@@ -84,8 +84,9 @@ emergency-stop procedure. Do not improvise undocumented keyboard controls.
 Landing success is estimator-qualified, not physical-contact sensing: low
 estimated height and low vertical speed must both pass. `LANDING_FAILED` may
 therefore trigger emergency motor shutdown while the vehicle is still airborne.
-The production path currently prints console telemetry and result data; no
-persistent production flight-file logger has been verified here.
+The production path prints console telemetry and writes a persistent run under
+the project-level `log/` directory. Metadata records the selected reference's
+safety configuration, including its maximum flight duration.
 
 ## Controller and reference selection
 
@@ -97,10 +98,13 @@ persistent production flight-file logger has been verified here.
 - `--execute`: explicit switch from inspection to hardware execution;
 - `--uri`: Crazyflie radio URI, default `radio://0/80/2M`.
 
-The circular provider is reusable for software inspection, but powered circular
-tracking is interlocked until fixed-hover production validation is further
-reviewed. New students should start at this production entry point, not with
-calibration hardware scripts.
+The circular provider is available for explicitly supervised powered execution.
+Its unchanged profile uses a 0.15 m radius, one revolution, 0.5 s armed idle,
+4.0 s takeoff, 15.0 s circular phase, and 4.0 s landing. Circular runs use a
+30.0 s maximum duration, leaving 6.5 s for `LANDING_CHECK`; fixed-hover runs
+retain their 15.0 s maximum. Both use the same controller parameters and 2.0 m
+horizontal displacement envelope. New students should start at this production
+entry point, not with calibration hardware scripts.
 
 ## Running tests
 

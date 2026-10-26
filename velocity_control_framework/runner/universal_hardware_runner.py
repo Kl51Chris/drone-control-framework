@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import time
-from typing import Callable, Generic, Protocol, TypeVar
+from typing import Any, Callable, Generic, Mapping, Protocol, TypeVar
 
 
 StateT = TypeVar("StateT")
@@ -194,6 +194,7 @@ class UniversalRunner(
             CommandT,
         ]
         | None = None,
+        run_logger: Any | None = None,
     ) -> None:
         self._state_provider = state_provider
         self._command_adapter = command_adapter
@@ -210,6 +211,7 @@ class UniversalRunner(
         )
 
         self._log_callback = log_callback
+        self._run_logger = run_logger
 
     def wait_for_first_state(
         self,
@@ -236,10 +238,14 @@ class UniversalRunner(
     def run(self) -> None:
         provider_started = False
         is_armed = False
+        run_status = "completed"
+        termination_reason: str | None = None
 
         try:
             self._state_provider.start()
             provider_started = True
+            if self._run_logger is not None:
+                self._run_logger.event("state_provider_started")
 
             print(
                 "[STATE] Waiting for estimator data"
@@ -252,9 +258,13 @@ class UniversalRunner(
             print(
                 "[STATE] Initial state received"
             )
+            if self._run_logger is not None:
+                self._run_logger.event("initial_state_received")
 
             self._arm()
             is_armed = True
+            if self._run_logger is not None:
+                self._run_logger.event("arming_requested")
 
             print(
                 "[STATE] Arming requested"
@@ -270,6 +280,9 @@ class UniversalRunner(
                 .get_state()
             )
             start_time = time.monotonic()
+
+            if self._run_logger is not None:
+                self._run_logger.mark_running(start_time)
 
             initialization_reporter = getattr(
                 self._flight_program,
@@ -323,6 +336,11 @@ class UniversalRunner(
                         f"[PHASE] {phase_name}"
                     )
                     previous_phase = phase_name
+                    if self._run_logger is not None:
+                        self._run_logger.event(
+                            "phase_changed", {"phase": phase_name},
+                            monotonic_s=now,
+                        )
 
                 state = (
                     self._state_provider
@@ -349,6 +367,33 @@ class UniversalRunner(
                 self._command_adapter.send(
                     command
                 )
+
+                if self._run_logger is not None:
+                    diagnostics: Mapping[str, Any] | None = None
+                    diagnostics_provider = getattr(
+                        self._flight_program, "get_logging_diagnostics", None
+                    )
+                    if diagnostics_provider is not None:
+                        try:
+                            diagnostics = diagnostics_provider()
+                        except Exception as error:
+                            self._run_logger.event(
+                                "diagnostics_unavailable",
+                                {"error": f"{type(error).__name__}: {error}"},
+                                monotonic_s=now,
+                            )
+                    source_context_provider = getattr(
+                        self._state_provider, "get_logging_context", None
+                    )
+                    source_context = (
+                        source_context_provider()
+                        if source_context_provider is not None else None
+                    )
+                    self._run_logger.log_flight(
+                        now - start_time, now, phase_name, state, reference,
+                        command, dt, diagnostics=diagnostics,
+                        source_context=source_context,
+                    )
 
                 should_log = (
                     self._log_callback is not None
@@ -395,11 +440,15 @@ class UniversalRunner(
             )
 
         except KeyboardInterrupt:
+            run_status = "aborted"
+            termination_reason = "KeyboardInterrupt"
             print(
                 "\n[STOP] Keyboard interrupt received"
             )
 
-        except BaseException:
+        except BaseException as error:
+            run_status = "failed"
+            termination_reason = f"{type(error).__name__}: {error}"
             if is_armed and self._emergency_stop is not None:
                 try:
                     self._emergency_stop()
@@ -437,3 +486,6 @@ class UniversalRunner(
                     print(
                         "[STOP] State provider stopped"
                     )
+
+                if self._run_logger is not None:
+                    self._run_logger.close(run_status, termination_reason)

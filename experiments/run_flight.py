@@ -33,6 +33,7 @@ from velocity_control_framework.references import (
     VerticalFlightReference,
 )
 from velocity_control_framework.runner import UniversalRunner, UniversalRunnerConfig
+from velocity_control_framework.logger import FlightLogger, RunConfiguration
 
 
 CONTROLLER_NAME = "outer-loop-pid"
@@ -40,14 +41,12 @@ CONFIGURATION_NAME = "stage5-hardware-candidate"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
 DEFAULT_URI = "radio://0/80/2M"
+FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S = 15.0
+CIRCULAR_MAXIMUM_FLIGHT_DURATION_S = 30.0
 
 
 class HardSafetyViolation(RuntimeError):
     """A hard flight envelope or system-health requirement failed."""
-
-
-class ProductionLifecycleBlocked(RuntimeError):
-    """The requested production lifecycle is not approved for execution."""
 
 
 class LandingFailed(HardSafetyViolation):
@@ -64,13 +63,13 @@ class ProductionSafetyConfig:
 
     max_state_age_s: float = 0.15
     max_control_loop_dt_s: float = 0.10
-    max_horizontal_displacement_m: float = 0.50
+    max_horizontal_displacement_m: float = 2.0
     max_altitude_above_ground_m: float = 1.50
     min_altitude_below_ground_m: float = -0.10
     max_horizontal_speed_m_s: float = 0.75
     max_vertical_speed_m_s: float = 1.50
     max_tilt_rad: float = 0.45
-    maximum_flight_duration_s: float = 15.0
+    maximum_flight_duration_s: float = FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S
     max_arming_position_jump_m: float = 0.15
     landing_altitude_tolerance_m: float = 0.05
     landing_vertical_speed_tolerance_m_s: float = 0.05
@@ -106,7 +105,13 @@ class ProductionFlightProgram:
             raise ValueError(f"unsupported reference provider: {reference_name}")
         self.controller = controller
         self.reference_name = reference_name
-        self.safety = safety or ProductionSafetyConfig()
+        self.safety = safety or ProductionSafetyConfig(
+            maximum_flight_duration_s=(
+                CIRCULAR_MAXIMUM_FLIGHT_DURATION_S
+                if reference_name == CIRCULAR_REFERENCE
+                else FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S
+            )
+        )
         self.supervisor_status = supervisor_status
         self.reference_provider: (
             VerticalFlightReference | CircularFlightReference | None
@@ -414,7 +419,9 @@ def request_supervisor_arming(
         raise
 
 
-def build_runner(cf, program: ProductionFlightProgram) -> UniversalRunner:
+def build_runner(
+    cf, program: ProductionFlightProgram, run_logger: FlightLogger | None = None
+) -> UniversalRunner:
     """Assemble existing production backends around UniversalRunner."""
 
     program.supervisor_status = lambda: _supervisor_status(cf)
@@ -422,12 +429,18 @@ def build_runner(cf, program: ProductionFlightProgram) -> UniversalRunner:
     def arm() -> None:
         request_supervisor_arming(cf)
 
+    state_provider = CrazyflieStateProvider(
+        cf,
+        onboard_state_callback=(
+            run_logger.record_onboard_state if run_logger is not None else None
+        ),
+    )
     return UniversalRunner[
         DroneState,
         Reference,
         BodyRateThrustCommand,
     ](
-        state_provider=CrazyflieStateProvider(cf),
+        state_provider=state_provider,
         command_adapter=CrazyflieCommandAdapter(cf),
         flight_program=program,
         arm=arm,
@@ -435,15 +448,8 @@ def build_runner(cf, program: ProductionFlightProgram) -> UniversalRunner:
         emergency_stop=cf.supervisor.send_emergency_stop,
         config=UniversalRunnerConfig(),
         log_callback=_log_step,
+        run_logger=run_logger,
     )
-
-
-def validate_powered_execution(reference_name: str) -> None:
-    if reference_name == CIRCULAR_REFERENCE:
-        raise ProductionLifecycleBlocked(
-            "circular tracking remains disabled until fixed-hover production "
-            "validation succeeds"
-        )
 
 
 def _log_step(
@@ -463,13 +469,17 @@ def _log_step(
     )
 
 
-def _print_selection(config: OuterLoopPIDConfig, reference_name: str) -> None:
+def _print_selection(
+    config: OuterLoopPIDConfig,
+    reference_name: str,
+    safety: ProductionSafetyConfig,
+) -> None:
     print(f"[CONTROLLER] {CONTROLLER_NAME}")
     print(f"[CONFIGURATION] {CONFIGURATION_NAME}")
     print(f"[REFERENCE] {reference_name}")
     print("[PARAMETERS] " + json.dumps(asdict(config), sort_keys=True))
-    print("[SAFETY] " + json.dumps(asdict(ProductionSafetyConfig()), sort_keys=True))
-    print("[LOG] UniversalRunner console callback; no production run directory")
+    print("[SAFETY] " + json.dumps(asdict(safety), sort_keys=True))
+    print("[LOG] Powered runs are stored under the project log/ directory")
 
 
 def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
@@ -480,7 +490,28 @@ def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
     cflib.crtp.init_drivers()
     crazyflie = Crazyflie(rw_cache="./cache")
     with SyncCrazyflie(uri, cf=crazyflie) as link:
-        build_runner(link.cf, program).run()
+        run_logger = FlightLogger(build_run_configuration(uri, program))
+        print(f"[LOG] {run_logger.directory.resolve()}")
+        build_runner(link.cf, program, run_logger).run()
+
+
+def build_run_configuration(
+    uri: str, program: ProductionFlightProgram
+) -> RunConfiguration:
+    """Build logger provenance from the fully selected production program."""
+    return RunConfiguration(
+        experiment_name="production-flight",
+        reference_type=program.reference_name,
+        reference_configuration={
+            "safety": asdict(program.safety),
+        },
+        controller_type=CONTROLLER_NAME,
+        parameter_set=CONFIGURATION_NAME,
+        controller_configuration=asdict(program.controller.config),
+        target_control_frequency_hz=UniversalRunnerConfig().control_frequency_hz,
+        hardware=f"Crazyflie ({uri})",
+        state_estimation_source="Crazyflie onboard stateEstimate via passthrough",
+    )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -506,23 +537,17 @@ def main(argv: list[str] | None = None) -> None:
         args.configuration,
         args.reference,
     )
-    _print_selection(config, args.reference)
+    _print_selection(config, args.reference, program.safety)
     if not args.execute:
         print("[STATUS] inspection_only; no hardware connection attempted")
         return
-    try:
-        validate_powered_execution(args.reference)
-        print("[STATUS] connecting for one supervised flight")
-        _run_hardware(args.uri, program)
-        if program.estimated_landing_confirmed:
-            print(
-                "[STATUS] SUCCESS; estimated landing criteria satisfied; "
-                "physical touchdown was not independently confirmed"
-            )
-    except ProductionLifecycleBlocked as error:
-        print("[STATUS] blocked")
-        print(f"[SHUTDOWN] no hardware connection was opened: {error}")
-        raise SystemExit(str(error)) from error
+    print("[STATUS] connecting for one supervised flight")
+    _run_hardware(args.uri, program)
+    if program.estimated_landing_confirmed:
+        print(
+            "[STATUS] SUCCESS; estimated landing criteria satisfied; "
+            "physical touchdown was not independently confirmed"
+        )
 
 
 if __name__ == "__main__":

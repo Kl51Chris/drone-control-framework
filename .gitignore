@@ -35,3 +35,6 @@ calibration/stage5_analysis/**/*.csv
 calibration/stage5_analysis/**/*.svg
 calibration/stage5_analysis/**/*.json
 calibration/stage5_analysis/__pycache__/
+
+# Flight experiment logs
+/log/

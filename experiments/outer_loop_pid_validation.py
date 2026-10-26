@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum, IntEnum
 import math
 from typing import Final
@@ -23,6 +23,7 @@ from velocity_control_framework.runner import (
     UniversalRunner,
     UniversalRunnerConfig,
 )
+from velocity_control_framework.logger import FlightLogger, RunConfiguration
 
 
 MAX_POLARITY_OFFSET_M: Final = 0.05
@@ -1418,12 +1419,28 @@ def main(argv: list[str] | None = None) -> None:
         cf = sync_crazyflie.cf
         controller = OuterLoopPIDController(config.controller_config())
         program = OuterLoopPIDValidationProgram(controller, config)
+        run_logger = FlightLogger(
+            RunConfiguration(
+                experiment_name="outer-loop-pid-validation",
+                reference_type=stage.name.lower().replace("_", "-"),
+                reference_configuration=asdict(config),
+                controller_type="outer-loop-pid",
+                parameter_set=f"stage-{int(stage)}-{stage.name.lower().replace('_', '-')}",
+                controller_configuration=asdict(controller.config),
+                target_control_frequency_hz=config.control_frequency_hz,
+                hardware=f"Crazyflie ({URI})",
+                state_estimation_source="Crazyflie onboard stateEstimate via passthrough",
+            )
+        )
+        print(f"[LOG] {run_logger.directory.resolve()}")
         runner = UniversalRunner[
             DroneState,
             Reference,
             BodyRateThrustCommand,
         ](
-            state_provider=CrazyflieStateProvider(cf),
+            state_provider=CrazyflieStateProvider(
+                cf, onboard_state_callback=run_logger.record_onboard_state
+            ),
             command_adapter=CrazyflieCommandAdapter(cf),
             flight_program=program,
             arm=lambda: cf.supervisor.send_arming_request(True),
@@ -1440,6 +1457,7 @@ def main(argv: list[str] | None = None) -> None:
                     program.stage_six_diagnostics,
                 )
             ),
+            run_logger=run_logger,
         )
         runner.run()
 

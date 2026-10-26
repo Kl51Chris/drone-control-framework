@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -62,11 +63,13 @@ class CrazyflieStateProvider:
         self,
         crazyflie: Any,
         state_estimator: StateEstimator | None = None,
+        onboard_state_callback: Callable[..., int | None] | None = None,
     ) -> None:
         self._cf = crazyflie
         self._state_estimator = (
             state_estimator or PassthroughStateEstimator()
         )
+        self._onboard_state_callback = onboard_state_callback
 
         self._lock = threading.Lock()
         self._state_ready = threading.Event()
@@ -82,6 +85,9 @@ class CrazyflieStateProvider:
         self._latest_velocity: np.ndarray | None = None
         self._latest_attitude: np.ndarray | None = None
         self._latest_body_rates: np.ndarray | None = None
+        self._latest_source_timestamp_s: float | None = None
+        self._latest_reception_monotonic_s: float | None = None
+        self._latest_onboard_sequence: int | None = None
 
         self._running = False
 
@@ -103,6 +109,9 @@ class CrazyflieStateProvider:
             self._latest_velocity = None
             self._latest_attitude = None
             self._latest_body_rates = None
+            self._latest_source_timestamp_s = None
+            self._latest_reception_monotonic_s = None
+            self._latest_onboard_sequence = None
         self._state_ready.clear()
         
         self._translation_log_config = (
@@ -332,7 +341,6 @@ class CrazyflieStateProvider:
         """
         Store one Crazyflie position and velocity log packet.
         """
-        del timestamp
         del log_config
 
         position = np.array(
@@ -354,6 +362,8 @@ class CrazyflieStateProvider:
         )
 
         with self._lock:
+            self._latest_source_timestamp_s = float(timestamp) / 1000.0
+            self._latest_reception_monotonic_s = time.monotonic()
             self._latest_position = position
             self._latest_velocity = velocity
             self._try_build_state_locked()
@@ -370,7 +380,6 @@ class CrazyflieStateProvider:
         Pitch uses the Crazyflie legacy sign convention. No extra
         sign inversion is applied here.
         """
-        del timestamp
         del log_config
 
         attitude = np.array(
@@ -389,6 +398,8 @@ class CrazyflieStateProvider:
         )
 
         with self._lock:
+            self._latest_source_timestamp_s = float(timestamp) / 1000.0
+            self._latest_reception_monotonic_s = time.monotonic()
             self._latest_attitude = attitude
             self._try_build_state_locked()
 
@@ -399,7 +410,6 @@ class CrazyflieStateProvider:
         log_config: Any,
     ) -> None:
         """Store p/q/r from the compressed estimator log packet."""
-        del timestamp
         del log_config
 
         milliradians_to_radians = 1.0e-3
@@ -413,6 +423,8 @@ class CrazyflieStateProvider:
         ) * milliradians_to_radians
 
         with self._lock:
+            self._latest_source_timestamp_s = float(timestamp) / 1000.0
+            self._latest_reception_monotonic_s = time.monotonic()
             self._latest_body_rates = body_rates
             self._try_build_state_locked()
 
@@ -454,7 +466,28 @@ class CrazyflieStateProvider:
             estimated_state=estimated_state,
             measured_state=measured_state,
         )
+        if self._onboard_state_callback is not None:
+            sequence = self._onboard_state_callback(
+                estimated_state,
+                source_timestamp_s=self._latest_source_timestamp_s,
+                reception_monotonic_s=(
+                    self._latest_reception_monotonic_s
+                    if self._latest_reception_monotonic_s is not None
+                    else estimated_state.timestamp
+                ),
+            )
+            if sequence is not None:
+                self._latest_onboard_sequence = int(sequence)
         self._state_ready.set()
+
+    def get_logging_context(self) -> dict[str, int | None]:
+        """Identify source samples available for the latest controller state."""
+        with self._lock:
+            return {
+                "onboard_sequence": self._latest_onboard_sequence,
+                "external_sequence": None,
+            }
+
     def _on_log_error(
         self,
         log_config: Any,
