@@ -21,6 +21,7 @@
   },
   "equilibrium_thrust": 0.425,
   "hardware_flight_authorized": false,
+  "horizontal_mapping_hardware_validated": false,
   "horizontal": {
     "enabled": false,
     "gravity_m_s2": 9.80665,

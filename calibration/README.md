@@ -53,6 +53,29 @@ python -m calibration run cascaded-5b \
 python -m calibration analyze-cascaded-flight calibration/runs/<cascaded-5b-run>
 ```
 
+The prepared Stage 5D XY mode is `cascaded-xy`. Deliberate bipolar hardware
+identification supports negative pitch/body-X and negative roll/body-Y mappings;
+the combined altitude-PD/XY-PD candidate records that reviewed mapping. The
+earlier first-flight candidate remains interlocked for provenance. Offline replay
+remains available:
+
+```bash
+python -m calibration replay-cascaded-flight \
+  calibration/runs/<cascaded-5b-run> calibration/stage5_analysis/xy-replay \
+  --controller-config calibration/stage5d_xy_pd_hover_candidate_config.json
+```
+
+The remaining body-X/pitch uncertainty has a dedicated, XY-disabled physical
+identification mode. It retains the Stage 5B controller and all flight safety
+limits, waits for a bounded hover condition, then applies fixed ±0.020 rad pitch
+reference pulses separated by neutral recovery periods. See
+`STAGE5D_PITCH_IDENTIFICATION.md`. Each flight still requires the confirmation
+literal; preparation never runs it automatically. Analyze its artifact with:
+
+```bash
+python -m calibration analyze-pitch-response calibration/runs/<pitch-response-id-run>
+```
+
 ## Hardware procedure
 
 1. Remove propellers. Secure the vehicle, inspect frame/motors/deck, charge the

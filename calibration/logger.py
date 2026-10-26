@@ -34,6 +34,9 @@ class ExperimentLogger:
         self._writer.writerow(values)
         self._stream.flush()
 
+    def persist_metadata(self) -> None:
+        self._write_metadata(self.metadata)
+
     def safety_event(self, condition: str, values: dict[str, Any]) -> None:
         """Persist fault evidence before shutdown can disrupt the link/process."""
         self.metadata["safety_event"] = {

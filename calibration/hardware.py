@@ -4,6 +4,7 @@ import math
 import threading
 import time
 from typing import Any
+from datetime import datetime, timezone
 
 from velocity_control_framework.backends import CrazyflieCommandAdapter, CrazyflieStateProvider
 from velocity_control_framework.interfaces import BodyRateThrustCommand
@@ -15,6 +16,7 @@ class CrazyflieHardware:
     """Thin lifecycle wrapper around the repository's verified CF adapters."""
 
     PARAMETER_READY_TIMEOUT_S = 10.0
+    BATTERY_SNAPSHOT_TIMEOUT_S = 1.0
 
     def __init__(self, uri: str, external_altitude_port: int | None = None) -> None:
         self.uri = uri
@@ -130,6 +132,78 @@ class CrazyflieHardware:
         if not isinstance(toc, dict):
             return set()
         return {f"{group}.{name}" for group, variables in toc.items() if isinstance(variables, dict) for name in variables}
+
+    @staticmethod
+    def _create_battery_log_config(variables: list[str]) -> Any:
+        from cflib.crazyflie.log import LogConfig
+        config = LogConfig(name="CalibrationBatterySnapshot", period_in_ms=100)
+        for variable in variables:
+            config.add_variable(variable)
+        return config
+
+    def battery_snapshot(self, timeout_s: float | None = None) -> dict[str, Any]:
+        """Capture one firmware battery sample without estimating state of charge."""
+        requested_utc = datetime.now(timezone.utc).isoformat()
+        snapshot: dict[str, Any] = {
+            "success": False, "requested_utc": requested_utc,
+            "measurement_utc": None, "measurement_monotonic_s": None,
+            "firmware_log_timestamp_ms": None, "voltage_v": None,
+            "percentage": None, "percentage_source": None, "error": None,
+        }
+        available = self.available_log_variables()
+        if "pm.vbat" not in available:
+            snapshot["error"] = "pm.vbat is unavailable in the firmware log TOC"
+            return snapshot
+        variables = ["pm.vbat"]
+        if "pm.batteryLevel" in available:
+            variables.append("pm.batteryLevel")
+            snapshot["percentage_source"] = "pm.batteryLevel"
+        event = threading.Event(); received: dict[str, Any] = {}
+
+        def on_data(timestamp: int, data: dict[str, Any], _config: Any) -> None:
+            received.update(data=data, timestamp=timestamp,
+                            measurement_utc=datetime.now(timezone.utc).isoformat(),
+                            measurement_monotonic_s=time.monotonic())
+            event.set()
+
+        def on_error(*args: Any) -> None:
+            received["error"] = str(args[-1]) if args else "unknown battery log error"
+            event.set()
+
+        config = None
+        try:
+            config = self._create_battery_log_config(variables)
+            config.data_received_cb.add_callback(on_data)
+            config.error_cb.add_callback(on_error)
+            self._cf.log.add_config(config)
+            if not config.valid:
+                raise RuntimeError("battery log configuration is invalid")
+            config.start()
+            if not event.wait(self.BATTERY_SNAPSHOT_TIMEOUT_S if timeout_s is None else timeout_s):
+                raise TimeoutError("timed out waiting for battery telemetry")
+            if "error" in received:
+                raise RuntimeError(received["error"])
+            data = received["data"]
+            voltage = float(data["pm.vbat"])
+            if not math.isfinite(voltage):
+                raise RuntimeError("battery voltage is not finite")
+            percentage = data.get("pm.batteryLevel")
+            if percentage is not None:
+                percentage = float(percentage)
+                if not math.isfinite(percentage) or not 0 <= percentage <= 100:
+                    percentage = None
+                    snapshot["percentage_source"] = None
+            snapshot.update(success=True, voltage_v=voltage, percentage=percentage,
+                            firmware_log_timestamp_ms=received["timestamp"],
+                            measurement_utc=received["measurement_utc"],
+                            measurement_monotonic_s=received["measurement_monotonic_s"])
+        except Exception as exc:
+            snapshot["error"] = f"{type(exc).__name__}: {exc}"
+        finally:
+            if config is not None:
+                try: config.stop()
+                except Exception: pass
+        return snapshot
 
     def start_onboard_thrust_log(self, period_ms: int = 20) -> bool:
         """Log firmware `stabilizer.thrust` when present (raw control units)."""

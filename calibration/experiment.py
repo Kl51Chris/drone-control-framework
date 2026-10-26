@@ -23,6 +23,10 @@ class Mode(str, Enum):
     PID = "pid"
     TAKEOFF_HOVER_LAND = "takeoff-hover-land"
     CASCADED_5B = "cascaded-5b"
+    CASCADED_5C = "cascaded-5c"
+    CASCADED_XY = "cascaded-xy"
+    PITCH_RESPONSE_ID = "pitch-response-id"
+    ROLL_RESPONSE_ID = "roll-response-id"
 
     @property
     def is_flight(self) -> bool:
@@ -51,6 +55,7 @@ class ReferencePoint:
     phase: str
     altitude_m: float
     complete: bool = False
+    vertical_velocity_m_s: float = 0.0
 
 
 def reference_for(mode: Mode, elapsed: float, initial_altitude: float, config: CalibrationConfig) -> ReferencePoint:
@@ -58,13 +63,15 @@ def reference_for(mode: Mode, elapsed: float, initial_altitude: float, config: C
     height = p.takeoff_height_m
     up_time = height / p.takeoff_rate_m_s
     if elapsed < up_time:
-        return ReferencePoint("TAKEOFF", initial_altitude + elapsed * p.takeoff_rate_m_s)
+        return ReferencePoint("TAKEOFF", initial_altitude + elapsed * p.takeoff_rate_m_s,
+                              vertical_velocity_m_s=p.takeoff_rate_m_s)
     if elapsed < up_time + p.hover_duration_s:
         return ReferencePoint("HOVER", initial_altitude + height)
     landing_elapsed = elapsed - up_time - p.hover_duration_s
     down_time = height / p.landing_rate_m_s
     if landing_elapsed < down_time:
-        return ReferencePoint("LANDING", initial_altitude + max(0.0, height - landing_elapsed * p.landing_rate_m_s))
+        return ReferencePoint("LANDING", initial_altitude + max(0.0, height - landing_elapsed * p.landing_rate_m_s),
+                              vertical_velocity_m_s=-p.landing_rate_m_s)
     if landing_elapsed + 1e-12 < down_time + p.settle_duration_s:
         return ReferencePoint("SETTLE", initial_altitude)
     return ReferencePoint("COMPLETE", initial_altitude, True)

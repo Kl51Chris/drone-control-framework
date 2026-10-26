@@ -62,6 +62,13 @@ def test_takeoff_hover_landing_transitions():
     assert reference_for(Mode.TAKEOFF_HOVER_LAND, up + p.hover_duration_s + down + p.settle_duration_s, .1, config).complete
 
 
+def test_reference_profile_includes_consistent_vertical_velocity():
+    config=CalibrationConfig();p=config.profile;up=p.takeoff_height_m/p.takeoff_rate_m_s
+    assert reference_for(Mode.CASCADED_5B,0,0,config).vertical_velocity_m_s==p.takeoff_rate_m_s
+    assert reference_for(Mode.CASCADED_5B,up,0,config).vertical_velocity_m_s==0
+    assert reference_for(Mode.CASCADED_5B,up+p.hover_duration_s,0,config).vertical_velocity_m_s==-p.landing_rate_m_s
+
+
 def test_p_modes_use_controlled_profile_and_complete_after_one_trial():
     config = CalibrationConfig()
     p = config.profile

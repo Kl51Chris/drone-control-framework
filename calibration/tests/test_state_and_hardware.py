@@ -119,3 +119,42 @@ def test_parameter_readiness_failure_is_bounded():
     hardware._link = SimpleNamespace(is_params_updated=lambda: False)
     with pytest.raises(RuntimeError, match="timed out waiting"):
         hardware._wait_for_parameters(timeout_s=0, poll_interval_s=0)
+
+
+class _Callbacks:
+    def __init__(self): self.callback=None
+    def add_callback(self,callback): self.callback=callback
+
+
+class _BatteryLogConfig:
+    def __init__(self,data):
+        self.data=data;self.valid=True;self.data_received_cb=_Callbacks();self.error_cb=_Callbacks()
+        self.stopped=False
+    def start(self): self.data_received_cb.callback(1234,self.data,self)
+    def stop(self): self.stopped=True
+
+
+def test_battery_snapshot_uses_firmware_voltage_and_percentage():
+    hardware=CrazyflieHardware("test")
+    hardware._cf=SimpleNamespace(log=SimpleNamespace(
+        toc=SimpleNamespace(toc={"pm":{"vbat":object(),"batteryLevel":object()}}),
+        add_config=lambda config:None))
+    config=_BatteryLogConfig({"pm.vbat":3.91,"pm.batteryLevel":73})
+    hardware._create_battery_log_config=lambda variables:config
+    snapshot=hardware.battery_snapshot(timeout_s=0)
+    assert snapshot["success"] is True
+    assert snapshot["voltage_v"]==pytest.approx(3.91)
+    assert snapshot["percentage"]==pytest.approx(73)
+    assert snapshot["percentage_source"]=="pm.batteryLevel"
+    assert snapshot["firmware_log_timestamp_ms"]==1234
+    assert snapshot["measurement_utc"] and config.stopped
+
+
+def test_battery_snapshot_reports_unavailable_without_voltage_variable():
+    hardware=CrazyflieHardware("test")
+    hardware._cf=SimpleNamespace(log=SimpleNamespace(
+        toc=SimpleNamespace(toc={"pm":{"state":object()}})))
+    snapshot=hardware.battery_snapshot()
+    assert snapshot["success"] is False
+    assert snapshot["voltage_v"] is None and snapshot["percentage"] is None
+    assert "pm.vbat is unavailable" in snapshot["error"]

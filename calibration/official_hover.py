@@ -91,6 +91,8 @@ class OfficialHoverLogger:
         self._write_metadata()
     def _write_metadata(self) -> None:
         (self.directory/"metadata.json").write_text(json.dumps(self.metadata, indent=2, sort_keys=True)+"\n", encoding="utf-8")
+    def persist_metadata(self) -> None:
+        self._write_metadata()
     def row(self, row: dict[str, Any]) -> None:
         self._writer.writerow(row); self._stream.flush()
     def close(self, status: str, reason: str, landing_status: str) -> None:

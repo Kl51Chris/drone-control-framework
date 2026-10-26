@@ -17,12 +17,36 @@ from .state_monitor import StateMonitorLogger, StateMonitorRunner, StateMonitorS
 from .equilibrium_analysis import analyze_equilibrium
 from .pid_replay import replay_official_hover, settings_from_config
 from .cascaded_pid import load_cascaded_config
-from .cascaded_replay import replay_cascaded_official_hover
-from .cascaded_flight import CascadedFlightLogger, CascadedStage5BRunner
+from .cascaded_replay import replay_cascaded_official_hover, replay_cascaded_flight
+from .cascaded_flight import (CascadedFlightLogger, CascadedStage5BRunner,
+                              PitchIdentificationSettings, RollIdentificationSettings)
 from .cascaded_analysis import analyze_cascaded_flight
+from .pitch_response_analysis import analyze_pitch_response
+from .roll_response_analysis import analyze_roll_response
+from .altitude_pd_analysis import analyze_altitude_pd
+from .vertical_system_id import identify_vertical_dynamics
+from .flight_support import record_battery_snapshot, print_run_summary
 
 
 FLIGHT_CONFIRMATION = "I_UNDERSTAND_PROPELLERS_MAY_SPIN"
+
+
+def _validate_cascaded_mode_config(mode: Mode, controller_config) -> None:
+    """Validate controller-stage compatibility before hardware connection."""
+    controller_config.validate()
+    if mode in (Mode.PITCH_RESPONSE_ID, Mode.ROLL_RESPONSE_ID):
+        if controller_config.stage not in {"5B","5C"}:
+            raise SystemExit(f"{mode.value} requires a compatible Stage 5B or Stage 5C controller configuration")
+        if controller_config.horizontal.enabled:
+            raise SystemExit(f"{mode.value} requires XY control disabled")
+    else:
+        expected_stage="5D" if mode is Mode.CASCADED_XY else ("5C" if mode is Mode.CASCADED_5C else "5B")
+        if controller_config.stage!=expected_stage:
+            raise SystemExit(f"{mode.value} requires a Stage {expected_stage} controller configuration")
+    if mode is Mode.CASCADED_XY and not controller_config.horizontal_mapping_hardware_validated:
+        raise SystemExit(
+            "XY flight refused: horizontal_mapping_hardware_validated is false. "
+            "Resolve and record physical body-X/pitch and body-Y/roll polarity first.")
 
 
 def parser() -> argparse.ArgumentParser:
@@ -46,9 +70,22 @@ def parser() -> argparse.ArgumentParser:
     cascaded = commands.add_parser("replay-cascaded")
     cascaded.add_argument("run_directory"); cascaded.add_argument("output_directory")
     cascaded.add_argument("--controller-config", default="calibration/stage5b_offline_config.json")
+    xy_replay = commands.add_parser("replay-cascaded-flight")
+    xy_replay.add_argument("run_directory"); xy_replay.add_argument("output_directory")
+    xy_replay.add_argument("--controller-config", default="calibration/stage5d_xy_first_flight_config.json")
     flight_analysis = commands.add_parser("analyze-cascaded-flight")
     flight_analysis.add_argument("run_directory")
+    pitch_analysis = commands.add_parser("analyze-pitch-response")
+    pitch_analysis.add_argument("run_directory")
+    roll_analysis = commands.add_parser("analyze-roll-response")
+    roll_analysis.add_argument("run_directory")
+    altitude_pd = commands.add_parser("analyze-altitude-pd")
+    altitude_pd.add_argument("run_directory"); altitude_pd.add_argument("output_directory")
+    vertical_id = commands.add_parser("identify-vertical-dynamics")
+    vertical_id.add_argument("p_only_run"); vertical_id.add_argument("pd_run"); vertical_id.add_argument("output_directory")
     run.add_argument("--controller-config", default="calibration/stage5b_offline_config.json")
+    run.add_argument("--pitch-excitation-rad",type=float,default=.02)
+    run.add_argument("--roll-excitation-rad",type=float,default=.02)
     return root
 
 
@@ -81,6 +118,20 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "analyze-cascaded-flight":
         print(json.dumps(analyze_cascaded_flight(args.run_directory), indent=2)); return 0
+    if args.command == "analyze-pitch-response":
+        report = analyze_pitch_response(args.run_directory)
+        print(json.dumps(report, indent=2)); return 0 if report["result"] == "PASS" else 1
+    if args.command == "analyze-roll-response":
+        report = analyze_roll_response(args.run_directory)
+        print(json.dumps(report, indent=2)); return 0 if report["result"] == "PASS" else 1
+    if args.command == "analyze-altitude-pd":
+        print(json.dumps(analyze_altitude_pd(args.run_directory,args.output_directory),indent=2)); return 0
+    if args.command == "identify-vertical-dynamics":
+        print(json.dumps(identify_vertical_dynamics(args.p_only_run,args.pd_run,args.output_directory),indent=2)); return 0
+    if args.command == "replay-cascaded-flight":
+        config = load_cascaded_config(args.controller_config)
+        print(json.dumps(replay_cascaded_flight(
+            args.run_directory, args.output_directory, config), indent=2)); return 0
     mode = Mode(args.mode)
     if mode.is_flight and args.confirm_flight != FLIGHT_CONFIRMATION:
         raise SystemExit(f"Flight refused. Pass --confirm-flight {FLIGHT_CONFIRMATION} after completing the safety checklist.")
@@ -125,6 +176,7 @@ def main(argv: list[str] | None = None) -> int:
         hardware = CrazyflieHardware(config.uri, external_altitude_port=None)
         try:
             hardware.connect()
+            record_battery_snapshot(hardware, logger)
             metrics = OfficialHoverRunner(hardware, config, logger, settings).run()
             print(json.dumps(metrics, indent=2))
             print(f"Official hover artifact: {logger.directory}")
@@ -134,15 +186,26 @@ def main(argv: list[str] | None = None) -> int:
             raise
         finally:
             hardware.close()
-    if mode is Mode.CASCADED_5B:
+            print_run_summary(logger)
+    if mode in (Mode.CASCADED_5B, Mode.CASCADED_5C, Mode.CASCADED_XY,
+                Mode.PITCH_RESPONSE_ID, Mode.ROLL_RESPONSE_ID):
         controller_config = load_cascaded_config(args.controller_config)
-        logger = CascadedFlightLogger(config.output_directory, config, controller_config)
+        _validate_cascaded_mode_config(mode,controller_config)
+        identification=(PitchIdentificationSettings(excitation_rad=args.pitch_excitation_rad)
+                        if mode is Mode.PITCH_RESPONSE_ID else None)
+        roll_identification=(RollIdentificationSettings(excitation_rad=args.roll_excitation_rad)
+                             if mode is Mode.ROLL_RESPONSE_ID else None)
+        logger = CascadedFlightLogger(config.output_directory, config, controller_config,
+                                      experiment_mode=mode.value)
         hardware = CrazyflieHardware(config.uri, external_altitude_port=None)
         runner_started = False
         try:
             hardware.connect()
+            record_battery_snapshot(hardware, logger)
             runner_started = True
-            CascadedStage5BRunner(hardware, config, controller_config, logger).run()
+            CascadedStage5BRunner(hardware, config, controller_config, logger,
+                                  pitch_identification=identification,
+                                  roll_identification=roll_identification).run()
             metrics = analyze_cascaded_flight(logger.directory)
             print(json.dumps(metrics, indent=2)); print(f"Cascaded flight artifact: {logger.directory}")
             return 0 if metrics["software_execution_status"] == "complete" else 1
@@ -160,6 +223,7 @@ def main(argv: list[str] | None = None) -> int:
             raise
         finally:
             hardware.close()
+            print_run_summary(logger)
     if mode.is_flight and not config.custom_attitude_hardware_validated:
         raise SystemExit(
             "Custom flight refused: custom_attitude_hardware_validated is false. "
@@ -169,6 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     hardware = CrazyflieHardware(config.uri, config.external_altitude_udp_port)
     try:
         hardware.connect()
+        record_battery_snapshot(hardware, logger)
         CalibrationRunner(hardware, config, mode, logger).run()
         print(f"Experiment artifact: {logger.directory}")
         return 0
@@ -177,3 +242,4 @@ def main(argv: list[str] | None = None) -> int:
         raise
     finally:
         hardware.close()
+        print_run_summary(logger)

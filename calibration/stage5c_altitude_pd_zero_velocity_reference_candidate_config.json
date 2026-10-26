@@ -1,0 +1,41 @@
+{
+  "altitude": {
+    "correction_max": 0.025,
+    "correction_min": -0.045,
+    "integral_enabled": false,
+    "integral_ki": 0.0,
+    "position_kp": 0.1,
+    "velocity_feedback_enabled": true,
+    "velocity_kp": 0.04,
+    "velocity_reference_tracking_enabled": false
+  },
+  "attitude": {
+    "max_pitch_rate_rad_s": 0.35,
+    "max_roll_rate_rad_s": 0.35,
+    "max_yaw_rate_rad_s": 0.35,
+    "pitch_command_sign": -1,
+    "pitch_kp": 4.0,
+    "roll_command_sign": 1,
+    "roll_kp": 4.0,
+    "yaw_command_sign": 1,
+    "yaw_kp": 2.0
+  },
+  "equilibrium_thrust": 0.425,
+  "hardware_flight_authorized": false,
+  "horizontal": {
+    "body_x_acceleration_to_pitch_sign": 1,
+    "body_y_acceleration_to_roll_sign": -1,
+    "enabled": false,
+    "gravity_m_s2": 9.80665,
+    "max_acceleration_m_s2": 0.0,
+    "max_tilt_reference_rad": 0.0,
+    "position_kp": 0.0,
+    "velocity_kp": 0.0
+  },
+  "horizontal_mapping_hardware_validated": false,
+  "max_thrust": 0.45,
+  "min_thrust": 0.38,
+  "powered_attitude_validated": false,
+  "schema_version": 1,
+  "stage": "5C"
+}

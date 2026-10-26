@@ -27,6 +27,7 @@ class AltitudeLoopConfig:
     correction_min: float = -0.045
     correction_max: float = 0.025
     velocity_feedback_enabled: bool = False
+    velocity_reference_tracking_enabled: bool = True
     integral_enabled: bool = False
 
 
@@ -52,6 +53,8 @@ class HorizontalLoopConfig:
     max_acceleration_m_s2: float = 0.0
     max_tilt_reference_rad: float = 0.0
     gravity_m_s2: float = 9.80665
+    body_x_acceleration_to_pitch_sign: int = 1
+    body_y_acceleration_to_roll_sign: int = -1
 
 
 @dataclass(slots=True)
@@ -66,6 +69,7 @@ class CascadedPIDConfig:
     horizontal: HorizontalLoopConfig = field(default_factory=HorizontalLoopConfig)
     hardware_flight_authorized: bool = False
     powered_attitude_validated: bool = False
+    horizontal_mapping_hardware_validated: bool = False
 
     def validate(self) -> None:
         if self.schema_version != 1:
@@ -81,6 +85,8 @@ class CascadedPIDConfig:
             raise ValueError("altitude correction_min must not exceed correction_max")
         if min(self.altitude.position_kp, self.altitude.velocity_kp, self.altitude.integral_ki) < 0:
             raise ValueError("altitude gains must be nonnegative")
+        if not isinstance(self.altitude.velocity_reference_tracking_enabled, bool):
+            raise ValueError("velocity_reference_tracking_enabled must be boolean")
         effective_min = max(self.altitude.correction_min, self.min_thrust-self.equilibrium_thrust)
         effective_max = min(self.altitude.correction_max, self.max_thrust-self.equilibrium_thrust)
         if effective_min > effective_max:
@@ -103,7 +109,12 @@ class CascadedPIDConfig:
                 raise ValueError("horizontal tilt reference limit must be below pi/2")
             if self.horizontal.gravity_m_s2 <= 0:
                 raise ValueError("gravity must be positive")
-        if not isinstance(self.hardware_flight_authorized, bool) or not isinstance(self.powered_attitude_validated, bool):
+            if (self.horizontal.body_x_acceleration_to_pitch_sign not in (-1, 1) or
+                    self.horizontal.body_y_acceleration_to_roll_sign not in (-1, 1)):
+                raise ValueError("horizontal acceleration-to-attitude signs must be -1 or 1")
+        if (not isinstance(self.hardware_flight_authorized, bool) or
+                not isinstance(self.powered_attitude_validated, bool) or
+                not isinstance(self.horizontal_mapping_hardware_validated, bool)):
             raise ValueError("hardware interlocks must be booleans")
         if self.stage == "5B" and (self.altitude.velocity_feedback_enabled or
                                    self.altitude.integral_enabled or self.horizontal.enabled):
@@ -168,7 +179,9 @@ class CascadedPIDController:
 
         cfg = self.config
         altitude_error = reference.altitude_m - state.altitude_m
-        vertical_velocity_error = reference.vertical_velocity_m_s - state.vertical_velocity_m_s
+        velocity_reference = (reference.vertical_velocity_m_s
+                              if cfg.altitude.velocity_reference_tracking_enabled else 0.0)
+        vertical_velocity_error = velocity_reference - state.vertical_velocity_m_s
         altitude_p = cfg.altitude.position_kp * altitude_error
         altitude_v = (cfg.altitude.velocity_kp * vertical_velocity_error
                       if cfg.altitude.velocity_feedback_enabled else 0.0)
@@ -187,7 +200,7 @@ class CascadedPIDController:
             self.altitude_integral_state = candidate_integral
         thrust = cfg.equilibrium_thrust + correction
 
-        desired_roll, desired_pitch, ax_world, ay_world, ax_body, ay_body = (
+        desired_roll, desired_pitch, horizontal_terms = (
             self._attitude_references(state, reference))
         roll_error = desired_roll - state.roll_rad
         pitch_error = desired_pitch - state.pitch_rad
@@ -202,6 +215,7 @@ class CascadedPIDController:
         command = BodyRateThrustCommand(roll_rate, pitch_rate, yaw_rate, thrust)
         return CascadedPIDResult(command, {
             "altitude_error_m": altitude_error,
+            "altitude_velocity_reference_m_s": velocity_reference,
             "vertical_velocity_error_m_s": vertical_velocity_error,
             "altitude_p": altitude_p, "altitude_velocity": altitude_v,
             "altitude_integral": altitude_i, "altitude_correction_raw": correction_raw,
@@ -210,10 +224,7 @@ class CascadedPIDController:
             "integral_update_accepted": int(accept_integral),
             "desired_roll_rad": desired_roll, "desired_pitch_rad": desired_pitch,
             "desired_yaw_rad": reference.yaw_rad,
-            "horizontal_acceleration_x_world_m_s2": ax_world,
-            "horizontal_acceleration_y_world_m_s2": ay_world,
-            "horizontal_acceleration_x_body_m_s2": ax_body,
-            "horizontal_acceleration_y_body_m_s2": ay_body,
+            **horizontal_terms,
             "roll_error_rad": roll_error, "pitch_error_rad": pitch_error,
             "yaw_error_rad": yaw_error,
             "roll_rate_raw_rad_s": roll_raw, "pitch_rate_raw_rad_s": pitch_raw,
@@ -224,28 +235,58 @@ class CascadedPIDController:
         })
 
     def _attitude_references(self, state: AltitudeState, reference: CascadedReference
-                             ) -> tuple[float, float, float, float, float, float]:
+                             ) -> tuple[float, float, dict[str, float | int]]:
         horizontal = self.config.horizontal
         if not horizontal.enabled:
-            return reference.roll_rad, reference.pitch_rad, 0.0, 0.0, 0.0, 0.0
-        ax_world = horizontal.position_kp * (reference.position_x_m-state.position_x_m) + \
-            horizontal.velocity_kp * (reference.velocity_x_m_s-state.velocity_x_m_s)
-        ay_world = horizontal.position_kp * (reference.position_y_m-state.position_y_m) + \
-            horizontal.velocity_kp * (reference.velocity_y_m_s-state.velocity_y_m_s)
-        magnitude = math.hypot(ax_world, ay_world)
+            return reference.roll_rad, reference.pitch_rad, {
+                name: 0.0 for name in (
+                    "horizontal_position_error_x_m", "horizontal_position_error_y_m",
+                    "horizontal_velocity_error_x_m_s", "horizontal_velocity_error_y_m_s",
+                    "horizontal_position_x_contribution_m_s2", "horizontal_position_y_contribution_m_s2",
+                    "horizontal_velocity_x_contribution_m_s2", "horizontal_velocity_y_contribution_m_s2",
+                    "horizontal_acceleration_x_world_raw_m_s2", "horizontal_acceleration_y_world_raw_m_s2",
+                    "horizontal_acceleration_x_world_m_s2", "horizontal_acceleration_y_world_m_s2",
+                    "horizontal_acceleration_x_body_m_s2", "horizontal_acceleration_y_body_m_s2")
+            } | {"horizontal_acceleration_saturated": 0, "tilt_reference_saturated": 0}
+        ex = reference.position_x_m-state.position_x_m
+        ey = reference.position_y_m-state.position_y_m
+        evx = reference.velocity_x_m_s-state.velocity_x_m_s
+        evy = reference.velocity_y_m_s-state.velocity_y_m_s
+        position_x = horizontal.position_kp*ex; position_y = horizontal.position_kp*ey
+        velocity_x = horizontal.velocity_kp*evx; velocity_y = horizontal.velocity_kp*evy
+        ax_raw, ay_raw = position_x+velocity_x, position_y+velocity_y
+        ax_world, ay_world = ax_raw, ay_raw
+        magnitude = math.hypot(ax_raw, ay_raw)
+        acceleration_saturated = magnitude > horizontal.max_acceleration_m_s2
         if magnitude > horizontal.max_acceleration_m_s2:
             scale = horizontal.max_acceleration_m_s2 / magnitude
             ax_world *= scale; ay_world *= scale
         cosine, sine = math.cos(state.yaw_rad), math.sin(state.yaw_rad)
         ax_body = cosine*ax_world + sine*ay_world
         ay_body = -sine*ax_world + cosine*ay_world
-        desired_pitch = math.atan2(ax_body, horizontal.gravity_m_s2)
-        desired_roll = -math.atan2(ay_body, horizontal.gravity_m_s2)
+        desired_pitch = horizontal.body_x_acceleration_to_pitch_sign * math.atan2(ax_body, horizontal.gravity_m_s2)
+        desired_roll = horizontal.body_y_acceleration_to_roll_sign * math.atan2(ay_body, horizontal.gravity_m_s2)
         tilt = math.hypot(desired_roll, desired_pitch)
+        tilt_saturated = tilt > horizontal.max_tilt_reference_rad
         if tilt > horizontal.max_tilt_reference_rad:
             scale = horizontal.max_tilt_reference_rad / tilt
             desired_roll *= scale; desired_pitch *= scale
-        return desired_roll, desired_pitch, ax_world, ay_world, ax_body, ay_body
+        return desired_roll, desired_pitch, {
+            "horizontal_position_error_x_m": ex, "horizontal_position_error_y_m": ey,
+            "horizontal_velocity_error_x_m_s": evx, "horizontal_velocity_error_y_m_s": evy,
+            "horizontal_position_x_contribution_m_s2": position_x,
+            "horizontal_position_y_contribution_m_s2": position_y,
+            "horizontal_velocity_x_contribution_m_s2": velocity_x,
+            "horizontal_velocity_y_contribution_m_s2": velocity_y,
+            "horizontal_acceleration_x_world_raw_m_s2": ax_raw,
+            "horizontal_acceleration_y_world_raw_m_s2": ay_raw,
+            "horizontal_acceleration_x_world_m_s2": ax_world,
+            "horizontal_acceleration_y_world_m_s2": ay_world,
+            "horizontal_acceleration_x_body_m_s2": ax_body,
+            "horizontal_acceleration_y_body_m_s2": ay_body,
+            "horizontal_acceleration_saturated": int(acceleration_saturated),
+            "tilt_reference_saturated": int(tilt_saturated),
+        }
 
 
 def load_cascaded_config(path: str | Path) -> CascadedPIDConfig:

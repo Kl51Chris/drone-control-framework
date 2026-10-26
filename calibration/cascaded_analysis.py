@@ -12,6 +12,14 @@ SATURATION_FIELDS = ("altitude_saturated", "roll_rate_saturated",
 CONTRIBUTIONS = ("altitude_p", "altitude_velocity", "altitude_integral",
                  "altitude_correction", "roll_error_rad", "pitch_error_rad",
                  "yaw_error_rad", "desired_roll_rad", "desired_pitch_rad",
+                 "horizontal_position_x_contribution_m_s2",
+                 "horizontal_position_y_contribution_m_s2",
+                 "horizontal_velocity_x_contribution_m_s2",
+                 "horizontal_velocity_y_contribution_m_s2",
+                 "horizontal_acceleration_x_world_m_s2",
+                 "horizontal_acceleration_y_world_m_s2",
+                 "horizontal_acceleration_x_body_m_s2",
+                 "horizontal_acceleration_y_body_m_s2",
                  "command_roll_rate_rad_s", "command_pitch_rate_rad_s",
                  "command_yaw_rate_rad_s", "command_thrust_normalized")
 
@@ -28,7 +36,7 @@ def analyze_cascaded_flight(run_directory: str | Path) -> dict[str, Any]:
         rows = list(csv.DictReader(stream))
     safety = metadata.get("safety_event")
     report: dict[str, Any] = {
-        "schema_version": 1, "analysis": "stage5b-custom-cascaded-flight",
+        "schema_version": 1, "analysis": "custom-cascaded-flight",
         "software_execution_status": metadata.get("status"),
         "termination_reason": metadata.get("termination_reason"),
         "sample_count": len(rows), "safety_event": safety,
@@ -49,7 +57,7 @@ def analyze_cascaded_flight(run_directory: str | Path) -> dict[str, Any]:
                          "fields":[field for field in SATURATION_FIELDS if int(row[field])]}
                         for row in rows if any(int(row[field]) for field in SATURATION_FIELDS)),None)
         preceding=[{"elapsed_s":float(row["elapsed_s"]),"phase":row["phase"],
-                    **{field:float(row[field]) for field in CONTRIBUTIONS}} for row in rows[-5:]]
+                    **{field:float(row.get(field, 0.0) or 0.0) for field in CONTRIBUTIONS}} for row in rows[-5:]]
         report.update({
             "metrics_available":True,"flight_duration_s":float(rows[-1]["elapsed_s"]),
             "altitude_tracking":{"rmse_m":math.sqrt(sum(v*v for v in error)/len(error)),

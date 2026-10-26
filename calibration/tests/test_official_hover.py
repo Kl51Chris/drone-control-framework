@@ -61,6 +61,13 @@ def test_custom_flight_requires_powered_attitude_validation_interlock():
         main(["run", "p-only", "--confirm-flight", "I_UNDERSTAND_PROPELLERS_MAY_SPIN"])
 
 
+def test_xy_flight_refuses_unvalidated_horizontal_mapping_before_connection():
+    with pytest.raises(SystemExit, match="horizontal_mapping_hardware_validated is false"):
+        main(["run", "cascaded-xy", "--config", "calibration/stage5b_first_flight_config.json",
+              "--controller-config", "calibration/stage5d_xy_first_flight_config.json",
+              "--confirm-flight", "I_UNDERSTAND_PROPELLERS_MAY_SPIN"])
+
+
 def test_normal_official_hover_calls_and_state_machine(tmp_path):
     clock=Clock();config=CalibrationConfig(output_directory=str(tmp_path));hardware=HoverHardware(clock)
     logger=OfficialHoverLogger(tmp_path,config,settings())

@@ -30,3 +30,8 @@ ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
 calibration/runs/
+# Generated calibration replay/plot data; source scripts and Markdown reports remain tracked.
+calibration/stage5_analysis/**/*.csv
+calibration/stage5_analysis/**/*.svg
+calibration/stage5_analysis/**/*.json
+calibration/stage5_analysis/__pycache__/
