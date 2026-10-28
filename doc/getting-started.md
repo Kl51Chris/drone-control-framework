@@ -60,6 +60,26 @@ python -m experiments.run_flight \
     --uri radio://0/80/2M
 ```
 
+### LQR Circular Flight Demo
+
+To select the D-FaLL-inspired outer-loop LQR and the existing circular
+reference for a supervised hardware run:
+
+```bash
+python -m experiments.run_flight \
+    --controller outer-loop-lqr \
+    --configuration lqr-dfall-initial \
+    --reference circular \
+    --execute
+```
+
+`outer-loop-lqr` selects the controller implementation and
+`lqr-dfall-initial` selects its independent parameter set. Powered production
+runs automatically use the unified flight logger; no logging flag is required.
+Output is written under the project-level `log/` directory with controller,
+configuration, and circular-reference metadata. The `lqr-dfall-initial`
+parameter set has not yet been flight-validated.
+
 This is an experimental supervised demonstration, not a validated autonomous
 flight procedure. The current fixed-hover reference is 0.30 m above the
 initialized ground estimate and uses:
@@ -92,8 +112,8 @@ safety configuration, including its maximum flight duration.
 
 `experiments/run_flight.py` accepts:
 
-- `--controller`: currently `outer-loop-pid`;
-- `--configuration`: currently `stage5-hardware-candidate`;
+- `--controller`: `outer-loop-pid` or `outer-loop-lqr`;
+- `--configuration`: `stage5-hardware-candidate` or `lqr-dfall-initial`;
 - `--reference`: `fixed-hover` (default) or `circular`;
 - `--execute`: explicit switch from inspection to hardware execution;
 - `--uri`: Crazyflie radio URI, default `radio://0/80/2M`.

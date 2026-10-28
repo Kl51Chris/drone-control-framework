@@ -6,9 +6,9 @@ The Drone Control Framework separates reference generation, reusable control
 algorithms, state acquisition and estimation, hardware-specific command
 conversion, timing and execution, and experiment-specific validation logic.
 
-The current implementation is centered on `OuterLoopPIDController`. Other
-controller families can implement the common interface in the future, but LQR,
-MPC, and DeePC are not active controller implementations. Historical code under
+The current implementations include `OuterLoopPIDController` and
+`OuterLoopLQRController`, selected through the same production assembly point.
+MPC and DeePC are not active controller implementations. Historical code under
 `legacy/` is not part of the active dependency graph.
 
 ## 2. Control Architecture
@@ -30,7 +30,7 @@ flowchart TD
         SE["StateEstimator<br/>(Current: Passthrough)"]
 
         RG["Reference Generator"]
-        CTRL["Controller<br/>(Current: OuterLoopPID)"]
+        CTRL["Controller<br/>(OuterLoopPID or OuterLoopLQR)"]
         CA["CrazyflieCommandAdapter"]
     end
 

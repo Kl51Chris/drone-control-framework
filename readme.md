@@ -43,6 +43,10 @@ python -m experiments.run_flight \
   --controller outer-loop-pid \
   --configuration stage5-hardware-candidate \
   --reference fixed-hover
+python -m experiments.run_flight \
+  --controller outer-loop-lqr \
+  --configuration lqr-dfall-initial \
+  --reference fixed-hover
 python -m pytest velocity_control_framework/tests calibration/tests
 ```
 
@@ -68,6 +72,8 @@ the selected software configuration. Hardware execution requires the explicit
 
 - The configurable cascaded PID is implemented in calibration and migrated to
   the production `OuterLoopPIDController`.
+- The D-FaLL-inspired `OuterLoopLQRController` is selectable through the same
+  production runner. Its initial parameter set is not flight-validated.
 - A production fixed-hover experiment has connected, armed, run the control
   loop at approximately 50 Hz, and executed takeoff/hover/descent references.
   The October 26, 2026 result ended as `LANDING_FAILED`; estimator-based

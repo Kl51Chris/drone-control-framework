@@ -9,6 +9,12 @@ from .outer_loop_pid import (
     OuterLoopPIDController,
     PIDConfig,
 )
+from .outer_loop_lqr import (
+    HorizontalLQRAxisConfig,
+    LQRPIDConfig,
+    OuterLoopLQRConfig,
+    OuterLoopLQRController,
+)
 
 __all__ = [
     "AttitudeControlConfig",
@@ -18,4 +24,8 @@ __all__ = [
     "OuterLoopPIDConfig",
     "OuterLoopPIDController",
     "PIDConfig",
+    "HorizontalLQRAxisConfig",
+    "LQRPIDConfig",
+    "OuterLoopLQRConfig",
+    "OuterLoopLQRController",
 ]

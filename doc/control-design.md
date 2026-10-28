@@ -11,8 +11,8 @@ body angular rates and normalized collective thrust. Crazyflie firmware closes
 the onboard body-rate loops and performs motor mixing; the offboard command is
 not a direct motor command.
 
-`OuterLoopPIDController` is the currently implemented reusable controller. LQR,
-MPC, and DeePC are planned future controllers and are not implemented. See
+`OuterLoopPIDController` and `OuterLoopLQRController` are implemented reusable
+controllers. MPC and DeePC are planned future controllers. See
 [`architecture.md`](architecture.md) for software architecture, component
 boundaries, state acquisition, hardware adaptation, and execution flow.
 
@@ -380,15 +380,64 @@ implement the existing `Reference`-producing provider without changing the
 controller or `UniversalRunner`; `references/circular_flight_reference.py` is
 the current example.
 
-## 3. LQR Controller [Planned]
+## 3. Outer-Loop LQR Controller [Implemented, Not Flight-Validated]
 
-Linear-quadratic regulation is intended to use a linearized model and quadratic
-state/input objectives while preserving the common controller input/output
-boundary. The operating point, internal
-state selection, model derivation, cost design, constraint handling, and
-reference-tracking formulation remain unresolved. The internal mathematical
-state need not equal the complete `DroneState` representation. **Status: Not
-implemented.**
+`OuterLoopLQRController` uses independent three-state continuous-time LQR
+channels for horizontal motion and private PID implementations for altitude and
+yaw. It implements the same `Controller` protocol and returns the same
+`BodyRateThrustCommand` as the PID controller. The initial configuration is
+`lqr-dfall-initial`; it is a modularity demonstration and has not been validated
+in flight.
+
+Horizontal position and velocity tracking errors use measured-minus-reference
+sign and are rotated from world to body coordinates with the same planar
+`R(-yaw)` transform used elsewhere. The axis states are
+
+```math
+e_X=[e_{x,B},e_{v_x,B},\theta]^T,\qquad
+e_Y=[e_{y,B},e_{v_y,B},\phi]^T.
+```
+
+Repository hardware identification measured both horizontal acceleration to
+attitude slopes as negative. The pitch command packet also has the opposite
+sign from measured pitch evolution, while roll command and measured roll share
+a sign. The configured models are therefore
+
+```math
+A_X=A_Y=\begin{bmatrix}0&1&0\\0&0&-g\\0&0&0\end{bmatrix},\quad
+B_X=\begin{bmatrix}0\\0\\-1\end{bmatrix},\quad
+B_Y=\begin{bmatrix}0\\0\\1\end{bmatrix}.
+```
+
+The command is `u=-Ke`. This differs deliberately from the D-FaLL example's
+`xddot=+g*pitch`, `yddot=-g*roll`, and positive angular-rate input signs because
+the framework must honor its measured state and packet conventions.
+
+The official [ETH D-FaLL LQR synthesis example](https://www.dfall.ethz.ch/pandsfiles/exercise04/exercise04_athome_lqr_synthesis_example.m)
+specifies the state order `[x,y,z,xdot,ydot,zdot,roll,pitch,yaw]`, input order
+`[total thrust,omega_x,omega_y,omega_z]`, a 1/50 s sample time, and identity
+full-state `Q` and input `R`. It solves both continuous and discrete designs.
+This implementation explicitly selects its continuous CARE design and uses the
+corresponding axis sub-costs `Q_X=Q_Y=diag(1,1,1)`, `R_X=R_Y=1`. At `g=9.81`,
+the sign-adapted gains are
+
+```text
+K_X = [ 1.000000,  1.451524, -5.429447]
+K_Y = [-1.000000, -1.451524,  5.429447]
+```
+
+Both closed-loop models have eigenvalues approximately `-1.0000` and
+`-2.2147 +/- 2.2147j`. Configuration construction validates finite values,
+positive Q/R diagonals, controllability, and stable closed-loop eigenvalues.
+SciPy is already a locked project dependency; gains are synthesized once when
+the immutable configuration is constructed, not on each controller update.
+
+Altitude and yaw gains, thrust limits, and rate limits initially match the
+Stage 5 hardware candidate but are copied into LQR-specific configuration
+objects. Altitude retains equilibrium-thrust compensation, measured vertical
+velocity feedback, thrust-authority-aware anti-windup, and clamping. Yaw retains
+wrapped angle error, conditional integral behavior, and rate clamping. No PID
+controller object or mutable PID parameter object is shared.
 
 ## 4. MPC Controller [Planned]
 

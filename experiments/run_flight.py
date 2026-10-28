@@ -1,4 +1,4 @@
-"""Minimal supervised production flight for the cascaded outer-loop PID."""
+"""Minimal supervised production flight with selectable outer-loop control."""
 
 from __future__ import annotations
 
@@ -17,11 +17,14 @@ from velocity_control_framework.backends import (
 )
 from velocity_control_framework.controllers import (
     HorizontalAccelerationMapping,
+    OuterLoopLQRConfig,
+    OuterLoopLQRController,
     OuterLoopPIDConfig,
     OuterLoopPIDController,
 )
 from velocity_control_framework.interfaces import (
     BodyRateThrustCommand,
+    Controller,
     DroneState,
     Reference,
 )
@@ -38,6 +41,8 @@ from velocity_control_framework.logger import FlightLogger, RunConfiguration
 
 CONTROLLER_NAME = "outer-loop-pid"
 CONFIGURATION_NAME = "stage5-hardware-candidate"
+LQR_CONTROLLER_NAME = "outer-loop-lqr"
+LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
 DEFAULT_URI = "radio://0/80/2M"
@@ -95,7 +100,7 @@ class ProductionFlightProgram:
 
     def __init__(
         self,
-        controller: OuterLoopPIDController,
+        controller: Controller,
         reference_name: str,
         *,
         safety: ProductionSafetyConfig | None = None,
@@ -104,6 +109,8 @@ class ProductionFlightProgram:
         if reference_name not in (FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE):
             raise ValueError(f"unsupported reference provider: {reference_name}")
         self.controller = controller
+        self.controller_name = type(controller).__name__
+        self.configuration_name = "unspecified"
         self.reference_name = reference_name
         self.safety = safety or ProductionSafetyConfig(
             maximum_flight_duration_s=(
@@ -321,13 +328,15 @@ class ProductionFlightProgram:
         return self.reference_provider
 
 
-def select_configuration(name: str) -> OuterLoopPIDConfig:
-    if name != CONFIGURATION_NAME:
-        raise ValueError(f"unsupported controller configuration: {name}")
-    config = OuterLoopPIDConfig.stage5_hardware_candidate()
-    if not isinstance(config.horizontal_mapping, HorizontalAccelerationMapping):
-        raise RuntimeError("selected configuration activated legacy mapping mode")
-    return config
+def select_configuration(name: str) -> OuterLoopPIDConfig | OuterLoopLQRConfig:
+    if name == CONFIGURATION_NAME:
+        config = OuterLoopPIDConfig.stage5_hardware_candidate()
+        if not isinstance(config.horizontal_mapping, HorizontalAccelerationMapping):
+            raise RuntimeError("selected configuration activated legacy mapping mode")
+        return config
+    if name == LQR_CONFIGURATION_NAME:
+        return OuterLoopLQRConfig.dfall_initial()
+    raise ValueError(f"unsupported controller configuration: {name}")
 
 
 def assemble_program(
@@ -335,12 +344,25 @@ def assemble_program(
     configuration_name: str,
     reference_name: str,
     **program_options,
-) -> tuple[OuterLoopPIDConfig, OuterLoopPIDController, ProductionFlightProgram]:
-    if controller_name != CONTROLLER_NAME:
-        raise ValueError(f"unsupported controller: {controller_name}")
+) -> tuple[
+    OuterLoopPIDConfig | OuterLoopLQRConfig,
+    OuterLoopPIDController | OuterLoopLQRController,
+    ProductionFlightProgram,
+]:
     config = select_configuration(configuration_name)
-    controller = OuterLoopPIDController(config)
+    if controller_name == CONTROLLER_NAME and isinstance(config, OuterLoopPIDConfig):
+        controller = OuterLoopPIDController(config)
+    elif controller_name == LQR_CONTROLLER_NAME and isinstance(config, OuterLoopLQRConfig):
+        controller = OuterLoopLQRController(config)
+    elif controller_name not in (CONTROLLER_NAME, LQR_CONTROLLER_NAME):
+        raise ValueError(f"unsupported controller: {controller_name}")
+    else:
+        raise ValueError(
+            f"configuration {configuration_name} is incompatible with {controller_name}"
+        )
     program = ProductionFlightProgram(controller, reference_name, **program_options)
+    program.controller_name = controller_name
+    program.configuration_name = configuration_name
     return config, controller, program
 
 
@@ -470,12 +492,14 @@ def _log_step(
 
 
 def _print_selection(
-    config: OuterLoopPIDConfig,
+    config: OuterLoopPIDConfig | OuterLoopLQRConfig,
+    controller_name: str,
+    configuration_name: str,
     reference_name: str,
     safety: ProductionSafetyConfig,
 ) -> None:
-    print(f"[CONTROLLER] {CONTROLLER_NAME}")
-    print(f"[CONFIGURATION] {CONFIGURATION_NAME}")
+    print(f"[CONTROLLER] {controller_name}")
+    print(f"[CONFIGURATION] {configuration_name}")
     print(f"[REFERENCE] {reference_name}")
     print("[PARAMETERS] " + json.dumps(asdict(config), sort_keys=True))
     print("[SAFETY] " + json.dumps(asdict(safety), sort_keys=True))
@@ -505,8 +529,8 @@ def build_run_configuration(
         reference_configuration={
             "safety": asdict(program.safety),
         },
-        controller_type=CONTROLLER_NAME,
-        parameter_set=CONFIGURATION_NAME,
+        controller_type=program.controller_name,
+        parameter_set=program.configuration_name,
         controller_configuration=asdict(program.controller.config),
         target_control_frequency_hz=UniversalRunnerConfig().control_frequency_hz,
         hardware=f"Crazyflie ({uri})",
@@ -516,9 +540,15 @@ def build_run_configuration(
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--controller", choices=(CONTROLLER_NAME,), default=CONTROLLER_NAME)
     parser.add_argument(
-        "--configuration", choices=(CONFIGURATION_NAME,), default=CONFIGURATION_NAME
+        "--controller",
+        choices=(CONTROLLER_NAME, LQR_CONTROLLER_NAME),
+        default=CONTROLLER_NAME,
+    )
+    parser.add_argument(
+        "--configuration",
+        choices=(CONFIGURATION_NAME, LQR_CONFIGURATION_NAME),
+        default=None,
     )
     parser.add_argument(
         "--reference",
@@ -532,12 +562,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    configuration_name = args.configuration or (
+        LQR_CONFIGURATION_NAME
+        if args.controller == LQR_CONTROLLER_NAME
+        else CONFIGURATION_NAME
+    )
     config, _, program = assemble_program(
         args.controller,
-        args.configuration,
+        configuration_name,
         args.reference,
     )
-    _print_selection(config, args.reference, program.safety)
+    _print_selection(
+        config,
+        args.controller,
+        configuration_name,
+        args.reference,
+        program.safety,
+    )
     if not args.execute:
         print("[STATUS] inspection_only; no hardware connection attempted")
         return
