@@ -299,3 +299,28 @@ refuses an armed or flying SITL instance:
 .venv/bin/python -m tools.validate_crazysim_emergency_stop \
   --execute-emergency-stop-test --i-understand-sitl-may-lock
 ```
+
+## Minimal high-level flight demo
+
+`simulation/scripts/demo_crazysim_flight.py` uses the firmware high-level
+planner rather than the uncalibrated project PID. Installed CFLib commands 7
+(`TAKEOFF_2`), 8 (`LAND_2`), and 3 (`STOP`) match the bundled CRTP-v7 firmware
+layouts. The demo targets 0.35 m above the initial estimate over 3 seconds,
+hovers for 2 seconds, lands to 0.03 m above the initial estimate over 3
+seconds, and is bounded to 12 seconds total.
+
+It requires the verified safe auto-armed lifecycle, stationary and level state,
+fresh telemetry, zero startup motors/thrust/controller targets, and bounded
+position, speed, and tilt throughout. Normal and exceptional cleanup both send
+high-level STOP followed by generic STOP, then verify all logged outputs return
+to zero. The default invocation is inspection-only:
+
+```bash
+.venv/bin/python -m simulation.scripts.demo_crazysim_flight
+```
+
+The explicitly powered invocation is:
+
+```bash
+.venv/bin/python -m simulation.scripts.demo_crazysim_flight --execute
+```
