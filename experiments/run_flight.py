@@ -14,6 +14,7 @@ import numpy as np
 from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
     CrazyflieStateProvider,
+    CrazySimCommandAdapter,
 )
 from velocity_control_framework.controllers import (
     HorizontalAccelerationMapping,
@@ -41,11 +42,15 @@ from velocity_control_framework.logger import FlightLogger, RunConfiguration
 
 CONTROLLER_NAME = "outer-loop-pid"
 CONFIGURATION_NAME = "stage5-hardware-candidate"
+CRAZYSIM_CONFIGURATION_NAME = "crazysim-cf2x-t350-initial"
 LQR_CONTROLLER_NAME = "outer-loop-lqr"
 LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
 DEFAULT_URI = "radio://0/80/2M"
+DEFAULT_CRAZYSIM_URI = "udp://127.0.0.1:19850"
+HARDWARE_BACKEND = "hardware"
+CRAZYSIM_BACKEND = "crazysim"
 FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S = 15.0
 CIRCULAR_MAXIMUM_FLIGHT_DURATION_S = 30.0
 
@@ -334,6 +339,8 @@ def select_configuration(name: str) -> OuterLoopPIDConfig | OuterLoopLQRConfig:
         if not isinstance(config.horizontal_mapping, HorizontalAccelerationMapping):
             raise RuntimeError("selected configuration activated legacy mapping mode")
         return config
+    if name == CRAZYSIM_CONFIGURATION_NAME:
+        return OuterLoopPIDConfig.crazysim_cf2x_t350_initial()
     if name == LQR_CONFIGURATION_NAME:
         return OuterLoopLQRConfig.dfall_initial()
     raise ValueError(f"unsupported controller configuration: {name}")
@@ -390,6 +397,7 @@ def request_supervisor_arming(
     status_reader: Callable[[], dict[str, bool]] | None = None,
     clock: Callable[[], float] = time.monotonic,
     sleeper: Callable[[float], None] = time.sleep,
+    arming_request: Callable[[bool], None] | None = None,
 ) -> None:
     """Validate pre-arm state, request arming, and confirm firmware state."""
 
@@ -407,7 +415,8 @@ def request_supervisor_arming(
             f"supervisor was already armed before request: {before}"
         )
 
-    cf.supervisor.send_arming_request(True)
+    request_arming = arming_request or cf.supervisor.send_arming_request
+    request_arming(True)
     deadline = clock() + timeout_s
     last_status = before
     try:
@@ -435,35 +444,49 @@ def request_supervisor_arming(
         # The request may have reached the firmware even if confirmation did not.
         # Explicitly request disarming before propagating the original failure.
         try:
-            cf.supervisor.send_arming_request(False)
+            request_arming(False)
         except BaseException as cleanup_error:
             print(f"[WARN] Disarm after arming failure failed: {cleanup_error}")
         raise
 
 
 def build_runner(
-    cf, program: ProductionFlightProgram, run_logger: FlightLogger | None = None
+    cf,
+    program: ProductionFlightProgram,
+    run_logger: FlightLogger | None = None,
+    *,
+    backend: str = HARDWARE_BACKEND,
 ) -> UniversalRunner:
     """Assemble existing production backends around UniversalRunner."""
 
     program.supervisor_status = lambda: _supervisor_status(cf)
-
-    def arm() -> None:
-        request_supervisor_arming(cf)
 
     state_provider = CrazyflieStateProvider(
         cf,
         onboard_state_callback=(
             run_logger.record_onboard_state if run_logger is not None else None
         ),
+        delete_log_blocks_on_stop=(backend == CRAZYSIM_BACKEND),
     )
+    if backend == HARDWARE_BACKEND:
+        command_adapter = CrazyflieCommandAdapter(cf)
+    elif backend == CRAZYSIM_BACKEND:
+        command_adapter = CrazySimCommandAdapter(cf)
+    else:
+        raise ValueError(f"unsupported backend: {backend}")
+
+    def arm() -> None:
+        request_supervisor_arming(cf)
+        if isinstance(command_adapter, CrazySimCommandAdapter):
+            command_adapter.unlock()
+
     return UniversalRunner[
         DroneState,
         Reference,
         BodyRateThrustCommand,
     ](
         state_provider=state_provider,
-        command_adapter=CrazyflieCommandAdapter(cf),
+        command_adapter=command_adapter,
         flight_program=program,
         arm=arm,
         disarm=lambda: cf.supervisor.send_arming_request(False),
@@ -506,7 +529,30 @@ def _print_selection(
     print("[LOG] Powered runs are stored under the project log/ directory")
 
 
-def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
+def validate_backend_uri(backend: str, uri: str) -> None:
+    """Reject transport/backend mismatches without discovery or fallback."""
+    if backend == HARDWARE_BACKEND:
+        if not uri.startswith("radio://"):
+            raise ValueError("hardware backend requires a radio:// URI")
+        return
+    if backend == CRAZYSIM_BACKEND:
+        if not uri.startswith("udp://"):
+            raise ValueError("crazysim backend requires an udp:// URI")
+        return
+    raise ValueError(f"unsupported backend: {backend}")
+
+
+def resolve_uri(backend: str, uri: str | None) -> str:
+    selected = uri or (
+        DEFAULT_CRAZYSIM_URI if backend == CRAZYSIM_BACKEND else DEFAULT_URI
+    )
+    validate_backend_uri(backend, selected)
+    return selected
+
+
+def _run_backend(
+    uri: str, program: ProductionFlightProgram, *, backend: str
+) -> None:
     import cflib.crtp
     from cflib.crazyflie import Crazyflie
     from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
@@ -514,13 +560,21 @@ def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
     cflib.crtp.init_drivers()
     crazyflie = Crazyflie(rw_cache="./cache")
     with SyncCrazyflie(uri, cf=crazyflie) as link:
-        run_logger = FlightLogger(build_run_configuration(uri, program))
+        run_logger = FlightLogger(build_run_configuration(uri, program, backend=backend))
         print(f"[LOG] {run_logger.directory.resolve()}")
-        build_runner(link.cf, program, run_logger).run()
+        build_runner(link.cf, program, run_logger, backend=backend).run()
+
+
+def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
+    """Preserve the existing physical-hardware execution entry point."""
+    _run_backend(uri, program, backend=HARDWARE_BACKEND)
 
 
 def build_run_configuration(
-    uri: str, program: ProductionFlightProgram
+    uri: str,
+    program: ProductionFlightProgram,
+    *,
+    backend: str = HARDWARE_BACKEND,
 ) -> RunConfiguration:
     """Build logger provenance from the fully selected production program."""
     return RunConfiguration(
@@ -533,8 +587,26 @@ def build_run_configuration(
         parameter_set=program.configuration_name,
         controller_configuration=asdict(program.controller.config),
         target_control_frequency_hz=UniversalRunnerConfig().control_frequency_hz,
-        hardware=f"Crazyflie ({uri})",
+        hardware=(
+            f"CrazySim SITL ({uri})"
+            if backend == CRAZYSIM_BACKEND
+            else f"Crazyflie ({uri})"
+        ),
         state_estimation_source="Crazyflie onboard stateEstimate via passthrough",
+        data_sources={
+            "backend": backend,
+            "transport_uri": uri,
+            "controller_state": {
+                "description": "DroneState consumed by controller"
+            },
+            "onboard": {
+                "description": "Crazyflie firmware stateEstimate telemetry"
+            },
+            "external": {
+                "available": False,
+                "description": "MuJoCo ground truth is not logged separately",
+            },
+        },
     )
 
 
@@ -547,7 +619,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--configuration",
-        choices=(CONFIGURATION_NAME, LQR_CONFIGURATION_NAME),
+        choices=(
+            CONFIGURATION_NAME,
+            CRAZYSIM_CONFIGURATION_NAME,
+            LQR_CONFIGURATION_NAME,
+        ),
         default=None,
     )
     parser.add_argument(
@@ -556,16 +632,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=FIXED_HOVER_REFERENCE,
     )
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--uri", default=DEFAULT_URI)
+    parser.add_argument(
+        "--backend",
+        choices=(HARDWARE_BACKEND, CRAZYSIM_BACKEND),
+        default=HARDWARE_BACKEND,
+    )
+    parser.add_argument("--uri", default=None)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    uri = resolve_uri(args.backend, args.uri)
     configuration_name = args.configuration or (
         LQR_CONFIGURATION_NAME
         if args.controller == LQR_CONTROLLER_NAME
-        else CONFIGURATION_NAME
+        else (
+            CRAZYSIM_CONFIGURATION_NAME
+            if args.backend == CRAZYSIM_BACKEND
+            else CONFIGURATION_NAME
+        )
     )
     config, _, program = assemble_program(
         args.controller,
@@ -579,11 +665,16 @@ def main(argv: list[str] | None = None) -> None:
         args.reference,
         program.safety,
     )
+    print(f"[BACKEND] {args.backend}")
+    print(f"[URI] {uri}")
     if not args.execute:
-        print("[STATUS] inspection_only; no hardware connection attempted")
+        print("[STATUS] inspection_only; no backend connection attempted")
         return
     print("[STATUS] connecting for one supervised flight")
-    _run_hardware(args.uri, program)
+    if args.backend == HARDWARE_BACKEND:
+        _run_hardware(uri, program)
+    else:
+        _run_backend(uri, program, backend=CRAZYSIM_BACKEND)
     if program.estimated_landing_confirmed:
         print(
             "[STATUS] SUCCESS; estimated landing criteria satisfied; "

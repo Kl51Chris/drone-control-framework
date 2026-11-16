@@ -202,6 +202,29 @@ class OuterLoopPIDConfig:
             max_thrust=0.45,
         )
 
+    @classmethod
+    def crazysim_cf2x_t350_initial(cls) -> OuterLoopPIDConfig:
+        """Return a deliberately non-flying, uncalibrated CrazySim preset.
+
+        No equilibrium thrust or control gain is inferred from the physical
+        vehicle. This configuration exists to make backend selection explicit
+        while command direction and thrust calibration remain unverified.
+        """
+
+        return cls(
+            horizontal_mapping=HorizontalAccelerationMapping(-1, -1),
+            horizontal_x=PIDConfig(),
+            horizontal_y=PIDConfig(),
+            altitude=PIDConfig(),
+            heading=PIDConfig(),
+            horizontal=HorizontalControlConfig(),
+            attitude=AttitudeControlConfig(roll_kp=0.0, pitch_kp=0.0),
+            altitude_velocity_reference_tracking=False,
+            equilibrium_thrust=0.0,
+            min_thrust=0.0,
+            max_thrust=0.0,
+        )
+
 
 class _PID:
     """PID channel with output-clamping conditional integration."""

@@ -9,6 +9,18 @@ class FakeCrazyflie:
     pass
 
 
+class FakeLogConfig:
+    def __init__(self) -> None:
+        self.stops = 0
+        self.deletes = 0
+
+    def stop(self) -> None:
+        self.stops += 1
+
+    def delete(self) -> None:
+        self.deletes += 1
+
+
 def test_provider_builds_unified_state_with_body_rates() -> None:
     provider = CrazyflieStateProvider(FakeCrazyflie())
 
@@ -52,3 +64,20 @@ def test_provider_builds_unified_state_with_body_rates() -> None:
         np.deg2rad([10.0, 20.0, 30.0]),
     )
     np.testing.assert_allclose([state.p, state.q, state.r], [0.1, -0.2, 0.3])
+
+
+def test_simulation_cleanup_deletes_firmware_log_blocks() -> None:
+    provider = CrazyflieStateProvider(
+        FakeCrazyflie(), delete_log_blocks_on_stop=True
+    )
+    configs = [FakeLogConfig(), FakeLogConfig(), FakeLogConfig()]
+    (
+        provider._translation_log_config,
+        provider._attitude_log_config,
+        provider._body_rate_log_config,
+    ) = configs
+
+    provider.stop()
+
+    assert [config.stops for config in configs] == [1, 1, 1]
+    assert [config.deletes for config in configs] == [1, 1, 1]

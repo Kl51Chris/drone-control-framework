@@ -64,12 +64,15 @@ class CrazyflieStateProvider:
         crazyflie: Any,
         state_estimator: StateEstimator | None = None,
         onboard_state_callback: Callable[..., int | None] | None = None,
+        *,
+        delete_log_blocks_on_stop: bool = False,
     ) -> None:
         self._cf = crazyflie
         self._state_estimator = (
             state_estimator or PassthroughStateEstimator()
         )
         self._onboard_state_callback = onboard_state_callback
+        self._delete_log_blocks_on_stop = bool(delete_log_blocks_on_stop)
 
         self._lock = threading.Lock()
         self._state_ready = threading.Event()
@@ -240,6 +243,12 @@ class CrazyflieStateProvider:
                 # Shutdown should continue even if one log block
                 # has already stopped or the link is unavailable.
                 pass
+            if self._delete_log_blocks_on_stop:
+                try:
+                    config.delete()
+                except Exception:
+                    # Continue cleanup if the link vanished between stop and delete.
+                    pass
 
         self._running = False
 

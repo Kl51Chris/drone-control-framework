@@ -10,6 +10,7 @@ import experiments.run_flight as run_flight
 from experiments.run_flight import (
     CIRCULAR_REFERENCE,
     CIRCULAR_MAXIMUM_FLIGHT_DURATION_S,
+    CRAZYSIM_CONFIGURATION_NAME,
     CONFIGURATION_NAME,
     CONTROLLER_NAME,
     FIXED_HOVER_REFERENCE,
@@ -24,10 +25,13 @@ from experiments.run_flight import (
     build_runner,
     main,
     request_supervisor_arming,
+    resolve_uri,
+    validate_backend_uri,
 )
 from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
     CrazyflieStateProvider,
+    CrazySimCommandAdapter,
 )
 from velocity_control_framework.controllers import (
     HorizontalAccelerationMapping,
@@ -67,6 +71,23 @@ def test_default_selection_builds_production_cascaded_controller() -> None:
     assert config == OuterLoopPIDConfig.stage5_hardware_candidate()
     assert isinstance(config.horizontal_mapping, HorizontalAccelerationMapping)
     assert program.controller is controller
+
+
+def test_crazysim_configuration_is_named_uncalibrated_and_non_flying() -> None:
+    config, controller, program = assemble_program(
+        CONTROLLER_NAME,
+        CRAZYSIM_CONFIGURATION_NAME,
+        FIXED_HOVER_REFERENCE,
+    )
+
+    assert isinstance(controller, OuterLoopPIDController)
+    assert program.configuration_name == "crazysim-cf2x-t350-initial"
+    assert config.equilibrium_thrust == 0.0
+    assert config.min_thrust == 0.0
+    assert config.max_thrust == 0.0
+    assert config.horizontal_x.kp == 0.0
+    assert config.horizontal_y.kp == 0.0
+    assert config.altitude.kp == 0.0
 
 
 def test_fixed_hover_uses_existing_vertical_reference_provider() -> None:
@@ -231,6 +252,50 @@ def test_runner_assembly_uses_production_interfaces_and_arm_callbacks() -> None:
     assert cf.supervisor.requests == [True, False]
 
 
+@pytest.mark.parametrize(
+    ("backend", "uri"),
+    [("hardware", "radio://0/80/2M"), ("crazysim", "udp://127.0.0.1:19850")],
+)
+def test_backend_accepts_only_its_transport(backend, uri) -> None:
+    validate_backend_uri(backend, uri)
+
+
+@pytest.mark.parametrize(
+    ("backend", "uri"),
+    [("hardware", "udp://127.0.0.1:19850"), ("crazysim", "radio://0/80/2M")],
+)
+def test_backend_rejects_transport_mismatch(backend, uri) -> None:
+    with pytest.raises(ValueError):
+        validate_backend_uri(backend, uri)
+
+
+def test_backend_defaults_are_explicit_and_do_not_fallback() -> None:
+    assert resolve_uri("hardware", None) == "radio://0/80/2M"
+    assert resolve_uri("crazysim", None) == "udp://127.0.0.1:19850"
+
+
+def test_crazysim_runner_uses_simulation_adapter() -> None:
+    _, _, program = assemble_program(
+        CONTROLLER_NAME, CONFIGURATION_NAME, FIXED_HOVER_REFERENCE
+    )
+    cf = FakeCrazyflie()
+    cf.param = type("Param", (), {
+        "set_value": lambda self, name, value: setattr(self, name.replace(".", "_"), value),
+        "get_value": lambda self, name: "0",
+    })()
+    commander_calls = []
+    cf.commander = type("Commander", (), {
+        "send_setpoint": lambda self, *args: commander_calls.append(args),
+        "send_stop_setpoint": lambda self: None,
+    })()
+
+    runner = build_runner(cf, program, backend="crazysim")
+
+    assert isinstance(runner._command_adapter, CrazySimCommandAdapter)
+    runner._arm()
+    assert commander_calls == [(0.0, 0.0, 0.0, 0)]
+
+
 @pytest.mark.parametrize("fault", ["is_locked", "is_crashed", "is_tumbled"])
 def test_runner_rejects_unsafe_supervisor_state_before_arming(fault) -> None:
     cf = FakeCrazyflie()
@@ -280,6 +345,27 @@ def test_firmware_prearm_refusal_is_not_bypassed() -> None:
     with pytest.raises(SupervisorArmingError, match="unsafe pre-arm"):
         request_supervisor_arming(cf, status_reader=lambda: status)
 
+    assert cf.supervisor.requests == []
+
+
+def test_arming_uses_explicit_compatibility_request_when_supplied() -> None:
+    cf = FakeCrazyflie()
+    requests = []
+    statuses = iter(
+        (
+            supervisor_status(),
+            supervisor_status(),
+            supervisor_status(can_fly=True, is_armed=True),
+        )
+    )
+    request_supervisor_arming(
+        cf,
+        status_reader=lambda: next(statuses),
+        arming_request=requests.append,
+        clock=IncrementingClock(),
+        sleeper=lambda _: None,
+    )
+    assert requests == [True]
     assert cf.supervisor.requests == []
 
 
