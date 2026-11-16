@@ -96,3 +96,18 @@ disk or network I/O.
 All CSV writes are queued to a background writer. Normal completion,
 interrupts, and exceptions drain the queue and finalize metadata after command
 and state-provider cleanup, preserving partial logs where possible.
+
+## Offline tracking analysis
+
+The project-owned analyzer calculates whole-run and per-phase tracking metrics
+from the reference and estimated-state columns already stored in `flight.csv`:
+
+```bash
+python -m tools.analyze_flight_log log/<run-directory>
+```
+
+It reports position, horizontal, and altitude RMSE; maximum position and
+horizontal errors; maximum horizontal displacement, tilt, and vertical speed;
+and normalized-thrust limit frequency. Thrust limits come from `metadata.json`.
+"Near limit" means within one percent of the configured thrust interval. The
+tool is read-only and does not connect to a flight backend.

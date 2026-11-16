@@ -60,6 +60,40 @@ python -m experiments.run_flight \
     --uri radio://0/80/2M
 ```
 
+## CrazySim SITL quick start
+
+Open two terminals. Keep the simulator running while executing the flight.
+
+### Terminal 1: Launch CrazySim/MuJoCo
+
+```bash
+cd ~/CrazySim
+source .venv/bin/activate
+cd crazyflie-firmware
+
+bash tools/crazyflie-simulation/simulator_files/mujoco/launch/sitl_singleagent.sh \
+  -m cf2x_T350 -x 0 -y 0
+```
+
+Wait for MuJoCo to initialize.
+
+### Terminal 2: Run the PID circular flight
+
+```bash
+cd ~/drone-project
+source .venv/bin/activate
+
+python -m experiments.run_flight \
+  --backend crazysim \
+  --configuration crazysim-cf2x-t350-calibrated \
+  --reference circular \
+  --execute
+```
+
+This uses the production runner, `OuterLoopPIDController`, circular reference,
+and logger through the CrazySim UDP backend. Omit `--execute` for an
+inspection-only run.
+
 ### LQR Circular Flight Demo
 
 To select the D-FaLL-inspired outer-loop LQR and the existing circular

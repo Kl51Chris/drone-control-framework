@@ -8,6 +8,7 @@ from tools.validate_crazysim_actuators import (
     MAX_RATE_RAD_S,
     build_command,
     safe_cleanup,
+    summarize_axis_response,
     validate_safe_startup,
     validate_duration,
     validate_authorized_command_phase,
@@ -163,6 +164,19 @@ def test_authorized_command_phase_retains_supervisor_fault_checks(changes) -> No
     status.update(changes)
     with pytest.raises(RuntimeError, match="authorized command"):
         validate_authorized_command_phase(status)
+
+
+def test_axis_response_summary_compares_command_state_and_motion_signs() -> None:
+    command = build_command("yaw", -0.1, 0.1)
+    records = [
+        {"state": {"yaw": 0.02, "r": -0.03}},
+        {"state": {"yaw": 0.01, "r": -0.08}},
+    ]
+    summary = summarize_axis_response(records, command)
+    assert summary["axis"] == "yaw"
+    assert summary["signed_peak_rate_rad_s"] == -0.08
+    assert summary["peak_rate_has_command_sign"] is True
+    assert summary["attitude_change_rad"] == pytest.approx(-0.01)
 
 
 class CleanupSupervisor:

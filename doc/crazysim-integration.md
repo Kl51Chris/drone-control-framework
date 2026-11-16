@@ -324,3 +324,62 @@ The explicitly powered invocation is:
 ```bash
 .venv/bin/python -m simulation.scripts.demo_crazysim_flight --execute
 ```
+
+## Outer-loop PID CrazySim checkpoint
+
+The opt-in configuration `crazysim-cf2x-t350-calibrated` retains the existing
+`OuterLoopPIDController`, `UniversalRunner`, production reference generator,
+safety program, and `FlightLogger`. The safe zero-thrust
+`crazysim-cf2x-t350-initial` remains the CrazySim default.
+
+### Weight-balance thrust estimate
+
+For the default model without `--mass` or `--ground-effect`, CrazySim loads:
+
+```text
+mass                         0.0379 kg
+gravity                      9.81 m/s^2
+maximum thrust per motor     0.18 N
+```
+
+The simulator maps PWM linearly to per-motor thrust before inverting its RPM
+polynomial. Thus:
+
+```text
+weight             = 0.0379 * 9.81             = 0.371799 N
+thrust per motor   = weight / 4                 = 0.09294975 N
+hover raw PWM      = 65535 * 0.09294975 / 0.18  = 33841.45
+normalized command = (33841.45 - 10001) / 49999 = 0.47681863
+```
+
+This is a static level-flight estimate, not an empirically tuned value. The
+opt-in thrust range is `[0.38, 0.56]`; altitude feedback is P=0.25, D=0.12,
+limited to +/-0.08. Horizontal acceleration feedback is P=0.60, D=0.35 with
+0.50 m/s² acceleration, 0.05 rad tilt-reference, and 0.20 rad/s body-rate
+limits. The trajectory is 0.20 m high with a 9.5 second hard duration and
+tighter simulation-specific position, velocity, and tilt envelopes.
+
+### Production lifecycle compatibility
+
+Before constructing the CrazySim command adapter, production execution starts
+fresh `supervisor.info` and motor/control-output monitoring and requires the
+safe auto-armed lifecycle with zero outputs. Immediately before the RPYT
+unlock, it repeats that complete validation. The adapter then configures and
+reads back all three rate modes and sends the explicit zero-thrust unlock.
+Hardware continues to use CFLib's native supervisor and explicit arming path.
+
+On cleanup the existing runner sends generic STOP. CrazySim does not receive a
+false disarm request for its compile-time auto-arm state; the backend verifies
+all logged outputs reach zero and closes its monitoring blocks. Safety failures
+retain the existing emergency-stop path, which locks this firmware and requires
+a simulator restart.
+
+### Dynamic sign gate
+
+Before the calibrated PID flight, run separate positive and negative roll,
+pitch, and yaw actuator diagnostics. Each JSON result now contains attitude,
+`p/q/r`, motor outputs, and `axis_response_summary`. Both
+`peak_rate_has_command_sign` and the attitude-change direction must reverse
+between the positive and negative runs. A motor-mixing observation alone is
+not sufficient. Do not change controller sign mappings silently; any mismatch
+must be reviewed against the CFLib packet and firmware/DroneState conventions.

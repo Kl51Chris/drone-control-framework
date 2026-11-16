@@ -11,6 +11,7 @@ from experiments.run_flight import (
     CIRCULAR_REFERENCE,
     CIRCULAR_MAXIMUM_FLIGHT_DURATION_S,
     CRAZYSIM_CONFIGURATION_NAME,
+    CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
     CONFIGURATION_NAME,
     CONTROLLER_NAME,
     FIXED_HOVER_REFERENCE,
@@ -27,6 +28,7 @@ from experiments.run_flight import (
     request_supervisor_arming,
     resolve_uri,
     validate_backend_uri,
+    validate_configuration_backend,
 )
 from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
@@ -121,6 +123,59 @@ def test_circular_selection_reuses_existing_circular_provider() -> None:
     program.initialize(initial_state(), start_time=10.0)
 
     assert isinstance(program.reference_provider, CircularFlightReference)
+
+
+def test_crazysim_calibrated_circle_uses_conservative_simulation_profile() -> None:
+    _, _, program = assemble_program(
+        CONTROLLER_NAME,
+        CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
+        CIRCULAR_REFERENCE,
+    )
+    program.initialize(initial_state(), start_time=10.0)
+
+    assert isinstance(program.reference_provider, CircularFlightReference)
+    profile = program.reference_provider.config
+    assert profile.takeoff_height == pytest.approx(0.20)
+    assert profile.circle_radius == pytest.approx(0.10)
+    assert profile.circle_revolutions == pytest.approx(1.0)
+    assert profile.circle_duration == pytest.approx(15.0)
+    assert program.reference_provider.total_duration == pytest.approx(21.5)
+    assert program.safety.maximum_flight_duration_s == pytest.approx(30.0)
+    assert program.safety.max_horizontal_displacement_m == pytest.approx(0.50)
+
+    circle_start = profile.armed_idle_duration + profile.takeoff_duration
+    samples = np.linspace(circle_start, circle_start + profile.circle_duration, 501)
+    references = [program.reference_provider.get_reference(10.0 + t) for t in samples]
+    assert max(
+        np.linalg.norm(reference.position[:2] - initial_state().position[:2])
+        for reference in references
+    ) == pytest.approx(0.20)
+    assert (
+        max(np.linalg.norm(reference.velocity[:2]) for reference in references)
+        < 0.065
+    )
+
+
+def test_crazysim_circular_profile_is_recorded_in_metadata() -> None:
+    _, _, program = assemble_program(
+        CONTROLLER_NAME,
+        CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
+        CIRCULAR_REFERENCE,
+    )
+
+    logging = build_run_configuration(
+        "udp://127.0.0.1:19850", program, backend="crazysim"
+    )
+
+    assert logging.reference_configuration["profile"] == {
+        "takeoff_height": 0.20,
+        "circle_radius": 0.10,
+        "circle_revolutions": 1.0,
+        "armed_idle_duration": 0.50,
+        "takeoff_duration": 3.0,
+        "circle_duration": 15.0,
+        "landing_duration": 3.0,
+    }
 
 
 def test_circular_reference_is_passed_unchanged_to_controller() -> None:
@@ -276,7 +331,7 @@ def test_backend_defaults_are_explicit_and_do_not_fallback() -> None:
 
 def test_crazysim_runner_uses_simulation_adapter() -> None:
     _, _, program = assemble_program(
-        CONTROLLER_NAME, CONFIGURATION_NAME, FIXED_HOVER_REFERENCE
+        CONTROLLER_NAME, CRAZYSIM_CONFIGURATION_NAME, FIXED_HOVER_REFERENCE
     )
     cf = FakeCrazyflie()
     cf.param = type("Param", (), {
@@ -289,11 +344,59 @@ def test_crazysim_runner_uses_simulation_adapter() -> None:
         "send_stop_setpoint": lambda self: None,
     })()
 
-    runner = build_runner(cf, program, backend="crazysim")
+    status = {
+        "is_auto_armed": True,
+        "can_be_armed": False,
+        "is_armed": True,
+        "can_fly": True,
+        "is_flying": False,
+        "is_tumbled": False,
+        "is_locked": False,
+        "is_crashed": False,
+        "hl_control_active": False,
+    }
+    compatibility = type("Compatibility", (), {
+        "status": lambda self: status,
+        "send_emergency_stop": lambda self: None,
+    })()
+    runner = build_runner(
+        cf,
+        program,
+        backend="crazysim",
+        crazysim_supervisor=compatibility,
+        crazysim_lifecycle="safe_auto_armed",
+        crazysim_outputs=lambda: {
+            "motor.m1": 0.0,
+            "motor.m2": 0.0,
+            "motor.m3": 0.0,
+            "motor.m4": 0.0,
+            "stabilizer.thrust": 0.0,
+            "ctrltarget.roll": 0.0,
+            "ctrltarget.pitch": 0.0,
+            "ctrltarget.yaw": 0.0,
+        },
+    )
 
     assert isinstance(runner._command_adapter, CrazySimCommandAdapter)
     runner._arm()
     assert commander_calls == [(0.0, 0.0, 0.0, 0)]
+
+
+def test_calibrated_crazysim_configuration_is_opt_in_and_backend_restricted() -> None:
+    config, _, program = assemble_program(
+        CONTROLLER_NAME,
+        CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
+        FIXED_HOVER_REFERENCE,
+    )
+    assert config.equilibrium_thrust == pytest.approx(0.4768186326)
+    assert config.min_thrust < config.equilibrium_thrust < config.max_thrust
+    assert program.safety.max_altitude_above_ground_m == 0.60
+    assert program.vertical_flight_config.takeoff_height == 0.20
+    validate_configuration_backend("crazysim", CRAZYSIM_CALIBRATED_CONFIGURATION_NAME)
+    with pytest.raises(ValueError, match="require --backend crazysim"):
+        validate_configuration_backend("hardware", CRAZYSIM_CALIBRATED_CONFIGURATION_NAME)
+    with pytest.raises(ValueError, match="CrazySim-specific"):
+        validate_configuration_backend("crazysim", CONFIGURATION_NAME)
 
 
 @pytest.mark.parametrize("fault", ["is_locked", "is_crashed", "is_tumbled"])

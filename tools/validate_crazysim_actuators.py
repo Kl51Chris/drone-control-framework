@@ -123,6 +123,32 @@ def validate_authorized_command_phase(status: dict[str, Any]) -> None:
         )
 
 
+def summarize_axis_response(
+    records: list[dict[str, Any]], command: BodyRateThrustCommand
+) -> dict[str, Any] | None:
+    commanded = {
+        "roll": command.roll_rate,
+        "pitch": command.pitch_rate,
+        "yaw": command.yaw_rate,
+    }
+    active = [(axis, value) for axis, value in commanded.items() if value != 0.0]
+    if len(active) != 1 or not records:
+        return None
+    axis, command_value = active[0]
+    rate_field = {"roll": "p", "pitch": "q", "yaw": "r"}[axis]
+    attitude_field = axis
+    rates = [float(record["state"][rate_field]) for record in records]
+    attitudes = [float(record["state"][attitude_field]) for record in records]
+    signed_peak = max(rates) if command_value > 0 else min(rates)
+    return {
+        "axis": axis,
+        "command_rad_s": command_value,
+        "signed_peak_rate_rad_s": signed_peak,
+        "peak_rate_has_command_sign": signed_peak * command_value > 0.0,
+        "attitude_change_rad": attitudes[-1] - attitudes[0],
+    }
+
+
 def safe_cleanup(
     cf: Any,
     adapter: Any | None,
@@ -250,7 +276,14 @@ def run_powered_test(
                         "normalized_thrust": command.thrust,
                         "raw_thrust": adapter._encode_thrust(command.thrust),
                     },
-                    "state": {"p": state.p, "q": state.q, "r": state.r},
+                    "state": {
+                        "roll": state.roll,
+                        "pitch": state.pitch,
+                        "yaw": state.yaw,
+                        "p": state.p,
+                        "q": state.q,
+                        "r": state.r,
+                    },
                     "motors": motors.latest(),
                     "supervisor": status,
                 })
@@ -303,6 +336,7 @@ def run_powered_test(
         "final_supervisor": final_supervisor,
         "final_outputs_after_stop": final_outputs,
         "startup_lifecycle": startup_lifecycle,
+        "axis_response_summary": summarize_axis_response(records, command),
     }
 
 

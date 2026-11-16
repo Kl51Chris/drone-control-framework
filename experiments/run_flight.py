@@ -15,6 +15,7 @@ from velocity_control_framework.backends import (
     CrazyflieCommandAdapter,
     CrazyflieStateProvider,
     CrazySimCommandAdapter,
+    CrazySimSupervisorAdapter,
 )
 from velocity_control_framework.controllers import (
     HorizontalAccelerationMapping,
@@ -30,6 +31,7 @@ from velocity_control_framework.interfaces import (
     Reference,
 )
 from velocity_control_framework.references import (
+    CircularFlightConfig,
     CircularFlightReference,
     CircularFlightState,
     FlightState,
@@ -43,6 +45,7 @@ from velocity_control_framework.logger import FlightLogger, RunConfiguration
 CONTROLLER_NAME = "outer-loop-pid"
 CONFIGURATION_NAME = "stage5-hardware-candidate"
 CRAZYSIM_CONFIGURATION_NAME = "crazysim-cf2x-t350-initial"
+CRAZYSIM_CALIBRATED_CONFIGURATION_NAME = "crazysim-cf2x-t350-calibrated"
 LQR_CONTROLLER_NAME = "outer-loop-lqr"
 LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
@@ -110,6 +113,8 @@ class ProductionFlightProgram:
         *,
         safety: ProductionSafetyConfig | None = None,
         supervisor_status: Callable[[], dict[str, bool]] | None = None,
+        vertical_flight_config: VerticalFlightConfig | None = None,
+        circular_flight_config: CircularFlightConfig | None = None,
     ) -> None:
         if reference_name not in (FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE):
             raise ValueError(f"unsupported reference provider: {reference_name}")
@@ -125,6 +130,8 @@ class ProductionFlightProgram:
             )
         )
         self.supervisor_status = supervisor_status
+        self.vertical_flight_config = vertical_flight_config
+        self.circular_flight_config = circular_flight_config
         self.reference_provider: (
             VerticalFlightReference | CircularFlightReference | None
         ) = None
@@ -182,13 +189,17 @@ class ProductionFlightProgram:
                 initial_position=initial_state.position,
                 initial_yaw=initial_state.yaw,
                 start_time=start_time,
-                config=VerticalFlightConfig(takeoff_height=0.30),
+                config=(
+                    self.vertical_flight_config
+                    or VerticalFlightConfig(takeoff_height=0.30)
+                ),
             )
         else:
             self.reference_provider = CircularFlightReference(
                 initial_position=initial_state.position,
                 initial_yaw=initial_state.yaw,
                 start_time=start_time,
+                config=self.circular_flight_config,
             )
 
     def is_complete(self, current_time: float) -> bool:
@@ -341,6 +352,8 @@ def select_configuration(name: str) -> OuterLoopPIDConfig | OuterLoopLQRConfig:
         return config
     if name == CRAZYSIM_CONFIGURATION_NAME:
         return OuterLoopPIDConfig.crazysim_cf2x_t350_initial()
+    if name == CRAZYSIM_CALIBRATED_CONFIGURATION_NAME:
+        return OuterLoopPIDConfig.crazysim_cf2x_t350_calibrated()
     if name == LQR_CONFIGURATION_NAME:
         return OuterLoopLQRConfig.dfall_initial()
     raise ValueError(f"unsupported controller configuration: {name}")
@@ -357,6 +370,50 @@ def assemble_program(
     ProductionFlightProgram,
 ]:
     config = select_configuration(configuration_name)
+    if configuration_name == CRAZYSIM_CALIBRATED_CONFIGURATION_NAME:
+        maximum_duration = (
+            CIRCULAR_MAXIMUM_FLIGHT_DURATION_S
+            if reference_name == CIRCULAR_REFERENCE
+            else 9.5
+        )
+        program_options.setdefault(
+            "safety",
+            ProductionSafetyConfig(
+                max_horizontal_displacement_m=0.50,
+                max_altitude_above_ground_m=0.60,
+                min_altitude_below_ground_m=-0.05,
+                max_horizontal_speed_m_s=0.50,
+                max_vertical_speed_m_s=0.75,
+                max_tilt_rad=0.25,
+                maximum_flight_duration_s=maximum_duration,
+                max_arming_position_jump_m=0.10,
+                landing_altitude_tolerance_m=0.06,
+                landing_vertical_speed_tolerance_m_s=0.08,
+            ),
+        )
+        program_options.setdefault(
+            "vertical_flight_config",
+            VerticalFlightConfig(
+                takeoff_height=0.20,
+                armed_idle_duration=0.50,
+                takeoff_duration=3.0,
+                hover_duration=2.0,
+                landing_duration=3.0,
+            ),
+        )
+        if reference_name == CIRCULAR_REFERENCE:
+            program_options.setdefault(
+                "circular_flight_config",
+                CircularFlightConfig(
+                    takeoff_height=0.20,
+                    circle_radius=0.10,
+                    circle_revolutions=1.0,
+                    armed_idle_duration=0.50,
+                    takeoff_duration=3.0,
+                    circle_duration=15.0,
+                    landing_duration=3.0,
+                ),
+            )
     if controller_name == CONTROLLER_NAME and isinstance(config, OuterLoopPIDConfig):
         controller = OuterLoopPIDController(config)
     elif controller_name == LQR_CONTROLLER_NAME and isinstance(config, OuterLoopLQRConfig):
@@ -456,10 +513,24 @@ def build_runner(
     run_logger: FlightLogger | None = None,
     *,
     backend: str = HARDWARE_BACKEND,
+    crazysim_supervisor: CrazySimSupervisorAdapter | None = None,
+    crazysim_lifecycle: str | None = None,
+    crazysim_outputs: Callable[[], dict[str, float]] | None = None,
 ) -> UniversalRunner:
     """Assemble existing production backends around UniversalRunner."""
 
-    program.supervisor_status = lambda: _supervisor_status(cf)
+    if backend == CRAZYSIM_BACKEND:
+        if (
+            crazysim_supervisor is None
+            or crazysim_lifecycle != "safe_auto_armed"
+            or crazysim_outputs is None
+        ):
+            raise ValueError(
+                "CrazySim runner requires a verified safe auto-armed supervisor"
+            )
+        program.supervisor_status = crazysim_supervisor.status
+    else:
+        program.supervisor_status = lambda: _supervisor_status(cf)
 
     state_provider = CrazyflieStateProvider(
         cf,
@@ -476,9 +547,36 @@ def build_runner(
         raise ValueError(f"unsupported backend: {backend}")
 
     def arm() -> None:
-        request_supervisor_arming(cf)
         if isinstance(command_adapter, CrazySimCommandAdapter):
+            assert crazysim_supervisor is not None
+            assert crazysim_outputs is not None
+            from tools.validate_crazysim_actuators import validate_safe_startup
+
+            status = crazysim_supervisor.status()
+            try:
+                lifecycle = validate_safe_startup(status, crazysim_outputs())
+            except RuntimeError as error:
+                raise SupervisorArmingError(
+                    f"unsafe CrazySim command-unlock state: {error}"
+                ) from error
+            if lifecycle != "safe_auto_armed":
+                raise SupervisorArmingError(
+                    f"unexpected CrazySim command-unlock lifecycle: {lifecycle}"
+                )
             command_adapter.unlock()
+        else:
+            request_supervisor_arming(cf)
+
+    disarm = (
+        (lambda: None)
+        if backend == CRAZYSIM_BACKEND
+        else (lambda: cf.supervisor.send_arming_request(False))
+    )
+    emergency_stop = (
+        crazysim_supervisor.send_emergency_stop
+        if crazysim_supervisor is not None
+        else cf.supervisor.send_emergency_stop
+    )
 
     return UniversalRunner[
         DroneState,
@@ -489,8 +587,8 @@ def build_runner(
         command_adapter=command_adapter,
         flight_program=program,
         arm=arm,
-        disarm=lambda: cf.supervisor.send_arming_request(False),
-        emergency_stop=cf.supervisor.send_emergency_stop,
+        disarm=disarm,
+        emergency_stop=emergency_stop,
         config=UniversalRunnerConfig(),
         log_callback=_log_step,
         run_logger=run_logger,
@@ -542,6 +640,20 @@ def validate_backend_uri(backend: str, uri: str) -> None:
     raise ValueError(f"unsupported backend: {backend}")
 
 
+def validate_configuration_backend(backend: str, configuration_name: str) -> None:
+    simulation_configurations = {
+        CRAZYSIM_CONFIGURATION_NAME,
+        CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
+    }
+    if backend == HARDWARE_BACKEND and configuration_name in simulation_configurations:
+        raise ValueError("CrazySim controller configurations require --backend crazysim")
+    if (
+        backend == CRAZYSIM_BACKEND
+        and configuration_name not in simulation_configurations
+    ):
+        raise ValueError("CrazySim backend requires a CrazySim-specific configuration")
+
+
 def resolve_uri(backend: str, uri: str | None) -> str:
     selected = uri or (
         DEFAULT_CRAZYSIM_URI if backend == CRAZYSIM_BACKEND else DEFAULT_URI
@@ -556,13 +668,64 @@ def _run_backend(
     import cflib.crtp
     from cflib.crazyflie import Crazyflie
     from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+    from tools.crazysim_session import PassiveCrazyflie
+    from tools.validate_crazysim_actuators import MotorMonitor, validate_safe_startup
 
     cflib.crtp.init_drivers()
-    crazyflie = Crazyflie(rw_cache="./cache")
+    crazyflie = (
+        PassiveCrazyflie(rw_cache="./cache")
+        if backend == CRAZYSIM_BACKEND
+        else Crazyflie(rw_cache="./cache")
+    )
     with SyncCrazyflie(uri, cf=crazyflie) as link:
         run_logger = FlightLogger(build_run_configuration(uri, program, backend=backend))
         print(f"[LOG] {run_logger.directory.resolve()}")
-        build_runner(link.cf, program, run_logger, backend=backend).run()
+        if backend == HARDWARE_BACKEND:
+            build_runner(link.cf, program, run_logger, backend=backend).run()
+            return
+
+        supervisor = CrazySimSupervisorAdapter(link.cf)
+        motors = MotorMonitor(link.cf)
+        runner_invoked = False
+        try:
+            supervisor.start()
+            motors.start()
+            lifecycle = validate_safe_startup(
+                supervisor.status(), motors.wait_for_first()
+            )
+            runner = build_runner(
+                link.cf,
+                program,
+                run_logger,
+                backend=backend,
+                crazysim_supervisor=supervisor,
+                crazysim_lifecycle=lifecycle,
+                crazysim_outputs=motors.latest,
+            )
+            runner_invoked = True
+            runner.run()
+        finally:
+            if not runner_invoked:
+                run_logger.close("failed", "CrazySim preflight validation failed")
+            cleanup_errors = []
+            try:
+                deadline = time.monotonic() + 0.5
+                while time.monotonic() < deadline:
+                    outputs = motors.latest()
+                    if all(math.isfinite(value) and abs(value) <= 1e-6 for value in outputs.values()):
+                        break
+                    time.sleep(0.01)
+                else:
+                    cleanup_errors.append(f"outputs active after STOP: {outputs}")
+            except BaseException as error:
+                cleanup_errors.append(f"STOP verification failed: {error}")
+            for label, monitor in (("motors", motors), ("supervisor", supervisor)):
+                try:
+                    monitor.stop()
+                except BaseException as error:
+                    cleanup_errors.append(f"{label} cleanup failed: {error}")
+            if cleanup_errors:
+                raise RuntimeError("; ".join(cleanup_errors))
 
 
 def _run_hardware(uri: str, program: ProductionFlightProgram) -> None:
@@ -577,12 +740,20 @@ def build_run_configuration(
     backend: str = HARDWARE_BACKEND,
 ) -> RunConfiguration:
     """Build logger provenance from the fully selected production program."""
+    reference_configuration: dict[str, object] = {
+        "safety": asdict(program.safety),
+    }
+    if program.reference_name == FIXED_HOVER_REFERENCE:
+        if program.vertical_flight_config is not None:
+            reference_configuration["profile"] = asdict(
+                program.vertical_flight_config
+            )
+    elif program.circular_flight_config is not None:
+        reference_configuration["profile"] = asdict(program.circular_flight_config)
     return RunConfiguration(
         experiment_name="production-flight",
         reference_type=program.reference_name,
-        reference_configuration={
-            "safety": asdict(program.safety),
-        },
+        reference_configuration=reference_configuration,
         controller_type=program.controller_name,
         parameter_set=program.configuration_name,
         controller_configuration=asdict(program.controller.config),
@@ -622,6 +793,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         choices=(
             CONFIGURATION_NAME,
             CRAZYSIM_CONFIGURATION_NAME,
+            CRAZYSIM_CALIBRATED_CONFIGURATION_NAME,
             LQR_CONFIGURATION_NAME,
         ),
         default=None,
@@ -653,6 +825,7 @@ def main(argv: list[str] | None = None) -> None:
             else CONFIGURATION_NAME
         )
     )
+    validate_configuration_backend(args.backend, configuration_name)
     config, _, program = assemble_program(
         args.controller,
         configuration_name,

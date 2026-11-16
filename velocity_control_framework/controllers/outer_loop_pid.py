@@ -225,6 +225,36 @@ class OuterLoopPIDConfig:
             max_thrust=0.0,
         )
 
+    @classmethod
+    def crazysim_cf2x_t350_calibrated(cls) -> OuterLoopPIDConfig:
+        """Conservative opt-in preset based on the default MuJoCo model.
+
+        The equilibrium command is derived from model weight and the simulator
+        PWM-to-thrust mapping, not copied from physical-airframe calibration.
+        """
+        from simulation.crazysim_calibration import CF2X_T350_HOVER
+
+        return cls(
+            horizontal_mapping=HorizontalAccelerationMapping(-1, -1),
+            horizontal_x=PIDConfig(0.60, 0.0, 0.35, -0.50, 0.50),
+            horizontal_y=PIDConfig(0.60, 0.0, 0.35, -0.50, 0.50),
+            altitude=PIDConfig(0.25, 0.0, 0.12, -0.08, 0.08),
+            heading=PIDConfig(1.0, 0.0, 0.0, -0.20, 0.20),
+            horizontal=HorizontalControlConfig(0.50, 0.05),
+            attitude=AttitudeControlConfig(
+                roll_kp=2.0,
+                pitch_kp=2.0,
+                roll_command_sign=1,
+                pitch_command_sign=-1,
+                max_roll_rate_rad_s=0.20,
+                max_pitch_rate_rad_s=0.20,
+            ),
+            altitude_velocity_reference_tracking=True,
+            equilibrium_thrust=CF2X_T350_HOVER.normalized_command,
+            min_thrust=0.38,
+            max_thrust=0.56,
+        )
+
 
 class _PID:
     """PID channel with output-clamping conditional integration."""
