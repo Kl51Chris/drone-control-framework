@@ -6,6 +6,7 @@ import argparse
 from dataclasses import asdict, dataclass
 import json
 import math
+from pathlib import Path
 import time
 from typing import Callable
 
@@ -23,6 +24,16 @@ from velocity_control_framework.controllers import (
     OuterLoopLQRController,
     OuterLoopPIDConfig,
     OuterLoopPIDController,
+)
+from velocity_control_framework.backends.crazysim_hlc_lifecycle import (
+    CommandOwner,
+    CrazySimHLCLifecycle,
+)
+from velocity_control_framework.controllers.near_hover_model import NearHoverModelConfig
+from velocity_control_framework.controllers.outer_loop_mpc import (
+    MPCSolveError,
+    OuterLoopMPCConfig,
+    OuterLoopMPCController,
 )
 from velocity_control_framework.interfaces import (
     BodyRateThrustCommand,
@@ -47,6 +58,7 @@ CONFIGURATION_NAME = "stage5-hardware-candidate"
 CRAZYSIM_CONFIGURATION_NAME = "crazysim-cf2x-t350-initial"
 CRAZYSIM_CALIBRATED_CONFIGURATION_NAME = "crazysim-cf2x-t350-calibrated"
 LQR_CONTROLLER_NAME = "outer-loop-lqr"
+MPC_CONTROLLER_NAME = "outer-loop-mpc"
 LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
@@ -141,6 +153,15 @@ class ProductionFlightProgram:
         self._last_state: DroneState | None = None
         self._last_command: BodyRateThrustCommand | None = None
         self.termination_record: FlightTerminationRecord | None = None
+        self.use_official_lifecycle = False
+        self.official_lifecycle: CrazySimHLCLifecycle | None = None
+        self._official_takeoff_end: float | None = None
+        self._official_landing_end: float | None = None
+        self.step_axis: str | None = None
+        self.force_solver_failure = False
+        self._fallback_reason: str | None = None
+        self._tracking_start: float | None = None
+        self._previous_input_valid = False
 
     @property
     def estimated_landing_confirmed(self) -> bool:
@@ -204,17 +225,36 @@ class ProductionFlightProgram:
 
     def is_complete(self, current_time: float) -> bool:
         self._update_descent_completion(current_time)
+        if (
+            self._official_landing_end is not None
+            and current_time >= self._official_landing_end + 0.5
+            and self._last_state is not None
+            and self._initial_state is not None
+            and 0 <= current_time - self._last_state.timestamp <= self.safety.max_state_age_s
+            and self._last_state.position[2] - self._initial_state.position[2]
+            <= self.safety.landing_altitude_tolerance_m
+            and abs(self._last_state.velocity[2]) <= self.safety.landing_vertical_speed_tolerance_m_s
+        ):
+            self._descent_reference_complete = True
+            self._finalize_landing_check()
+            if self._last_command is None and self._fallback_reason is None:
+                raise LandingFailed("official flight landed without entering body-rate tracking")
+            return self.estimated_landing_confirmed
         if self._elapsed(current_time) < self.safety.maximum_flight_duration_s:
             return False
         if self.termination_record is None:
             self._finalize_landing_check()
         if self.estimated_landing_confirmed:
+            if self.official_lifecycle is not None and self._last_command is None and self._fallback_reason is None:
+                raise LandingFailed("official flight landed without entering body-rate tracking")
             return True
         assert self.termination_record is not None
         raise LandingFailed(self.termination_record.termination_reason)
 
     def get_phase_name(self, current_time: float) -> str:
         self._update_descent_completion(current_time)
+        if self._fallback_reason is not None:
+            return "FALLBACK_LANDING"
         if self._descent_reference_complete:
             return "LANDING_CHECK"
         return self._provider().get_state(current_time).name
@@ -224,13 +264,100 @@ class ProductionFlightProgram:
         state: DroneState,
         current_time: float,
         dt: float,
-    ) -> tuple[Reference, BodyRateThrustCommand]:
+    ) -> tuple[Reference, BodyRateThrustCommand | None]:
         self._validate_safety(state, current_time, dt)
         reference = self._provider().get_reference(current_time)
+        if self.official_lifecycle is not None:
+            if (
+                self.step_axis is not None and self._tracking_start is not None
+                and 0.4 <= current_time - self._tracking_start
+                and self._provider().get_state(current_time).name == "HOVER"
+            ):
+                position = reference.position.copy()
+                position["xyz".index(self.step_axis)] += 0.03
+                reference = Reference(position, reference.velocity, reference.yaw,
+                                      reference.yaw_rate, reference.timestamp)
+            return reference, self._update_official(state, reference, current_time, dt)
         command = self.controller.update(state, reference, dt)
         self._last_state = state
         self._last_command = command
         return reference, command
+
+    def _update_official(
+        self, state: DroneState, reference: Reference, now: float, dt: float
+    ) -> BodyRateThrustCommand | None:
+        lifecycle = self.official_lifecycle
+        assert lifecycle is not None and self._initial_state is not None
+        self._previous_input_valid = lifecycle.owner is CommandOwner.BODY_RATE
+        provider = self._provider()
+        phase = provider.get_state(now).name
+        self._last_state = state
+        ground_z = float(self._initial_state.position[2])
+        if phase == "TAKEOFF" and lifecycle.owner is CommandOwner.GROUND:
+            # Leave time for the official loop to settle before tracking.
+            duration = provider.config.takeoff_duration - 0.5
+            lifecycle.takeoff(ground_z + provider.config.takeoff_height, duration)
+            self._official_takeoff_end = now + duration
+        elif phase in ("HOVER", "CIRCLE"):
+            if lifecycle.owner is CommandOwner.OFFICIAL:
+                assert self._official_takeoff_end is not None
+                if (
+                    now < self._official_takeoff_end + 0.4
+                    or abs(float(state.position[2] - reference.position[2])) > 0.05
+                    or np.linalg.norm(state.velocity) > 0.10
+                    or max(abs(state.roll), abs(state.pitch)) > 0.10
+                ):
+                    return None
+                self.controller.reset()
+                self._tracking_start = now
+            if lifecycle.owner in (CommandOwner.OFFICIAL, CommandOwner.BODY_RATE):
+                try:
+                    if (
+                        self.force_solver_failure and self._tracking_start is not None
+                        and now - self._tracking_start >= 0.40
+                        and isinstance(self.controller, OuterLoopMPCController)
+                    ):
+                        raise MPCSolveError("controlled solver failure")
+                    command = self.controller.update(state, reference, dt)
+                except MPCSolveError as error:
+                    if np.linalg.norm(state.velocity) > 0.10 or max(abs(state.roll), abs(state.pitch)) > 0.10:
+                        raise HardSafetyViolation("solver failed outside the official recovery envelope") from error
+                    self._fallback_reason = str(error)
+                    lifecycle.land(ground_z + 0.03, provider.config.landing_duration)
+                    self._official_landing_end = now + provider.config.landing_duration
+                    return None
+                self._last_command = command
+                return command
+        elif phase == "LANDING" and lifecycle.owner in (
+            CommandOwner.OFFICIAL, CommandOwner.BODY_RATE
+        ):
+            lifecycle.land(ground_z + 0.03, provider.config.landing_duration)
+            self._official_landing_end = now + provider.config.landing_duration
+        return None
+
+    def get_logging_diagnostics(self) -> dict:
+        if self.official_lifecycle is None:
+            return {}
+        return {
+            "command_source": self.official_lifecycle.owner.name,
+            "fallback_reason": self._fallback_reason,
+            "previous_input_valid": self._previous_input_valid,
+            "handover_seed": (
+                [0.0, 0.0, 0.0, self.controller.config.model.equilibrium_thrust]
+                if isinstance(self.controller, OuterLoopMPCController)
+                and self.official_lifecycle.owner is CommandOwner.BODY_RATE
+                and not self._previous_input_valid else None
+            ),
+            "mpc": (
+                getattr(self.controller, "diagnostics", {})
+                if self.official_lifecycle.owner is CommandOwner.BODY_RATE or self._fallback_reason else {}
+            ),
+        }
+
+    def get_prediction_snapshot(self) -> dict | None:
+        if isinstance(self.controller, OuterLoopMPCController):
+            return self.controller.prediction
+        return None
 
     def _update_descent_completion(self, current_time: float) -> None:
         state = self._provider().get_state(current_time)
@@ -546,8 +673,25 @@ def build_runner(
     else:
         raise ValueError(f"unsupported backend: {backend}")
 
+    body_rate_adapter = command_adapter
+    if program.use_official_lifecycle:
+        if backend != CRAZYSIM_BACKEND:
+            raise ValueError("official lifecycle is currently CrazySim-only")
+        program.official_lifecycle = CrazySimHLCLifecycle(cf, body_rate_adapter)
+
+        class TrackingAdapter:
+            def send(self, command: BodyRateThrustCommand) -> None:
+                assert program.official_lifecycle is not None
+                program.official_lifecycle.send_tracking(command)
+
+            def stop(self) -> None:
+                assert program.official_lifecycle is not None
+                program.official_lifecycle.stop()
+
+        command_adapter = TrackingAdapter()
+
     def arm() -> None:
-        if isinstance(command_adapter, CrazySimCommandAdapter):
+        if isinstance(body_rate_adapter, CrazySimCommandAdapter):
             assert crazysim_supervisor is not None
             assert crazysim_outputs is not None
             from tools.validate_crazysim_actuators import validate_safe_startup
@@ -563,7 +707,8 @@ def build_runner(
                 raise SupervisorArmingError(
                     f"unexpected CrazySim command-unlock lifecycle: {lifecycle}"
                 )
-            command_adapter.unlock()
+            if program.official_lifecycle is None:
+                body_rate_adapter.unlock()
         else:
             request_supervisor_arming(cf)
 
@@ -742,6 +887,9 @@ def build_run_configuration(
     """Build logger provenance from the fully selected production program."""
     reference_configuration: dict[str, object] = {
         "safety": asdict(program.safety),
+        "flight_lifecycle": "hlc" if program.use_official_lifecycle else "controller",
+        "step_axis": program.step_axis,
+        "forced_solver_failure": program.force_solver_failure,
     }
     if program.reference_name == FIXED_HOVER_REFERENCE:
         if program.vertical_flight_config is not None:
@@ -785,7 +933,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--controller",
-        choices=(CONTROLLER_NAME, LQR_CONTROLLER_NAME),
+        choices=(CONTROLLER_NAME, LQR_CONTROLLER_NAME, MPC_CONTROLLER_NAME),
         default=CONTROLLER_NAME,
     )
     parser.add_argument(
@@ -810,15 +958,28 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=HARDWARE_BACKEND,
     )
     parser.add_argument("--uri", default=None)
+    parser.add_argument("--flight-lifecycle", choices=("controller", "hlc"), default="controller")
+    parser.add_argument("--mpc-config", type=Path)
+    parser.add_argument("--horizon", type=int)
+    parser.add_argument("--step-axis", choices=("x", "y", "z"))
+    parser.add_argument("--force-solver-failure", action="store_true")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    use_mpc = args.controller == MPC_CONTROLLER_NAME
+    if use_mpc and args.backend != CRAZYSIM_BACKEND:
+        raise ValueError("MPC experiments are CrazySim-only")
+    if not use_mpc and (args.mpc_config or args.horizon or args.step_axis or args.force_solver_failure):
+        raise ValueError("MPC options require --controller outer-loop-mpc")
+    if args.reference != FIXED_HOVER_REFERENCE and (args.step_axis or args.force_solver_failure):
+        raise ValueError("step and solver failure require the fixed-hover reference")
     uri = resolve_uri(args.backend, args.uri)
     configuration_name = args.configuration or (
         LQR_CONFIGURATION_NAME
         if args.controller == LQR_CONTROLLER_NAME
+        else CRAZYSIM_CALIBRATED_CONFIGURATION_NAME if use_mpc
         else (
             CRAZYSIM_CONFIGURATION_NAME
             if args.backend == CRAZYSIM_BACKEND
@@ -827,10 +988,29 @@ def main(argv: list[str] | None = None) -> None:
     )
     validate_configuration_backend(args.backend, configuration_name)
     config, _, program = assemble_program(
-        args.controller,
+        CONTROLLER_NAME if use_mpc else args.controller,
         configuration_name,
         args.reference,
     )
+    if args.flight_lifecycle == "hlc" or use_mpc:
+        if (
+            args.backend != CRAZYSIM_BACKEND
+            or configuration_name != CRAZYSIM_CALIBRATED_CONFIGURATION_NAME
+        ):
+            raise ValueError("HLC flight requires the calibrated CrazySim configuration")
+        program.use_official_lifecycle = True
+    if use_mpc:
+        parameters = json.loads(args.mpc_config.read_text()) if args.mpc_config else {}
+        model = NearHoverModelConfig(**parameters.pop("model", {}))
+        if not math.isclose(model.sample_period_s, UniversalRunnerConfig().control_period_s):
+            raise ValueError("MPC model period must match the production runner")
+        if args.horizon is not None:
+            parameters["horizon"] = args.horizon
+        config = OuterLoopMPCConfig(model=model, **parameters)
+        program.controller = OuterLoopMPCController(config)
+        program.controller_name = MPC_CONTROLLER_NAME
+        program.force_solver_failure = args.force_solver_failure
+        program.step_axis = args.step_axis
     _print_selection(
         config,
         args.controller,

@@ -141,6 +141,11 @@ rqt-shell==1.0.2
 rqt-srv==1.0.3
 rqt-topic==1.5.1
 scipy==1.15.3
+osqp==1.0.4
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+joblib==1.6.0
+cloudpickle==3.1.3
 sensor-msgs==4.9.1
 sensor-msgs-py==4.9.1
 shape-msgs==4.9.1

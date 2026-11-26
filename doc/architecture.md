@@ -6,10 +6,11 @@ The Drone Control Framework separates reference generation, reusable control
 algorithms, state acquisition and estimation, hardware-specific command
 conversion, timing and execution, and experiment-specific validation logic.
 
-The current implementations include `OuterLoopPIDController` and
-`OuterLoopLQRController`, selected through the same production assembly point.
-MPC and DeePC are not active controller implementations. Historical code under
-`legacy/` is not part of the active dependency graph.
+The production CLI selects PID, LQR, or the CrazySim-only MPC baseline.
+CrazySim can delegate takeoff and landing to the official HighLevelCommander,
+while the selected offboard controller owns the body-rate tracking segment.
+DeePC remains planned. Historical code under `legacy/` is outside the active
+dependency graph.
 
 ## 2. Control Architecture
 

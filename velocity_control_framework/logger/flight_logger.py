@@ -132,6 +132,7 @@ class FlightLogger:
         self._queue: queue.Queue[tuple[str, dict[str, Any]] | None] = queue.Queue()
         self._closed = False
         self._worker_error: BaseException | None = None
+        self._prediction_drops = 0
 
         source_info = config.data_sources or {
             "controller_state": {"description": "DroneState consumed by controller"},
@@ -198,7 +199,12 @@ class FlightLogger:
                     if item is None:
                         break
                     kind, row = item
-                    writers[kind].writerow(row)
+                    if kind == "prediction":
+                        if kind not in streams:
+                            streams[kind] = (self.directory / "predictions.jsonl").open("w", encoding="utf-8")
+                        streams[kind].write(json.dumps(_json_value(row), allow_nan=False) + "\n")
+                    else:
+                        writers[kind].writerow(row)
                 finally:
                     self._queue.task_done()
             for stream in streams.values():
@@ -286,6 +292,21 @@ class FlightLogger:
         row["reference_yaw_rate_rad_s"] = getattr(reference, "yaw_rate", None)
         self._enqueue("flight", row)
 
+    def log_prediction(
+        self, monotonic_s: float, send_completed_s: float, prediction: Mapping[str, Any]
+    ) -> None:
+        """Queue the immutable prediction from the just-recorded control step."""
+        if self._queue.qsize() >= 128:
+            self._prediction_drops += 1
+            return
+        self._enqueue("prediction", {
+            "schema_version": 1,
+            "step_index": self._step_sequence - 1,
+            "monotonic_s": monotonic_s,
+            "send_completed_monotonic_s": send_completed_s,
+            **prediction,
+        })
+
     def _record_source(
         self, source: str, state: Any, *, source_timestamp_s: float | None,
         reception_monotonic_s: float, available: bool,
@@ -339,6 +360,7 @@ class FlightLogger:
         self._enqueue("event", row)
 
     def close(self, status: str = "completed", reason: str | None = None) -> None:
+        self.metadata["prediction_snapshots_dropped"] = self._prediction_drops
         if self._closed:
             return
         self.event("run_finished", {"status": status, "reason": reason})

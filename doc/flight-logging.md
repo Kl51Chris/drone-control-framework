@@ -99,6 +99,14 @@ and state-provider cleanup, preserving partial logs where possible.
 
 ## Offline tracking analysis
 
+CrazySim MPC also writes `predictions.jsonl` in the background. Each snapshot is
+linked to `flight.csv` by step index and records predicted states, input
+deviations, slack, the model origin, and host send completion time. An overloaded
+logger can skip prediction snapshots, counted in metadata. The per-step
+diagnostics include controller ownership, fallback reason and QP/host timing.
+Official lifecycle rows have empty body-rate command fields. See the
+[predictive flight analyzer](crazysim-hlc-testing.md#mpc-scenarios).
+
 The project-owned analyzer calculates whole-run and per-phase tracking metrics
 from the reference and estimated-state columns already stored in `flight.csv`:
 

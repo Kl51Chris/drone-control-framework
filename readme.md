@@ -85,9 +85,10 @@ the selected software configuration. Hardware execution requires the explicit
   a reference-specific 30-second maximum duration, leaving 6.5 seconds for
   estimator-qualified landing verification. Fixed hover retains its 15-second
   maximum duration.
-- PID gains and landing behavior remain experimental. MPC and DeePC are future
-  research directions; no implementations are present in the active
-  controller package.
+- PID gains and landing behavior remain experimental. CrazySim provides an
+  OSQP-based MPC baseline for tracking with official HLC takeoff and landing.
+  See the [CrazySim MPC testing guide](doc/crazysim-hlc-testing.md) for the
+  reproducible hover, step, circle and fallback scenarios. DeePC remains planned.
 
 ## Tests
 

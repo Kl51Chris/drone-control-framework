@@ -11,8 +11,8 @@ body angular rates and normalized collective thrust. Crazyflie firmware closes
 the onboard body-rate loops and performs motor mixing; the offboard command is
 not a direct motor command.
 
-`OuterLoopPIDController` and `OuterLoopLQRController` are implemented reusable
-controllers. MPC and DeePC are planned future controllers. See
+`OuterLoopPIDController` and `OuterLoopLQRController` are reusable controllers.
+`OuterLoopMPCController` is the CrazySim near-hover baseline. DeePC remains planned. See
 [`architecture.md`](architecture.md) for software architecture, component
 boundaries, state acquisition, hardware adaptation, and execution flow.
 
@@ -439,13 +439,22 @@ velocity feedback, thrust-authority-aware anti-windup, and clamping. Yaw retains
 wrapped angle error, conditional integral behavior, and rate clamping. No PID
 controller object or mutable PID parameter object is shared.
 
-## 4. MPC Controller [Planned]
+## 4. CrazySim MPC Controller
 
-Model predictive control is intended to optimize predicted tracking behavior
-and control effort over a finite horizon while returning a
-`BodyRateThrustCommand` through the common interface. The prediction model,
-internal state, horizon, objective, constraints, estimator coupling, and
-real-time solution strategy remain unresolved. **Status: Not implemented.**
+The local model orders state as position, velocity, roll, pitch and yaw.
+Position and velocity are represented in a frame fixed at the initial yaw.
+Small-angle horizontal acceleration uses the existing signed gravity terms.
+Vertical acceleration is proportional to normalized thrust deviation, and
+angle derivatives approximate signed commanded rates. The pulse experiments
+support positive roll and negative pitch/yaw command-to-Euler signs for the
+tested CrazySim firmware. The model uses a 20 ms zero-order hold.
+
+The condensed OSQP problem penalizes tracking, input magnitude, input
+increments and state slack. Its input box constrains body rates and collective
+thrust. The production runner separately enforces the measured safety envelope.
+The first increment uses an explicitly logged hover seed. The default horizon
+is 25 steps and configurable. See the
+[CrazySim MPC testing guide](crazysim-hlc-testing.md) for configuration and validation.
 
 ## 5. DeePC Controller [Planned]
 

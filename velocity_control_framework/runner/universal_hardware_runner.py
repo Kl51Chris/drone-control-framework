@@ -76,7 +76,7 @@ class FlightProgramProtocol(
         dt: float,
     ) -> tuple[
         ReferenceT,
-        CommandT,
+        CommandT | None,
     ]:
         ...
 
@@ -364,9 +364,9 @@ class UniversalRunner(
                     )
                 )
 
-                self._command_adapter.send(
-                    command
-                )
+                if command is not None:
+                    self._command_adapter.send(command)
+                step_completed = time.monotonic()
 
                 if self._run_logger is not None:
                     diagnostics: Mapping[str, Any] | None = None
@@ -391,12 +391,25 @@ class UniversalRunner(
                     )
                     self._run_logger.log_flight(
                         now - start_time, now, phase_name, state, reference,
-                        command, dt, diagnostics=diagnostics,
+                        command, dt, diagnostics={
+                            **(diagnostics or {}),
+                            "timing": {
+                                "step_work_s": step_completed - now,
+                                "send_completed_monotonic_s": step_completed if command is not None else None,
+                                "deadline_monotonic_s": next_deadline + self._config.control_period_s,
+                            },
+                        },
                         source_context=source_context,
                     )
+                    prediction_provider = getattr(self._flight_program, "get_prediction_snapshot", None)
+                    if command is not None and prediction_provider is not None:
+                        snapshot = prediction_provider()
+                        if snapshot:
+                            self._run_logger.log_prediction(now, step_completed, snapshot)
 
                 should_log = (
                     self._log_callback is not None
+                    and command is not None
                     and now - last_log_time
                     >= self._config.log_period_s
                 )
@@ -431,6 +444,12 @@ class UniversalRunner(
                 else:
                     # Drop missed deadlines instead of running
                     # multiple control steps back-to-back.
+                    if self._run_logger is not None:
+                        self._run_logger.event(
+                            "control_deadline_missed",
+                            {"phase": phase_name, "overrun_s": -sleep_duration},
+                            monotonic_s=now,
+                        )
                     next_deadline = (
                         time.monotonic()
                     )

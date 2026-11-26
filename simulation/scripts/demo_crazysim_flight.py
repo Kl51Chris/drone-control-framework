@@ -19,6 +19,9 @@ from velocity_control_framework.backends import (
     CrazyflieStateProvider,
     CrazySimSupervisorAdapter,
 )
+from velocity_control_framework.backends.crazysim_command_adapter import CrazySimCommandAdapter
+from velocity_control_framework.backends.crazysim_hlc_lifecycle import CrazySimHLCLifecycle
+from velocity_control_framework.interfaces import BodyRateThrustCommand
 
 
 TAKEOFF_HEIGHT_M = 0.35
@@ -118,8 +121,12 @@ def monitor_phase(
         time.sleep(MONITOR_PERIOD_S)
 
 
-def run_demo(uri: str) -> dict[str, Any]:
+def run_demo(
+    uri: str, *, verify_handover: bool = False, axis: str = "roll", direction: int = 1
+) -> dict[str, Any]:
     validate_crazysim_uri(uri)
+    if axis not in ("roll", "pitch", "yaw", "thrust") or direction not in (-1, 1):
+        raise ValueError("invalid CrazySim identification axis or direction")
     import cflib.crtp
     from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 
@@ -152,9 +159,14 @@ def run_demo(uri: str) -> dict[str, Any]:
             landing_height = float(initial_position[2]) + LANDING_HEIGHT_M
             experiment_deadline = time.monotonic() + MAX_TOTAL_DURATION_S
 
-            link.cf.high_level_commander.takeoff(
-                takeoff_height, TAKEOFF_DURATION_S, yaw=None
-            )
+            handover = None
+            if verify_handover:
+                handover = CrazySimHLCLifecycle(link.cf, CrazySimCommandAdapter(link.cf))
+                handover.takeoff(takeoff_height, TAKEOFF_DURATION_S)
+            else:
+                link.cf.high_level_commander.takeoff(
+                    takeoff_height, TAKEOFF_DURATION_S, yaw=None
+                )
             monitor_phase(
                 "TAKEOFF", TAKEOFF_DURATION_S + SETTLE_DURATION_S,
                 provider=provider, supervisor=supervisor, motors=motors,
@@ -167,15 +179,64 @@ def run_demo(uri: str) -> dict[str, Any]:
                 initial_position=initial_position,
                 experiment_deadline=experiment_deadline, records=records,
             )
-            link.cf.high_level_commander.land(
-                landing_height, LANDING_DURATION_S, yaw=None
-            )
+            if handover is None:
+                link.cf.high_level_commander.land(
+                    landing_height, LANDING_DURATION_S, yaw=None
+                )
+            else:
+                tracking_start = time.monotonic()
+                tracking_deadline = tracking_start + 0.84
+                while time.monotonic() < tracking_deadline:
+                    now = time.monotonic()
+                    state = provider.get_state()
+                    status = supervisor.status()
+                    validate_flight_state(state, initial_position, now)
+                    validate_flight_supervisor(status)
+                    active = now - tracking_start < 0.24
+                    rate = direction * 0.08 if active else 0.0
+                    thrust = 0.47681863
+                    if axis == "thrust" and active:
+                        thrust += direction * 0.012
+                    command = BodyRateThrustCommand(
+                        rate if axis == "roll" else 0.0,
+                        rate if axis == "pitch" else 0.0,
+                        rate if axis == "yaw" else 0.0,
+                        thrust,
+                    )
+                    handover.send_tracking(command)
+                    send_completed = time.monotonic()
+                    records.append({
+                        "monotonic_s": now,
+                        "phase": "BODY_RATE",
+                        "position_m": state.position.tolist(),
+                        "velocity_m_s": state.velocity.tolist(),
+                        "attitude_rad": [state.roll, state.pitch, state.yaw],
+                        "body_rate_rad_s": [state.p, state.q, state.r],
+                        "state_timestamp_s": state.timestamp,
+                        "send_completed_monotonic_s": send_completed,
+                        "input": [command.roll_rate, command.pitch_rate, command.yaw_rate, command.thrust],
+                        "outputs": motors.latest(),
+                    })
+                    time.sleep(0.02)
+                handover.land(landing_height, LANDING_DURATION_S)
             monitor_phase(
                 "LANDING", LANDING_DURATION_S + SETTLE_DURATION_S,
                 provider=provider, supervisor=supervisor, motors=motors,
                 initial_position=initial_position,
                 experiment_deadline=experiment_deadline, records=records,
             )
+            if handover is not None:
+                tracking = [r for r in records if r["phase"] == "BODY_RATE"]
+                if axis == "roll" and not any(
+                    direction * r["body_rate_rad_s"][0] > 0.02 for r in tracking
+                ):
+                    raise RuntimeError("body-rate pulse did not produce the expected roll response")
+                final_state = provider.get_state()
+                if (
+                    abs(float(final_state.position[2]) - landing_height) > 0.06
+                    or abs(float(final_state.velocity[2])) > 0.08
+                ):
+                    raise RuntimeError("HLC landing did not settle at the expected height")
             completed = True
         except BaseException as error:
             failure = f"{type(error).__name__}: {error}"
@@ -201,6 +262,9 @@ def run_demo(uri: str) -> dict[str, Any]:
                     cleanup_errors.append(f"{label}_stop: {error}")
     return {
         "uri": uri,
+        "verify_handover": verify_handover,
+        "axis": axis if verify_handover else None,
+        "direction": direction if verify_handover else None,
         "completed": completed,
         "failure": failure,
         "cleanup_errors": cleanup_errors,
@@ -220,12 +284,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--uri", default=CRAZYSIM_URI)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--verify-handover", action="store_true")
+    parser.add_argument("--axis", choices=("roll", "pitch", "yaw", "thrust"), default="roll")
+    parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     args = parser.parse_args()
     validate_crazysim_uri(args.uri)
     if not args.execute:
         print(json.dumps({"uri": args.uri, "status": "inspection_only"}, indent=2))
         return
-    result = run_demo(args.uri)
+    result = (
+        run_demo(args.uri, verify_handover=True, axis=args.axis, direction=args.direction)
+        if args.verify_handover else run_demo(args.uri)
+    )
     path = write_result(result)
     print(json.dumps({key: value for key, value in result.items() if key != "records"}, indent=2))
     print(f"[LOG] {path}")
