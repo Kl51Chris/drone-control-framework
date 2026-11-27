@@ -64,3 +64,26 @@ def test_measurement_noise_replays_by_index_and_zero_preserves_state():
     np.testing.assert_array_equal(a.position,b.position)
     np.testing.assert_array_equal(state.position,[0.,0.,0.])
     assert a.timestamp==3.
+
+
+def test_mixed_fir_preserves_each_axis_history_across_rollout():
+    rng = np.random.default_rng(43)
+    lengths = (6, 6, 25, 12)
+    coefficients = tuple(tuple(rng.normal(size=length)) for length in lengths)
+    bias = (.001, -.002, .005, .01)
+    model = NearHoverModelConfig()
+    candidate = IdentifiedHoverModelConfig("fixture", "fixture", coefficients, bias)
+    a, b = identified_discrete_model(model, candidate)
+    ad, bd = discrete_model(model)
+    x = rng.normal(size=9)
+    history = rng.normal(size=(24, 4))
+    state = np.r_[x, [history[lag, axis] for lag, axis in candidate.history_slots], 1.]
+    assert state.size == 55
+    for u in rng.normal(size=(40, 4)):
+        packets = np.vstack((u, history))
+        effective = [w @ packets[:len(w), axis] + bias[axis] for axis, w in enumerate(coefficients)]
+        x = ad @ x + bd @ (effective / np.array([1., -1., -1., model.thrust_gain_m_s2]))
+        state = a @ state + b @ u
+        history = packets[:-1]
+        np.testing.assert_allclose(state[:9], x, rtol=1e-12, atol=1e-12)
+        np.testing.assert_array_equal(state[9:-1], [history[lag, axis] for lag, axis in candidate.history_slots])

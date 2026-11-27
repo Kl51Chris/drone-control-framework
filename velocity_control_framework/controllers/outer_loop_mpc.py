@@ -103,7 +103,7 @@ class OuterLoopMPCController:
         self.diagnostics: dict = {}
         self.prediction: dict = {}
         self._last_input = np.zeros(4)
-        self._issued_history=np.zeros((5,4))
+        self._issued_history=np.zeros((self.config.identified.history_steps if self.config.identified else 5,4))
         self._issued_count=0
         if getattr(self,"_history_bridge",None) is not None:
             self._history_bridge.reset()
@@ -128,14 +128,14 @@ class OuterLoopMPCController:
                        (adapter.RAW_THRUST_MAX-adapter.RAW_THRUST_MIN)-self.config.model.equilibrium_thrust)
             self._issued_history[1:]=self._issued_history[:-1]
             self._issued_history[0]=issued
-            self._issued_count=min(5,self._issued_count+1)
+            self._issued_count=min(len(self._issued_history),self._issued_count+1)
             self._history_bridge.record_issued_command(command)
 
     def _update(self, state: DroneState, references: tuple[Reference, ...]) -> BodyRateThrustCommand:
         if self._origin is None:
             self._origin = state.position.copy()
             self._yaw = state.yaw
-        if self.config.identified is not None and self._issued_count < 5:
+        if self.config.identified is not None and self._issued_count < self.config.identified.history_steps:
             command=self._history_bridge.update_preview(state,references)
             self.diagnostics={**self._history_bridge.diagnostics,"active_controller":"m0_history_bridge",
                               "real_history_steps":self._issued_count}
@@ -154,7 +154,8 @@ class OuterLoopMPCController:
         ])
         if constant:
             goals = np.repeat(goals, self.config.horizon, axis=0)
-        model_state=np.r_[x,self._issued_history.ravel(),1.] if self.config.identified is not None else x
+        model_state=(np.r_[x,[self._issued_history[lag,axis] for lag,axis in self.config.identified.history_slots],1.]
+                     if self.config.identified is not None else x)
         free = self._free @ model_state
         target = goals.ravel()
         q = self._linear.copy()

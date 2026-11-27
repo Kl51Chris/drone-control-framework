@@ -13,8 +13,31 @@
    defined degradation tests. MuJoCo ground truth is an offline scoring
    channel and is unavailable as online controller feedback.
 
-The existing MPC is a development baseline. Phase 3 does not tune final
-weights or implement online DeePC.
+## Post-Phase 4.3 development decision
+
+The current MPC identification stage is closed. Keep phase3-v1 and its
+existing split. Use Joint FIR6 as the primary identified MPC candidate
+and M0 as the physics-based control. Joint FIR6 captures effective
+multi-cycle body-rate and thrust response and reduced realized physical
+cost and control effort in the paired nominal runs. Monitor its known
+low-frequency yaw gain bias in signed yaw scenarios.
+
+Use a common N=25 (0.50 s at 50 Hz) for MPC and DeePC development. Reserve
+N=40 for later horizon sensitivity testing. N=25 leaves more nominal
+compute headroom given the observed DeePC timeouts under sustained
+active output constraints.
+
+1. Improve DeePC solver reliability with active output constraints.
+2. Select DeePC T_ini and regularization.
+3. Run paired nominal and stochastic-noise development trials.
+4. Tune shared Q/R/S on the common development scenarios.
+5. Confirm in independent closed-loop scenarios, then freeze the model,
+   dataset and controller parameters before formal evaluation.
+
+Stop FIR order and model structure searches. Reopen limited identification
+only for a reproducible failure attributable to plant-model mismatch that
+persists after reasonable tuning. These are development settings. The
+final research configuration remains open until independent confirmation.
 
 ## Existing dataset audit
 

@@ -33,8 +33,8 @@ def training_blocks(config):
     if not math.isclose(manifest["thrust_equilibrium"], config.model.equilibrium_thrust):
         raise ValueError("DeePC thrust equilibrium differs from dataset")
     t, n = config.past, config.horizon
-    if t != 6 or n != 25 or config.latent < 1 or config.regularization <= 0:
-        raise ValueError("DeePC prototype is scoped to 6 past and 25 future steps")
+    if t != 6 or n not in (25,40) or config.latent < 1 or config.regularization <= 0:
+        raise ValueError("DeePC supports 6 past and 25 or 40 future steps")
     all_u, all_y = [], []
     for item in manifest["episodes"]:
         if item["split"] != "train":
@@ -105,6 +105,8 @@ class OuterLoopDeePCController(OuterLoopMPCController):
         hessian = (self._forced.T@(self._q[:,None]*self._forced) +
                    self._past_map.T@self._past_map + self._lambda*self._lift_free.T@self._lift_free)
         hessian[:4*n,:4*n] += np.diag(self._r)+self._difference.T@(self._s[:,None]*self._difference)
+        self._axis_slack_unit = .001
+        self._soft_axis_solvers = self._make_soft_axis_solvers(sparse.csc_matrix(hessian), select)
         p = sparse.block_diag((sparse.csc_matrix(hessian),0.1*slack),format="csc")
         self._factor = linalg.cho_factor(hessian)
         self._box_solver = osqp.OSQP()
@@ -126,6 +128,9 @@ class OuterLoopDeePCController(OuterLoopMPCController):
     def reset(self):
         super().reset()
         self._box_solver.warm_start(x=np.zeros(self._n_decision),y=np.zeros(self._n_input))
+        for indices, solver in self._soft_axis_solvers.values():
+            solver.warm_start(x=np.zeros(self._n_decision+len(indices)),
+                              y=np.zeros(self._n_input+3*len(indices)))
         self._observations = deque(maxlen=self.config.past+1)
         self._issued = deque(maxlen=self.config.past)
         self._bridge = OuterLoopMPCController(self.config) if not hasattr(self,"_bridge") else self._bridge
@@ -141,6 +146,68 @@ class OuterLoopDeePCController(OuterLoopMPCController):
                      (adapter.RAW_THRUST_MAX-adapter.RAW_THRUST_MIN)-self.config.model.equilibrium_thrust)
         self._last_input = actual
         self._issued.append(actual)
+
+    def _make_soft_axis_solvers(self, hessian, select):
+        """Prepare QPs for individual axes and common coupled horizontal bounds."""
+        import osqp
+
+        unit = self._axis_slack_unit
+        bank = {}
+        groups = [(axis,) for axis in range(9)] + [(0, 1), (0, 2), (1, 2), (0, 1, 6, 7)]
+        axes = np.arange(9*self.config.horizon) % 9
+        for group in groups:
+            indices = np.flatnonzero(np.isin(axes, group))
+            n = len(indices)
+            eye = sparse.eye(n, format="csc")
+            p = sparse.block_diag((hessian, .1*unit**2*eye), format="csc")
+            rows = sparse.csc_matrix(self._forced[indices]/unit)
+            constraints = sparse.vstack((
+                sparse.hstack((select, sparse.csc_matrix((self._n_input, n)))),
+                sparse.hstack((rows, -eye)), sparse.hstack((rows, eye)),
+                sparse.hstack((sparse.csc_matrix((n, self._n_decision)), eye)),
+            ), format="csc")
+            solver = osqp.OSQP()
+            solver.setup(P=p, q=np.r_[np.zeros(self._n_decision), np.full(n, 100.*unit)],
+                         A=constraints, l=np.r_[self._low_u, np.full(2*n, -np.inf), np.zeros(n)],
+                         u=np.r_[self._high_u, np.full(3*n, np.inf)],
+                         eps_abs=1e-5, eps_rel=1e-5, rho=.1, check_termination=5,
+                         verbose=False, time_limit=self.config.solver_time_limit_s)
+            solver.solve(raise_error=False)
+            bank[group] = (indices, solver)
+        return bank
+
+    def _screened_soft_solution(self, linear, free, candidate, started):
+        """Use a prefactored QP and check every omitted soft constraint."""
+        unit = self._axis_slack_unit
+        physical = self._forced@candidate+free
+        active = np.flatnonzero(abs(physical)>self._bounds)
+        group = tuple(np.unique(active%9))
+        if not group:
+            return None
+        group = next((key for key in self._soft_axis_solvers if set(group).issubset(key)), None)
+        if group is None:
+            return None
+        remaining = self.config.solver_time_limit_s-(perf_counter()-started)
+        if remaining <= .0001:
+            return None
+        indices, solver = self._soft_axis_solvers[group]
+        n = len(indices)
+        upper = (self._bounds[indices]-free[indices])/unit
+        lower = (-self._bounds[indices]-free[indices])/unit
+        solver.update_settings(time_limit=remaining)
+        solver.update(q=np.r_[linear[:self._n_decision], np.full(n, 100.*unit)],
+                      l=np.r_[self._low_u, np.full(n, -np.inf), lower, np.zeros(n)],
+                      u=np.r_[self._high_u, upper, np.full(2*n, np.inf)])
+        result = solver.solve(raise_error=False)
+        if result.info.status!="solved" or not np.all(np.isfinite(result.x)):
+            return None
+        z = result.x[:self._n_decision]
+        slack = np.zeros_like(free)
+        slack[indices] = np.maximum(result.x[self._n_decision:]*unit, 0.)
+        violation = np.abs(self._forced@z+free)-self._bounds
+        if np.max(violation-slack)>2e-6:
+            return None
+        return SimpleNamespace(x=np.r_[z,slack], info=result.info)
 
     def _update(self,state,references):
         if self._previous_observation is not None:
@@ -170,7 +237,8 @@ class OuterLoopDeePCController(OuterLoopMPCController):
                            x[8]+math.remainder(ref.yaw-self._yaw-x[8],2*math.pi)] for ref in references])
         free=self._future_offset@u_past
         # Translate the original fixed takeover box into the moving frame.
-        lo,hi=self._constraint_bounds(free+np.tile(shift,n))
+        absolute_free = free+np.tile(shift,n)
+        lo,hi=self._constraint_bounds(absolute_free)
         past_residual=self._past_offset@u_past-past
         g0=self._lift_past@u_past
         linear=self._linear.copy()
@@ -181,23 +249,38 @@ class OuterLoopDeePCController(OuterLoopMPCController):
         candidate=linalg.cho_solve(self._factor,-linear[:self._n_decision])
         requested=candidate[:self._n_input]
         result=None
-        if np.any(requested<self._low_u) or np.any(requested>self._high_u):
-            self._box_solver.update(q=linear[:self._n_decision])
-            box=self._box_solver.solve(raise_error=False)
-            if box.info.status=="solved":
-                candidate=box.x
-                result=SimpleNamespace(x=np.r_[candidate,np.zeros(9*n)],info=box.info)
+        output_violated = np.any(abs(self._forced@candidate+absolute_free)>self._bounds)
+        if not output_violated:
+            if np.any(requested<self._low_u) or np.any(requested>self._high_u):
+                self._box_solver.update(q=linear[:self._n_decision])
+                box=self._box_solver.solve(raise_error=False)
+                if box.info.status=="solved":
+                    candidate=box.x
+                    result=SimpleNamespace(x=np.r_[candidate,np.zeros(9*n)],info=box.info)
+            else:
+                result=SimpleNamespace(x=np.r_[candidate,np.zeros(9*n)],info=SimpleNamespace(
+                    status="solved",iter=0,prim_res=0.,dual_res=0.,solve_time=0.))
+        if result is None or np.any(abs(self._forced@candidate+absolute_free)>self._bounds):
+            result=self._screened_soft_solution(linear,absolute_free,candidate,start)
+            solver_path="screened_soft" if result is not None else "full"
+            if result is None:
+                previous = perf_counter()-start
+                remaining=self.config.solver_time_limit_s-previous
+                if remaining <= .0001:
+                    self.diagnostics = {"status":"budget_exhausted","qp_elapsed_s":previous,
+                                        "active_controller":"deepc","solver_path":"full"}
+                    self.prediction={}
+                    raise MPCSolveError("DeePC screened solve exhausted its budget")
+                self._solver.update_settings(time_limit=remaining)
+                self._solver.update(q=linear,l=lo,u=hi)
+                result=self._solver.solve(raise_error=False)
         else:
-            result=SimpleNamespace(x=np.r_[candidate,np.zeros(9*n)],info=SimpleNamespace(
-                status="solved",iter=0,prim_res=0.,dual_res=0.,solve_time=0.))
-        if result is None or np.any(abs(self._forced@candidate+free+np.tile(shift,n))>self._bounds):
-            self._solver.update(q=linear,l=lo,u=hi)
-            result=self._solver.solve(raise_error=False)
+            solver_path="box" if result.info.iter else "unconstrained"
         elapsed=perf_counter()-start
         self.diagnostics={"status":result.info.status,"iterations":result.info.iter,
             "primal_residual":result.info.prim_res,"dual_residual":result.info.dual_res,
             "solve_s":result.info.solve_time,"qp_elapsed_s":elapsed,"active_controller":"deepc",
-            "history_samples":len(self._issued)}
+            "history_samples":len(self._issued),"solver_path":solver_path}
         self.prediction={}
         if result.info.status!="solved" or elapsed>self.config.solver_time_limit_s or result.x is None or not np.all(np.isfinite(result.x)):
             raise MPCSolveError(f"DeePC QP status={result.info.status}, elapsed={elapsed:.6f}s")

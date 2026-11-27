@@ -1029,7 +1029,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--flight-lifecycle", choices=("controller", "hlc"), default="controller")
     parser.add_argument("--mpc-config", type=Path)
     parser.add_argument("--horizon", type=int)
-    parser.add_argument("--mpc-model", choices=("m0","hybrid","joint-fir6"), default="m0")
+    parser.add_argument("--mpc-model", choices=("m0","hybrid","joint-fir6","balanced-low-fir25",
+                                              "axis-r6-p6-y25-t12","axis-r6-p6-y25-t16",
+                                              "axis-r6-p6-y25-t20","axis-r6-p6-y25-t25",
+                                              "axis-r10-p10-y16-t12"), default="m0")
     parser.add_argument("--model-evidence", type=Path, default=Path("log/phase3-offline-coordinates/results.json"))
     parser.add_argument("--measurement-noise", choices=("none","iid-small"))
     parser.add_argument("--noise-amplitude", type=float, default=1.0)
