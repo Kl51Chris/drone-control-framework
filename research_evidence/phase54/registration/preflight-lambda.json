@@ -1,0 +1,20 @@
+{
+  "t6-ref": {
+    "lambda_g": 0.013307542202673592,
+    "expected": 0.0133075422,
+    "relative_error": 2.0090804223551143e-10,
+    "pass_": true
+  },
+  "t6-a": {
+    "lambda_g": 1.3307542202673592,
+    "expected": 1.33075422,
+    "relative_error": 2.0090805787828106e-10,
+    "pass_": true
+  },
+  "t6-b": {
+    "lambda_g": 1.3307542202673592,
+    "expected": 1.33075422,
+    "relative_error": 2.0090805787828106e-10,
+    "pass_": true
+  }
+}

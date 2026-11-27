@@ -1,0 +1,20 @@
+hover-t6-ref-L1-54111 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] fixed-hover
+yaw7-pos-t6-a-L1-54121 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] fixed-hover
+yaw7-neg-t6-b-L1-54131 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] fixed-hover
+z4-pos-t6-ref-L1-54141 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] fixed-hover
+z4-neg-t6-a-L1-54151 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] fixed-hover
+circle6-t6-b-L1-54161 exit 0 | execute-flag-absent True
+    [CONTROLLER] outer-loop-deepc
+    [REFERENCE] circular
+"initialization_weight": 0.0625 "regularization": 0.01 "maximum_flight_duration_s": 9.5 
+"initialization_weight": 0.0625 "regularization": 0.01 "maximum_flight_duration_s": 30.0 

@@ -1,0 +1,5 @@
+## feat/crazysim-integration...origin/feat/crazysim-integration
+?? CLAUDE.md
+?? research_evidence/phase54/
+c41c71511301251ad19b3d20f1c3e950de2937dc
+3.10.12 2.2.6 1.15.3 1.0.4
