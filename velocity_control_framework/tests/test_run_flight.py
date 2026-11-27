@@ -174,6 +174,7 @@ def test_crazysim_circular_profile_is_recorded_in_metadata() -> None:
         "armed_idle_duration": 0.50,
         "takeoff_duration": 3.0,
         "circle_duration": 15.0,
+        "speed_profile": "smoothstep",
         "landing_duration": 3.0,
     }
 

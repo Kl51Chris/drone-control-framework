@@ -458,6 +458,14 @@ is 25 steps and configurable. See the
 
 ## 5. DeePC Controller [Planned]
 
+Formal comparison follows [Shared-Dataset Same-Cost](shared-dataset.md).
+MPC identification and DeePC Hankel construction share the same body-rate
+I/O episodes and split. Both controllers share Q/R/S, horizon, measurement
+permissions, reference policy, constraints and sampling. Controller-specific
+parameters may be optimized independently on common nominal and stochastic
+conditions. GNSS degradation scenarios are reserved from tuning. Freeze
+the dataset, model and controller parameters before formal evaluation.
+
 Data-enabled predictive control is intended to compute constrained predictive
 commands from recorded input/output behavior while using the same external
 controller interface. Required excitation data, signal selection, data quality

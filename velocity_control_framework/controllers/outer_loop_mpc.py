@@ -1,6 +1,6 @@
 """Constrained linear MPC for CrazySim near-hover tracking."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import math
 from time import perf_counter
 
@@ -9,6 +9,7 @@ from scipy import sparse
 
 from velocity_control_framework.interfaces import BodyRateThrustCommand, DroneState, Reference
 from .near_hover_model import NearHoverModelConfig, discrete_model, world_to_fixed_yaw
+from .identified_hover_model import IdentifiedHoverModelConfig, identified_discrete_model
 
 
 class MPCSolveError(RuntimeError):
@@ -27,6 +28,7 @@ class OuterLoopMPCConfig:
     min_thrust: float = 0.38
     max_thrust: float = 0.56
     solver_time_limit_s: float = 0.012
+    identified: IdentifiedHoverModelConfig | None = None
 
     def __post_init__(self) -> None:
         if isinstance(self.horizon, bool) or not isinstance(self.horizon, int) or self.horizon < 1:
@@ -48,13 +50,15 @@ class OuterLoopMPCController:
 
         self.config = config
         ad, bd = discrete_model(config.model)
+        if config.identified is not None:
+            ad,bd=identified_discrete_model(config.model,config.identified)
         n = config.horizon
-        self._free = np.vstack([np.linalg.matrix_power(ad, j) for j in range(1, n + 1)])
+        self._free = np.vstack([np.linalg.matrix_power(ad, j)[:9] for j in range(1, n + 1)])
         self._forced = np.zeros((9 * n, 4 * n))
         for row in range(n):
             for col in range(row + 1):
                 self._forced[row * 9:(row + 1) * 9, col * 4:(col + 1) * 4] = (
-                    np.linalg.matrix_power(ad, row - col) @ bd
+                    np.linalg.matrix_power(ad, row - col)[:9] @ bd
                 )
         self._q = np.tile(config.q, n)
         self._r = np.tile(config.r, n)
@@ -82,6 +86,8 @@ class OuterLoopMPCController:
         self._solver.setup(P=p, q=self._linear, A=matrix, l=lower, u=upper,
                            verbose=False, time_limit=config.solver_time_limit_s)
         self._rows = matrix.shape[0]
+        self._history_bridge = (OuterLoopMPCController(replace(config,identified=None))
+                                if config.identified is not None else None)
         self.reset()
 
     def _constraint_bounds(self, free: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -97,20 +103,60 @@ class OuterLoopMPCController:
         self.diagnostics: dict = {}
         self.prediction: dict = {}
         self._last_input = np.zeros(4)
+        self._issued_history=np.zeros((5,4))
+        self._issued_count=0
+        if getattr(self,"_history_bridge",None) is not None:
+            self._history_bridge.reset()
 
     def update(self, state: DroneState, reference: Reference, dt: float) -> BodyRateThrustCommand:
+        return self._update(state, (reference,) * self.config.horizon)
+
+    def update_preview(self, state: DroneState, references: tuple[Reference, ...]) -> BodyRateThrustCommand:
+        if len(references) != self.config.horizon:
+            raise ValueError("preview length must match the prediction horizon")
+        return self._update(state, references)
+
+    def record_issued_command(self, command: BodyRateThrustCommand) -> None:
+        """Update the slew origin when an experiment adds a bounded excitation."""
+        self._last_input = np.array([command.roll_rate, command.pitch_rate, command.yaw_rate,
+                                     command.thrust - self.config.model.equilibrium_thrust])
+        if self.config.identified is not None:
+            from ..backends.crazysim_command_adapter import CrazySimCommandAdapter as adapter
+
+            issued=self._last_input.copy()
+            issued[3]=((adapter._encode_thrust(command.thrust)-adapter.RAW_THRUST_MIN) /
+                       (adapter.RAW_THRUST_MAX-adapter.RAW_THRUST_MIN)-self.config.model.equilibrium_thrust)
+            self._issued_history[1:]=self._issued_history[:-1]
+            self._issued_history[0]=issued
+            self._issued_count=min(5,self._issued_count+1)
+            self._history_bridge.record_issued_command(command)
+
+    def _update(self, state: DroneState, references: tuple[Reference, ...]) -> BodyRateThrustCommand:
         if self._origin is None:
             self._origin = state.position.copy()
             self._yaw = state.yaw
+        if self.config.identified is not None and self._issued_count < 5:
+            command=self._history_bridge.update_preview(state,references)
+            self.diagnostics={**self._history_bridge.diagnostics,"active_controller":"m0_history_bridge",
+                              "real_history_steps":self._issued_count}
+            self.prediction=self._history_bridge.prediction
+            return command
         rotation = world_to_fixed_yaw(self._yaw)
         x = np.r_[rotation @ (state.position - self._origin),
                   rotation @ state.velocity, state.roll, state.pitch,
                   math.remainder(state.yaw - self._yaw, 2 * math.pi)]
-        goal = np.r_[rotation @ (reference.position - self._origin),
-                     rotation @ reference.velocity, 0., 0.,
-                     math.remainder(reference.yaw - self._yaw, 2 * math.pi)]
-        free = self._free @ x
-        target = np.tile(goal, self.config.horizon)
+        constant = all(reference is references[0] for reference in references)
+        goals = np.asarray([
+            np.r_[rotation @ (reference.position - self._origin),
+                  rotation @ reference.velocity, 0., 0.,
+                  x[8] + math.remainder(reference.yaw - self._yaw - x[8], 2 * math.pi)]
+            for reference in (references[:1] if constant else references)
+        ])
+        if constant:
+            goals = np.repeat(goals, self.config.horizon, axis=0)
+        model_state=np.r_[x,self._issued_history.ravel(),1.] if self.config.identified is not None else x
+        free = self._free @ model_state
+        target = goals.ravel()
         q = self._linear.copy()
         q[:len(self._r)] = self._forced.T @ (self._q * (free - target))
         q[:4] -= self._s[:4] * self._last_input
@@ -123,6 +169,8 @@ class OuterLoopMPCController:
             "status": result.info.status, "iterations": result.info.iter,
             "primal_residual": result.info.prim_res, "dual_residual": result.info.dual_res,
             "solve_s": result.info.solve_time, "qp_elapsed_s": elapsed,
+            "model_variant":self.config.identified.variant if self.config.identified else "M0",
+            "real_history_steps":self._issued_count,
         }
         self.prediction = {}
         if result.info.status != "solved" or elapsed > self.config.solver_time_limit_s:
@@ -153,7 +201,8 @@ class OuterLoopMPCController:
             "state": np.vstack((x, predicted.reshape(-1, 9))),
             "input": inputs.reshape(-1, 4),
             "slack": slack.reshape(-1, 9),
-            "reference": goal,
+            "reference": goals[0],
+            "reference_trajectory": goals,
             "origin": self._origin,
             "yaw": self._yaw,
         }

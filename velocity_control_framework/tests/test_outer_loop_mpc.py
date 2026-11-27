@@ -32,3 +32,21 @@ def test_qp_holds_hover_and_respects_bounds_at_unreachable_reference():
     assert controller.diagnostics["status"] == "solved"
     controller.reset()
     assert not controller.prediction
+
+
+def test_preview_uses_future_targets_and_constant_preview_matches_baseline():
+    pytest.importorskip("osqp")
+    config = OuterLoopMPCConfig(horizon=5)
+    controller = OuterLoopMPCController(config)
+    state = DroneState.zero()
+    ref = Reference.hover(0, 0, 0)
+    baseline = controller.update(state, ref, 0.02)
+    controller.reset()
+    same = controller.update_preview(state, (ref,) * 5)
+    for field in ("roll_rate", "pitch_rate", "yaw_rate", "thrust"):
+        assert getattr(same, field) == pytest.approx(getattr(baseline, field), abs=1e-10)
+    references = tuple(Reference.hover(0, 0, 0.01 * j) for j in range(1, 6))
+    command = controller.update_preview(state, references)
+    assert command.thrust > baseline.thrust
+    np.testing.assert_allclose(controller.prediction["reference_trajectory"][:, 2],
+                               [0.01, 0.02, 0.03, 0.04, 0.05])

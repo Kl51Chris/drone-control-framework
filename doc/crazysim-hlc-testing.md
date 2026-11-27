@@ -135,3 +135,50 @@ under the git-ignored `log/` directory.
 These runs had zero recorded deadline misses and zero dropped prediction
 snapshots. HLC landing is qualified by estimator criteria and post-STOP
 actuator inactivity. Data are local to this simulator and test configuration.
+
+## Phase 2 evaluation
+
+Run from the repository root. The matrix tool defaults to three repeats.
+Each matrix uses its own output directory, and each case starts new firmware
+and MuJoCo processes. Stop any process using the selected firmware port or
+choose a different port. CFLib connects on the firmware port minus 100.
+
+```bash
+.venv/bin/python -m tools.mpc_phase2_matrix compare > /tmp/mpc-compare.json
+.venv/bin/python -m tools.run_crazysim_batch /tmp/mpc-compare.json log/my-mpc-compare
+OPENBLAS_NUM_THREADS=1 .venv/bin/python -m tools.analyze_mpc_batch log/my-mpc-compare
+```
+
+Add `--gui` to the batch command to show the MuJoCo viewer. The default is
+headless. After reviewing the paired comparison, generate stage `nominal`
+and then `horizon` using the same commands with fresh output directories and
+pass `--mode preview` or `--mode constant` to the matrix generator.
+
+`--reference-mode constant` is the original MPC objective. In preview mode,
+the circular reference is sampled at the future control ticks, with samples
+after the circle clamped to its endpoint. Both modes use the same solver
+structure. Steps are unannounced in both modes. For example, add
+`--step-axis yaw --step-amplitude -0.0872664626 --step-hold 2` for a -5° step.
+XYZ step amplitudes are in meters and yaw amplitudes are in radians.
+Step hold is limited to 2 s by the existing fixed-hover flight timeout.
+An unsettled response is reported as censored at the end of the observation.
+
+For circles, use `--circle-radius`, `--circle-duration` and
+`--circle-speed-profile smoothstep|smootherstep`. For one revolution, mean
+speed is 2*pi*radius/duration and peak speed is respectively 1.5 or 1.875
+times the mean. The factory profile remains cubic smoothstep.
+
+The truth observer records simulator time, host monotonic time, world
+position, XYZW quaternion, world linear velocity, and body angular velocity
+from MuJoCo. It returns the original pose unchanged to the simulator.
+The analysis aligns truth to the host-timestamped observations, reports
+interpolation gaps, and reports estimation error separately from
+reference-to-truth tracking error. The model validation rolls out the
+existing model from truth with recorded host-issued commands. It is distinct
+from comparing an online MPC plan with later measurements.
+Each run saves commands and status in `experiment.json`, including failed
+runs. The analysis generates per-run plots, `summary.json`, `aggregate.json`
+and grouped comparison plots.
+
+See [Phase 2 evaluation results](mpc-phase2-results.md) for the completed
+comparison, nominal runs, horizon sweep, and local artifact locations.

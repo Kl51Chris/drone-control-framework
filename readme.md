@@ -89,6 +89,9 @@ the selected software configuration. Hardware execution requires the explicit
   OSQP-based MPC baseline for tracking with official HLC takeoff and landing.
   See the [CrazySim MPC testing guide](doc/crazysim-hlc-testing.md) for the
   reproducible hover, step, circle and fallback scenarios. DeePC remains planned.
+- The [shared offline dataset guide](doc/shared-dataset.md) describes
+  excitation collection, train/validation/test separation, and the
+  Shared-Dataset Same-Cost research protocol.
 
 ## Tests
 

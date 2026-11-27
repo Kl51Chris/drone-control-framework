@@ -46,9 +46,12 @@ class CircularFlightConfig:
     armed_idle_duration: float = 0.50
     takeoff_duration: float = 4.00
     circle_duration: float = 15.00
+    speed_profile: str = "smoothstep"
     landing_duration: float = 4.00
 
     def __post_init__(self) -> None:
+        if self.speed_profile not in ("smoothstep", "smootherstep"):
+            raise ValueError("unsupported circular speed profile")
         positive_values = {
             "takeoff_height": self.takeoff_height,
             "circle_radius": self.circle_radius,
@@ -301,6 +304,9 @@ class CircularFlightReference:
             6.0 * s
             - 6.0 * s**2
         )
+        if self.config.speed_profile == "smootherstep":
+            smooth_position = s**3 * (10.0 - 15.0 * s + 6.0 * s**2)
+            smooth_velocity = 30.0 * s**2 * (1.0 - s)**2
 
         total_angle = (
             2.0

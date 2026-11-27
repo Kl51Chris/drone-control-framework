@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
+from experiments.excitation import HoverExcitation
+from experiments.measurement_noise import MeasurementNoise
+from velocity_control_framework.controllers.outer_loop_deepc import (
+    OuterLoopDeePCConfig, OuterLoopDeePCController,
+)
+from velocity_control_framework.controllers.identified_hover_model import IdentifiedHoverModelConfig
 import json
 import math
 from pathlib import Path
@@ -59,6 +65,7 @@ CRAZYSIM_CONFIGURATION_NAME = "crazysim-cf2x-t350-initial"
 CRAZYSIM_CALIBRATED_CONFIGURATION_NAME = "crazysim-cf2x-t350-calibrated"
 LQR_CONTROLLER_NAME = "outer-loop-lqr"
 MPC_CONTROLLER_NAME = "outer-loop-mpc"
+DEEPC_CONTROLLER_NAME = "outer-loop-deepc"
 LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
@@ -158,10 +165,18 @@ class ProductionFlightProgram:
         self._official_takeoff_end: float | None = None
         self._official_landing_end: float | None = None
         self.step_axis: str | None = None
+        self.step_amplitude = 0.03
+        self.reference_mode = "constant"
+        self.log_root: Path | None = None
+        self.excitation: HoverExcitation | None = None
+        self._excitation_log: dict = {}
         self.force_solver_failure = False
         self._fallback_reason: str | None = None
         self._tracking_start: float | None = None
         self._previous_input_valid = False
+        self.measurement_noise: MeasurementNoise | None = None
+        self._noise_step = 0
+        self._noise_log: dict = {}
 
     @property
     def estimated_landing_confirmed(self) -> bool:
@@ -196,6 +211,8 @@ class ProductionFlightProgram:
         return post_arming_state
 
     def initialize(self, initial_state: DroneState, start_time: float) -> None:
+        self._noise_step = 0
+        self._noise_log = {}
         self._validate_finite_state(initial_state)
         initial_age = float(start_time) - initial_state.timestamp
         if initial_age < -0.01 or initial_age > self.safety.max_state_age_s:
@@ -274,8 +291,12 @@ class ProductionFlightProgram:
                 and self._provider().get_state(current_time).name == "HOVER"
             ):
                 position = reference.position.copy()
-                position["xyz".index(self.step_axis)] += 0.03
-                reference = Reference(position, reference.velocity, reference.yaw,
+                yaw = reference.yaw
+                if self.step_axis == "yaw":
+                    yaw += self.step_amplitude
+                else:
+                    position["xyz".index(self.step_axis)] += self.step_amplitude
+                reference = Reference(position, reference.velocity, yaw,
                                       reference.yaw_rate, reference.timestamp)
             return reference, self._update_official(state, reference, current_time, dt)
         command = self.controller.update(state, reference, dt)
@@ -292,6 +313,7 @@ class ProductionFlightProgram:
         provider = self._provider()
         phase = provider.get_state(now).name
         self._last_state = state
+        self._noise_log = {}
         ground_z = float(self._initial_state.position[2])
         if phase == "TAKEOFF" and lifecycle.owner is CommandOwner.GROUND:
             # Leave time for the official loop to settle before tracking.
@@ -318,7 +340,26 @@ class ProductionFlightProgram:
                         and isinstance(self.controller, OuterLoopMPCController)
                     ):
                         raise MPCSolveError("controlled solver failure")
-                    command = self.controller.update(state, reference, dt)
+                    observation=state
+                    if self.measurement_noise is not None:
+                        observation,self._noise_log=self.measurement_noise.apply(state,self._noise_step)
+                        self._noise_step+=1
+                    if (
+                        self.reference_mode == "preview"
+                        and isinstance(self.controller, OuterLoopMPCController)
+                        and phase == "CIRCLE"
+                    ):
+                        profile = provider.config
+                        assert self._start_time is not None
+                        end = self._start_time + profile.armed_idle_duration + profile.takeoff_duration + profile.circle_duration
+                        period = self.controller.config.model.sample_period_s
+                        references = tuple(
+                            provider.get_reference(min(now + i * period, math.nextafter(end, -math.inf)))
+                            for i in range(1, self.controller.config.horizon + 1)
+                        )
+                        command = self.controller.update_preview(observation, references)
+                    else:
+                        command = self.controller.update(observation, reference, dt)
                 except MPCSolveError as error:
                     if np.linalg.norm(state.velocity) > 0.10 or max(abs(state.roll), abs(state.pitch)) > 0.10:
                         raise HardSafetyViolation("solver failed outside the official recovery envelope") from error
@@ -326,6 +367,20 @@ class ProductionFlightProgram:
                     lifecycle.land(ground_z + 0.03, provider.config.landing_duration)
                     self._official_landing_end = now + provider.config.landing_duration
                     return None
+                if self.excitation is not None:
+                    assert self._tracking_start is not None
+                    baseline = np.array([command.roll_rate, command.pitch_rate, command.yaw_rate, command.thrust])
+                    injection = self.excitation.sample(now - self._tracking_start)
+                    requested = baseline + injection
+                    cfg = self.controller.config
+                    total = np.clip(requested, [-cfg.max_rate] * 3 + [cfg.min_thrust],
+                                    [cfg.max_rate] * 3 + [cfg.max_thrust])
+                    self._excitation_log = {
+                        "baseline": baseline.tolist(), "injected": injection.tolist(),
+                        "saturated": (total != requested).tolist(),
+                    }
+                    command = BodyRateThrustCommand(*total)
+                    self.controller.record_issued_command(command)
                 self._last_command = command
                 return command
         elif phase == "LANDING" and lifecycle.owner in (
@@ -339,6 +394,8 @@ class ProductionFlightProgram:
         if self.official_lifecycle is None:
             return {}
         return {
+            "measurement_noise": self._noise_log,
+            "excitation": self._excitation_log if self.official_lifecycle.owner is CommandOwner.BODY_RATE else {},
             "command_source": self.official_lifecycle.owner.name,
             "fallback_reason": self._fallback_reason,
             "previous_input_valid": self._previous_input_valid,
@@ -683,6 +740,8 @@ def build_runner(
             def send(self, command: BodyRateThrustCommand) -> None:
                 assert program.official_lifecycle is not None
                 program.official_lifecycle.send_tracking(command)
+                if isinstance(program.controller, OuterLoopMPCController):
+                    program.controller.record_issued_command(command)
 
             def stop(self) -> None:
                 assert program.official_lifecycle is not None
@@ -823,7 +882,8 @@ def _run_backend(
         else Crazyflie(rw_cache="./cache")
     )
     with SyncCrazyflie(uri, cf=crazyflie) as link:
-        run_logger = FlightLogger(build_run_configuration(uri, program, backend=backend))
+        logger_options = {"root": program.log_root} if program.log_root is not None else {}
+        run_logger = FlightLogger(build_run_configuration(uri, program, backend=backend), **logger_options)
         print(f"[LOG] {run_logger.directory.resolve()}")
         if backend == HARDWARE_BACKEND:
             build_runner(link.cf, program, run_logger, backend=backend).run()
@@ -889,6 +949,14 @@ def build_run_configuration(
         "safety": asdict(program.safety),
         "flight_lifecycle": "hlc" if program.use_official_lifecycle else "controller",
         "step_axis": program.step_axis,
+        "step_amplitude": program.step_amplitude if program.step_axis else None,
+        "reference_mode": program.reference_mode,
+        "measurement_noise": asdict(program.measurement_noise) if program.measurement_noise is not None else None,
+        "excitation": (
+            {"seed": program.excitation.seed, "axis": program.excitation.axis,
+             "max_hz": program.excitation.max_hz, "kind": program.excitation.kind}
+            if program.excitation is not None else None
+        ),
         "forced_solver_failure": program.force_solver_failure,
     }
     if program.reference_name == FIXED_HOVER_REFERENCE:
@@ -930,10 +998,10 @@ def build_run_configuration(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument(
         "--controller",
-        choices=(CONTROLLER_NAME, LQR_CONTROLLER_NAME, MPC_CONTROLLER_NAME),
+        choices=(CONTROLLER_NAME, LQR_CONTROLLER_NAME, MPC_CONTROLLER_NAME, DEEPC_CONTROLLER_NAME),
         default=CONTROLLER_NAME,
     )
     parser.add_argument(
@@ -961,14 +1029,54 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--flight-lifecycle", choices=("controller", "hlc"), default="controller")
     parser.add_argument("--mpc-config", type=Path)
     parser.add_argument("--horizon", type=int)
-    parser.add_argument("--step-axis", choices=("x", "y", "z"))
+    parser.add_argument("--mpc-model", choices=("m0","hybrid","joint-fir6"), default="m0")
+    parser.add_argument("--model-evidence", type=Path, default=Path("log/phase3-offline-coordinates/results.json"))
+    parser.add_argument("--measurement-noise", choices=("none","iid-small"))
+    parser.add_argument("--noise-amplitude", type=float, default=1.0)
+    parser.add_argument("--noise-seed", type=int, default=0)
+    parser.add_argument("--step-axis", choices=("x", "y", "z", "yaw"))
+    parser.add_argument("--step-amplitude", type=float, help="signed meters or yaw radians")
+    parser.add_argument("--step-hold", type=float, help="seconds after the unexpected reference change")
+    parser.add_argument("--reference-mode", choices=("constant", "preview"), default="constant")
+    parser.add_argument("--circle-radius", type=float)
+    parser.add_argument("--circle-duration", type=float)
+    parser.add_argument("--circle-speed-profile", choices=("smoothstep", "smootherstep"))
+    parser.add_argument("--log-root", type=Path)
+    parser.add_argument("--excitation-seed", type=int)
+    parser.add_argument("--excitation-axis", choices=("all", "roll", "pitch", "yaw", "thrust"), default="all")
+    parser.add_argument("--excitation-max-hz", type=float, choices=(8.0, 16.0), default=8.0)
+    parser.add_argument("--excitation-kind", choices=("multisine", "filtered"), default="multisine")
     parser.add_argument("--force-solver-failure", action="store_true")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    use_mpc = args.controller == MPC_CONTROLLER_NAME
+    use_deepc = args.controller == DEEPC_CONTROLLER_NAME
+    if args.mpc_model != "m0" and args.controller != MPC_CONTROLLER_NAME:
+        raise ValueError("identified model is only available for MPC")
+    if args.mpc_model != "m0" and args.excitation_seed is not None:
+        raise ValueError("identified candidate does not run data-collection excitation")
+    use_mpc = args.controller in (MPC_CONTROLLER_NAME, DEEPC_CONTROLLER_NAME)
+    if args.measurement_noise is not None and (
+        not use_mpc or args.backend != CRAZYSIM_BACKEND or args.excitation_seed is not None
+    ):
+        raise ValueError("host observation noise requires a CrazySim predictive controller without collection excitation")
+    if use_deepc and args.excitation_seed is not None:
+        raise ValueError("DeePC prototype does not run data-collection excitation")
+    if args.excitation_seed is not None and (
+        not use_mpc or args.backend != CRAZYSIM_BACKEND or args.reference != FIXED_HOVER_REFERENCE
+        or args.step_axis or args.force_solver_failure or args.excitation_seed < 0
+    ):
+        raise ValueError("excitation requires a nonnegative seed and CrazySim MPC hover")
+    custom_circle = any(value is not None for value in (args.circle_radius, args.circle_duration, args.circle_speed_profile))
+    custom_step = args.step_amplitude is not None or args.step_hold is not None
+    if custom_step and not args.step_axis:
+        raise ValueError("step parameters require --step-axis")
+    if custom_circle and args.reference != CIRCULAR_REFERENCE:
+        raise ValueError("circle parameters require --reference circular")
+    if not use_mpc and (custom_circle or custom_step or args.reference_mode != "constant"):
+        raise ValueError("evaluation settings require the MPC controller")
     if use_mpc and args.backend != CRAZYSIM_BACKEND:
         raise ValueError("MPC experiments are CrazySim-only")
     if not use_mpc and (args.mpc_config or args.horizon or args.step_axis or args.force_solver_failure):
@@ -992,6 +1100,9 @@ def main(argv: list[str] | None = None) -> None:
         configuration_name,
         args.reference,
     )
+    program.log_root = args.log_root
+    if args.measurement_noise is not None:
+        program.measurement_noise=MeasurementNoise(args.measurement_noise,args.noise_amplitude,args.noise_seed)
     if args.flight_lifecycle == "hlc" or use_mpc:
         if (
             args.backend != CRAZYSIM_BACKEND
@@ -1006,11 +1117,53 @@ def main(argv: list[str] | None = None) -> None:
             raise ValueError("MPC model period must match the production runner")
         if args.horizon is not None:
             parameters["horizon"] = args.horizon
-        config = OuterLoopMPCConfig(model=model, **parameters)
-        program.controller = OuterLoopMPCController(config)
-        program.controller_name = MPC_CONTROLLER_NAME
+        if use_deepc:
+            config = OuterLoopDeePCConfig(model=model, **parameters)
+            program.controller = OuterLoopDeePCController(config)
+        else:
+            if args.mpc_model != "m0":
+                if model != NearHoverModelConfig():
+                    raise ValueError("identified model requires the original phase3-v1 physical parameters")
+                parameters["identified"] = IdentifiedHoverModelConfig.from_report(args.model_evidence,args.mpc_model)
+            config = OuterLoopMPCConfig(model=model, **parameters)
+            program.controller = OuterLoopMPCController(config)
+        program.controller_name = args.controller
         program.force_solver_failure = args.force_solver_failure
         program.step_axis = args.step_axis
+        program.reference_mode = args.reference_mode
+        if args.excitation_seed is not None:
+            program.excitation = HoverExcitation(args.excitation_seed, args.excitation_axis,
+                                                 args.excitation_max_hz, args.excitation_kind)
+            program.vertical_flight_config = replace(program.vertical_flight_config, hover_duration=2.4)
+        if args.step_axis:
+            amplitude = args.step_amplitude
+            if amplitude is None:
+                amplitude = math.radians(5) if args.step_axis == "yaw" else 0.03
+            limit = 0.20 if args.step_axis == "yaw" else 0.10
+            if not 0 < abs(amplitude) <= limit:
+                raise ValueError("step amplitude is outside the evaluation envelope")
+            program.step_amplitude = amplitude
+            if args.step_hold is not None:
+                if not 0.5 <= args.step_hold <= 2.0:
+                    raise ValueError("step hold must fit the existing 9.5-second flight timeout (0.5 to 2.0 seconds)")
+                assert program.vertical_flight_config is not None
+                program.vertical_flight_config = replace(
+                    program.vertical_flight_config, hover_duration=0.4 + args.step_hold
+                )
+        if custom_circle:
+            profile = program.circular_flight_config
+            assert profile is not None
+            profile = replace(
+                profile,
+                circle_radius=args.circle_radius if args.circle_radius is not None else profile.circle_radius,
+                circle_duration=args.circle_duration if args.circle_duration is not None else profile.circle_duration,
+                speed_profile=args.circle_speed_profile or profile.speed_profile,
+            )
+            peak_speed = 2 * math.pi * profile.circle_radius / profile.circle_duration
+            peak_speed *= 1.5 if profile.speed_profile == "smoothstep" else 1.875
+            if profile.circle_radius > 0.18 or peak_speed > 0.14 or profile.circle_duration > 22:
+                raise ValueError("circle exceeds the nominal evaluation envelope")
+            program.circular_flight_config = profile
     _print_selection(
         config,
         args.controller,
