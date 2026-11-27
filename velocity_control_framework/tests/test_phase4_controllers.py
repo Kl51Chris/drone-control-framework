@@ -33,15 +33,16 @@ def test_identified_fir_augmentation_matches_direct_rollout():
     assert y[-1]==1
 
 
-def test_deepc_uses_six_sent_commands_and_preserves_input_box():
+@pytest.mark.parametrize("past", [6, 12, 18, 25])
+def test_deepc_uses_sent_commands_and_preserves_input_box(past):
     pytest.importorskip("osqp")
     if not Path("log/phase3-v1/manifest.json").exists():
         pytest.skip("local phase3-v1 training artifact is not mounted")
-    c=OuterLoopDeePCController(OuterLoopDeePCConfig())
+    c=OuterLoopDeePCController(OuterLoopDeePCConfig(past=past))
     ref=Reference.hover(.03,0.,0.)
-    for i in range(8):
+    for i in range(past+2):
         command=c.update(DroneState.zero(timestamp=1.+i*.02),ref,.02)
-        expected="mpc_history_bridge" if i<6 else "deepc"
+        expected="mpc_history_bridge" if i<past else "deepc"
         assert c.diagnostics["active_controller"]==expected
         assert max(abs(command.roll_rate),abs(command.pitch_rate),abs(command.yaw_rate))<=.2
         assert .38<=command.thrust<=.56

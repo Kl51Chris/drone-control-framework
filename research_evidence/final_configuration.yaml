@@ -1,0 +1,83 @@
+status: provisional
+formal_freeze: false
+scope: "CrazySim near-hover development. Independent closed-loop confirmation pending."
+evidence_revision: e85310a
+evidence_revision_note: "Flight metadata records a Git HEAD. Phase 5.1–5.3 worktree changes are documented in the original audits and Phase 5.3 archive."
+shared:
+  horizon_steps: 25
+  horizon_seconds: 0.50
+  later_sensitivity_horizon_steps: 40
+  sample_rate_hz: 50
+  solver_acceptance_budget_ms: 12
+  dataset: phase3-v1
+  split_manifest: log/phase3-v1/manifest.json
+  final_test: sealed
+  reference_policy:
+    known_circles: preview
+    unexpected_steps: constant_without_advance_notice
+  state_order: [x, y, z, vx, vy, vz, roll, pitch, yaw]
+  input_order: [roll_rate, pitch_rate, yaw_rate, normalized_collective_deviation]
+  controller_Q: [120, 120, 200, 12, 12, 24, 6, 6, 10]
+  controller_R: [2, 2, 1, 12]
+  controller_S: [2, 2, 1, 12]
+  evaluation_weights: original_shared_Q_R_S
+  physical_constraints:
+    maximum_commanded_body_rate_rad_s_per_axis: 0.20
+    absolute_collective_thrust_min: 0.38
+    absolute_collective_thrust_max: 0.56
+    soft_prediction_box_in_state_order: [0.40, 0.40, 0.45, 0.40, 0.40, 0.60, 0.10, 0.10, 0.30]
+    independent_runner_safety: existing_CrazySim_HLC_monitored_envelope
+  collective_equilibrium: 0.47681863
+  flight_lifecycle: HLC_takeoff_body_rate_tracking_HLC_landing
+MPC:
+  primary_candidate: joint-fir6
+  reference_baseline: m0
+  code_cli_default: m0
+  identified_taps_per_channel: [6, 6, 6, 6]
+  coordinates: takeover_relative_fixed_initial_yaw
+  physics_baseline_states: 9
+  primary_augmented_states: 30
+  model_search: closed
+  limitations: "Low-frequency yaw gain bias. Monitor in independent signed-yaw tests."
+DeePC:
+  primary_T_ini_steps: 6
+  comparator_T_ini_steps: 12
+  historical_T_ini_steps: [18, 25]
+  retained_latent_directions: 16
+  coordinates: window_local_position_fixed_initial_yaw
+  regularization_rho: 0.001
+  ridge_definition: "(rho * sigma_max(H_u_scaled))^2"
+  initialization_weight_beta: 0.25
+  code_defaults:
+    past: 6
+    regularization: 0.001
+    initialization_weight: 1.0
+  config_examples:
+    primary: log/phase53/configs/t6-init-quarter-s1.json
+    comparator: log/phase53/configs/t12-init-quarter-s1.json
+measurement_noise:
+  injection: host_outer_loop_estimate_from_first_body_rate_update_including_bridge
+  normalized_measurement_time_index: per_attempted_tracking_update
+  distribution: iid_zero_mean_Gaussian_per_channel
+  generator: NumPy_SeedSequence_and_PCG64
+  scale_order: [position_mm, velocity_mm_s, attitude_mrad, body_rate_mrad_s]
+  level_sigmas:
+    L0: [0, 0, 0, 0]
+    L1: [1, 5, 1, 10]
+    L2: [2, 10, 2, 20]
+    L3: [3, 15, 3, 30]
+  development_levels: [L0, L1]
+  separate_stress_level: L2
+  CrazySim_native_sensor_noise: off_for_archived_noise_pilots
+GNSS_degradation:
+  status: not_yet_verified
+  injection_layer: null
+  outage_onset_duration_and_recovery_schedule: null
+  bias_direction_magnitude_and_ramp: null
+  paired_seeds_and_predeclared_state_quality_thresholds: null
+  policy: "Determine after independent development confirmation and freeze. Do not tune on formal degradation scenarios."
+sources:
+  - doc/shared-dataset.md
+  - doc/phase5-noise-protocol.md
+  - log/phase53/plan.md
+  - log/phase53/report.md

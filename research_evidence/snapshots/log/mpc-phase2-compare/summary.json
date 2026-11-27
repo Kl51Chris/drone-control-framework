@@ -1,0 +1,1352 @@
+[
+  {
+    "run": "log/mpc-phase2-compare/001",
+    "name": "baseline-circle",
+    "repeat": 1,
+    "mode": "constant",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "constant",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "constant",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.015880332391685608,
+      0.014111310003855192,
+      0.0028526426025066603,
+      0.00045529432788789335
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.027381415170429645,
+      0.026792517173667728,
+      0.0036366889589711147,
+      0.0007231737303337038
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.0001360024454440784,
+      0.00010240503262475975,
+      5.290671712164889e-05,
+      0.0004441790050463948
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.0004910210645333108,
+      0.0008691814117319693,
+      0.0004441790050463948
+    ],
+    "truth_bracket_p99_ms": 10.845082419727987,
+    "truth_observer_p99_ms": 0.010922319997916928,
+    "truth_real_time_factor": 0.938836933099494,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 748,
+        "rmse": [
+          4.513972213939501e-05,
+          4.201517543695395e-05,
+          1.1336270811463133e-05,
+          0.00028633511730197117,
+          0.00026534446407467646,
+          0.001335936068208596,
+          2.0426713460529006e-05,
+          2.015111207259835e-05,
+          1.1339149646750318e-05
+        ]
+      },
+      "15": {
+        "windows": 735,
+        "rmse": [
+          0.001290121897563561,
+          0.0012000909862379119,
+          0.0016450361072688042,
+          0.004359229900775197,
+          0.004066277559447456,
+          0.0083728026104243,
+          0.00010902184845811099,
+          0.00011780562098323743,
+          0.00015691460644658072
+        ]
+      },
+      "25": {
+        "windows": 725,
+        "rmse": [
+          0.002897358386262176,
+          0.002698927410810449,
+          0.0024720070122099458,
+          0.007341531756327182,
+          0.006876821208465327,
+          0.00275478850909903,
+          0.00015647215965827537,
+          0.00016508994900859872,
+          0.00023327837454116272
+        ]
+      },
+      "40": {
+        "windows": 710,
+        "rmse": [
+          0.0064610204814409935,
+          0.006030163263412863,
+          0.004134399135137903,
+          0.011900159068049358,
+          0.01120498513938355,
+          0.007164386150218631,
+          0.00022759848209181287,
+          0.00023222893005539922,
+          0.0002866336669435492
+        ]
+      }
+    },
+    "effort": [
+      3.063690216141145e-06,
+      2.8394946833784035e-06,
+      1.7257784667739768e-08,
+      3.763244557162767e-05
+    ],
+    "increment_rms": [
+      0.0004850816825463061,
+      0.0005103573645692777,
+      1.6957249485401153e-05,
+      0.001469270952190663
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 0.9900965897759306,
+    "solver_ms_percentiles": [
+      0.5882085001758242,
+      0.9231890000592101,
+      0.9900965897759306,
+      3.102822000073502
+    ],
+    "loop_ms_percentiles": [
+      1.1223120000067865,
+      1.5737390500362376,
+      1.71554001952245,
+      3.8361139995686244
+    ],
+    "max_slack": 9.361221938553864e-10,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -9.875219494900757e-07,
+      -3.100934440587589e-13,
+      -3.804976525035983e-17,
+      0.442370618028907
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.4388283618456191
+  },
+  {
+    "run": "log/mpc-phase2-compare/002",
+    "name": "baseline-circle",
+    "repeat": 1,
+    "mode": "preview",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "preview",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "preview",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.004474797055143045,
+      0.004138525354167849,
+      0.002906497740851814,
+      0.00046704496402770576
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.00817803632133833,
+      0.006325930098953878,
+      0.0040270319541321304,
+      0.0007321786374280492
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.0001248919092660385,
+      0.00012016308516278724,
+      4.552809185200647e-05,
+      0.00045682964479615556
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.0008433237423292741,
+      0.0006735793085094844,
+      0.00045682964479615556
+    ],
+    "truth_bracket_p99_ms": 10.84036820973779,
+    "truth_observer_p99_ms": 0.011613999731707736,
+    "truth_real_time_factor": 0.939409185980835,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 748,
+        "rmse": [
+          4.470482776760513e-05,
+          4.169884199082631e-05,
+          1.1091147274809712e-05,
+          0.00028822879168873114,
+          0.0002668039580978708,
+          0.0012645688112676576,
+          1.762009424166976e-05,
+          1.4766362446236197e-05,
+          1.16127118511512e-05
+        ]
+      },
+      "15": {
+        "windows": 734,
+        "rmse": [
+          0.0012911570882648703,
+          0.0012034110462226277,
+          0.001602275525518086,
+          0.00441910127417787,
+          0.004129517662295004,
+          0.008019341652408002,
+          0.00012355122910279103,
+          0.00012575820968940788,
+          0.0001604510009881216
+        ]
+      },
+      "25": {
+        "windows": 724,
+        "rmse": [
+          0.0029124635735620413,
+          0.0027206258450017764,
+          0.0024472983185731367,
+          0.007470738554879633,
+          0.007023236956905874,
+          0.0028899517788367104,
+          0.0001834873706515057,
+          0.00017566180248227014,
+          0.00023994209641315582
+        ]
+      },
+      "40": {
+        "windows": 709,
+        "rmse": [
+          0.0065290297762417415,
+          0.006122042448054464,
+          0.004077618213671248,
+          0.01217731168139189,
+          0.011541055293781913,
+          0.00663971129429534,
+          0.00027070905011130004,
+          0.00024499323256166637,
+          0.0002962866550935962
+        ]
+      }
+    },
+    "effort": [
+      3.991120218040342e-06,
+      2.445565577172642e-06,
+      1.9196822789987415e-08,
+      3.316366310184655e-05
+    ],
+    "increment_rms": [
+      0.0003435072962965168,
+      0.0003136788088583676,
+      1.677177595468256e-05,
+      0.0013643617168559129
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 1.0673576898807369,
+    "solver_ms_percentiles": [
+      0.5797919998258294,
+      1.002030350446148,
+      1.0673576898807369,
+      4.870961000051466
+    ],
+    "loop_ms_percentiles": [
+      1.6293974999825878,
+      3.142271599836022,
+      3.318603269817686,
+      7.391138999992108
+    ],
+    "max_slack": 1.1302223334256573e-09,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -0.00857262868281239,
+      -8.31397534202864e-05,
+      -1.668428433329885e-17,
+      0.44249377038330096
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.09789865260938223
+  },
+  {
+    "run": "log/mpc-phase2-compare/003",
+    "name": "baseline-circle",
+    "repeat": 2,
+    "mode": "preview",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "preview",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "preview",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.004426035198844128,
+      0.0040619931274858715,
+      0.002859942176670577,
+      0.0004887127216680465
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.00837388511922176,
+      0.006196824361441775,
+      0.003772042206303613,
+      0.0007519698432525646
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.00013545120351628946,
+      0.00012169128476195886,
+      5.39965619135713e-05,
+      0.00047737451243515326
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.000829472396895113,
+      0.0006936194252106058,
+      0.00047737451243515326
+    ],
+    "truth_bracket_p99_ms": 10.848588450089665,
+    "truth_observer_p99_ms": 0.01131339995481543,
+    "truth_real_time_factor": 0.9393006431318942,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 749,
+        "rmse": [
+          4.526190013000777e-05,
+          4.113990771573319e-05,
+          1.174912634031033e-05,
+          0.0002881459549187635,
+          0.00026687753304555843,
+          0.001418598733015852,
+          1.9253281589647277e-05,
+          1.7740680323720356e-05,
+          1.1290347515787579e-05
+        ]
+      },
+      "15": {
+        "windows": 734,
+        "rmse": [
+          0.0013003814162629544,
+          0.0011961030003411093,
+          0.0018127594440057674,
+          0.004426080551428921,
+          0.004133451648848031,
+          0.009090853687108215,
+          0.00011776842019871813,
+          0.0001280475712030728,
+          0.00015630978871731982
+        ]
+      },
+      "25": {
+        "windows": 724,
+        "rmse": [
+          0.002929897906927353,
+          0.0027089178989771643,
+          0.00269359003445223,
+          0.007489644545552091,
+          0.007027035458958577,
+          0.002638863405169443,
+          0.000171843664118987,
+          0.00018250371155744115,
+          0.00023549647955409657
+        ]
+      },
+      "40": {
+        "windows": 710,
+        "rmse": [
+          0.0065606290144979975,
+          0.006099384433849331,
+          0.0044708833783874335,
+          0.012222224868653117,
+          0.011529058519740827,
+          0.007769264335240642,
+          0.00025932160096514057,
+          0.0002559985807089069,
+          0.0002991553852208402
+        ]
+      }
+    },
+    "effort": [
+      4.26246977769683e-06,
+      2.5788989617531566e-06,
+      1.710820727904792e-08,
+      4.229500361761926e-05
+    ],
+    "increment_rms": [
+      0.00046593705730637534,
+      0.00046199281647458623,
+      1.574717814249348e-05,
+      0.0015838441296796824
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 1.004604470072081,
+    "solver_ms_percentiles": [
+      0.6650089999311604,
+      0.9596525001597911,
+      1.004604470072081,
+      3.1046359999891138
+    ],
+    "loop_ms_percentiles": [
+      1.7123535003520374,
+      2.9455204497480736,
+      3.1023805598124454,
+      4.402629000651359
+    ],
+    "max_slack": 1.1225934941488757e-09,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -0.008570196338553767,
+      -8.30901112129712e-05,
+      -1.662623701351548e-17,
+      0.4422594486094421
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.08915827608618547
+  },
+  {
+    "run": "log/mpc-phase2-compare/004",
+    "name": "baseline-circle",
+    "repeat": 2,
+    "mode": "constant",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "constant",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "constant",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.015958806844371155,
+      0.014264757459333595,
+      0.002856651884413155,
+      0.000440406636300499
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.027595142624610967,
+      0.02617896548534121,
+      0.0036977185881470944,
+      0.0006984933613350284
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.0001424341263991882,
+      0.00011943167528893408,
+      4.810816813664473e-05,
+      0.0004297120037810469
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.0007377767172368093,
+      0.0008827868816813465,
+      0.0004297120037810469
+    ],
+    "truth_bracket_p99_ms": 10.896889879822993,
+    "truth_observer_p99_ms": 0.012021240463582215,
+    "truth_real_time_factor": 0.939262776885711,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 748,
+        "rmse": [
+          4.660393960459207e-05,
+          4.293840655393196e-05,
+          1.060279268247655e-05,
+          0.00028535584236034,
+          0.00026560442431436415,
+          0.0011718923192715063,
+          1.3699367368103466e-05,
+          1.5073625103190816e-05,
+          1.1361801664245026e-05
+        ]
+      },
+      "15": {
+        "windows": 735,
+        "rmse": [
+          0.0012974073879574368,
+          0.0012055490627634648,
+          0.0014293544309689854,
+          0.004365041000512894,
+          0.004107542836814813,
+          0.006865342640722659,
+          0.00012959348928742945,
+          0.0001262277361239244,
+          0.00015800711900965296
+        ]
+      },
+      "25": {
+        "windows": 725,
+        "rmse": [
+          0.0029107230278424016,
+          0.002716603643758651,
+          0.0021243590496609695,
+          0.007371394007391703,
+          0.0069847190075400314,
+          0.0025769067189616596,
+          0.0001959084851284377,
+          0.00018299296732640847,
+          0.0002346287687549652
+        ]
+      },
+      "40": {
+        "windows": 710,
+        "rmse": [
+          0.0064984019541502475,
+          0.0060980245501515646,
+          0.003549939472692537,
+          0.012004792116171016,
+          0.011475115014939618,
+          0.005448508225087181,
+          0.0002863565114537858,
+          0.000254493155629001,
+          0.00028239356733216283
+        ]
+      }
+    },
+    "effort": [
+      2.8255520127923033e-06,
+      2.5289031524751076e-06,
+      1.7689418147184837e-08,
+      2.858363429388119e-05
+    ],
+    "increment_rms": [
+      0.000290827500395449,
+      0.00033978560718682784,
+      1.715101722926477e-05,
+      0.0012766936632443138
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 1.0344499098118831,
+    "solver_ms_percentiles": [
+      0.5643270001201017,
+      0.9612762499273231,
+      1.0344499098118831,
+      2.9216319999250118
+    ],
+    "loop_ms_percentiles": [
+      1.0725829997682013,
+      1.6976685498775623,
+      1.8551397305418504,
+      3.6595909996322007
+    ],
+    "max_slack": 9.361858952056794e-10,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -9.922049082397673e-07,
+      -3.1305539980080674e-13,
+      -3.800544552664733e-17,
+      0.44246624216450237
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.4246946238652375
+  },
+  {
+    "run": "log/mpc-phase2-compare/005",
+    "name": "baseline-circle",
+    "repeat": 3,
+    "mode": "constant",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "constant",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "constant",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.016085836471951828,
+      0.014363363374122542,
+      0.0028710220877178716,
+      0.0004125864343917505
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.027419769959037776,
+      0.02819070278582324,
+      0.003726245367818111,
+      0.0006734527479863806
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.0001380284706559921,
+      0.00012536958074211337,
+      4.342871773862569e-05,
+      0.00039996354053749495
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.000492840220297878,
+      0.000893800000793068,
+      0.00039996354053749495
+    ],
+    "truth_bracket_p99_ms": 10.934960549830066,
+    "truth_observer_p99_ms": 0.011456000502221274,
+    "truth_real_time_factor": 0.9385991649393813,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 749,
+        "rmse": [
+          4.5351387697307614e-05,
+          4.513107381695976e-05,
+          1.0730858073382102e-05,
+          0.000286459562957814,
+          0.00026528541338538867,
+          0.001184656579892439,
+          1.4541602189242878e-05,
+          1.2955328781317405e-05,
+          1.1145939396643552e-05
+        ]
+      },
+      "15": {
+        "windows": 734,
+        "rmse": [
+          0.0012973359625545503,
+          0.0012341126124226038,
+          0.0013666602849729133,
+          0.004394762500682941,
+          0.00410289288972716,
+          0.006796167537074831,
+          0.00013853818648101434,
+          0.00012440654993477746,
+          0.00015344970804558045
+        ]
+      },
+      "25": {
+        "windows": 724,
+        "rmse": [
+          0.0029186991646411834,
+          0.002762191691772931,
+          0.0020502511551111612,
+          0.007430587039006714,
+          0.006965241917751081,
+          0.0024731382993154133,
+          0.0002106312718082836,
+          0.0001824292303478367,
+          0.00022980480766225637
+        ]
+      },
+      "40": {
+        "windows": 709,
+        "rmse": [
+          0.006529628542900302,
+          0.006162956055202155,
+          0.0033834418829452196,
+          0.012115522233576426,
+          0.011419146022423003,
+          0.005229569390764583,
+          0.000306519730397831,
+          0.00025498678180270424,
+          0.0002840228425052603
+        ]
+      }
+    },
+    "effort": [
+      3.4408379613850143e-06,
+      2.314426080706955e-06,
+      1.6649795897881124e-08,
+      2.9104692722092566e-05
+    ],
+    "increment_rms": [
+      0.0003704966317224072,
+      0.0002666883449857809,
+      1.6998689793197644e-05,
+      0.0012857066351029817
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 1.0785605399723863,
+    "solver_ms_percentiles": [
+      0.5713354998988507,
+      0.9983317001569957,
+      1.0785605399723863,
+      4.823021999982302
+    ],
+    "loop_ms_percentiles": [
+      1.0802310002873128,
+      1.7542374493586974,
+      1.9067420798728563,
+      5.766903999756323
+    ],
+    "max_slack": 9.365197224857412e-10,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -2.28448934575989e-06,
+      -1.060583433446957e-13,
+      -3.8028691280287255e-17,
+      0.4429638573350206
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.44891114224199685
+  },
+  {
+    "run": "log/mpc-phase2-compare/006",
+    "name": "baseline-circle",
+    "repeat": 3,
+    "mode": "preview",
+    "horizon": 25,
+    "args": [
+      "--reference",
+      "circular",
+      "--reference-mode",
+      "preview",
+      "--horizon",
+      "25"
+    ],
+    "status": "completed",
+    "reference": {
+      "configuration": {
+        "flight_lifecycle": "hlc",
+        "forced_solver_failure": false,
+        "profile": {
+          "armed_idle_duration": 0.5,
+          "circle_duration": 15.0,
+          "circle_radius": 0.1,
+          "circle_revolutions": 1.0,
+          "landing_duration": 3.0,
+          "speed_profile": "smoothstep",
+          "takeoff_duration": 3.0,
+          "takeoff_height": 0.2
+        },
+        "reference_mode": "preview",
+        "safety": {
+          "landing_altitude_tolerance_m": 0.06,
+          "landing_vertical_speed_tolerance_m_s": 0.08,
+          "max_altitude_above_ground_m": 0.6,
+          "max_arming_position_jump_m": 0.1,
+          "max_control_loop_dt_s": 0.1,
+          "max_horizontal_displacement_m": 0.5,
+          "max_horizontal_speed_m_s": 0.5,
+          "max_state_age_s": 0.15,
+          "max_tilt_rad": 0.25,
+          "max_vertical_speed_m_s": 0.75,
+          "maximum_flight_duration_s": 30.0,
+          "min_altitude_below_ground_m": -0.05
+        },
+        "step_amplitude": null,
+        "step_axis": null
+      },
+      "type": "circular"
+    },
+    "controller": {
+      "bounds": [
+        0.4,
+        0.4,
+        0.45,
+        0.4,
+        0.4,
+        0.6,
+        0.1,
+        0.1,
+        0.3
+      ],
+      "horizon": 25,
+      "max_rate": 0.2,
+      "max_thrust": 0.56,
+      "min_thrust": 0.38,
+      "model": {
+        "equilibrium_thrust": 0.47681863,
+        "gravity_m_s2": 9.81,
+        "sample_period_s": 0.02,
+        "thrust_gain_m_s2": 14.495,
+        "version": "cf2x-t350-hover-9-v1"
+      },
+      "q": [
+        120,
+        120,
+        200,
+        12,
+        12,
+        24,
+        6,
+        6,
+        10
+      ],
+      "r": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "s": [
+        2,
+        2,
+        1,
+        12
+      ],
+      "solver_time_limit_s": 0.012
+    },
+    "tracking_rmse_xyz_yaw": [
+      0.004847465860012091,
+      0.004079372238364564,
+      0.002855237793451895,
+      0.0004905150064617572
+    ],
+    "tracking_p95_xyz_yaw": [
+      0.008911930481442062,
+      0.006447336749143586,
+      0.0038054083969837225,
+      0.000755406247685686
+    ],
+    "estimation_rmse_xyz_yaw": [
+      0.00011561143137069482,
+      0.00011972274812219434,
+      4.4848173171422536e-05,
+      0.00048074165967971496
+    ],
+    "attitude_estimation_rmse_rad": [
+      0.0009516593936004716,
+      0.0009404184586504935,
+      0.00048074165967971496
+    ],
+    "truth_bracket_p99_ms": 10.841091449601663,
+    "truth_observer_p99_ms": 0.01127975019699079,
+    "truth_real_time_factor": 0.9391795947639157,
+    "actual_input_model_rmse": {
+      "1": {
+        "windows": 749,
+        "rmse": [
+          4.468573891769345e-05,
+          4.130388452882918e-05,
+          1.1144028475767033e-05,
+          0.0002876639484188608,
+          0.00026642741740756214,
+          0.0012731843837386373,
+          1.7159493680652212e-05,
+          1.2786971082180562e-05,
+          1.1339248547067872e-05
+        ]
+      },
+      "15": {
+        "windows": 734,
+        "rmse": [
+          0.0012913889517589267,
+          0.0011983506852465758,
+          0.0014944949657737753,
+          0.00442061040148762,
+          0.004133214835718561,
+          0.00738488868562037,
+          0.00013486377671237374,
+          0.0001338625761929258,
+          0.00015894479835081162
+        ]
+      },
+      "25": {
+        "windows": 724,
+        "rmse": [
+          0.002914362171782293,
+          0.00271389917714722,
+          0.002202728991928227,
+          0.007484238944790675,
+          0.0070380585174202245,
+          0.0022900606992639965,
+          0.00021087413529765028,
+          0.00020377960656603865,
+          0.00023898897408065545
+        ]
+      },
+      "40": {
+        "windows": 709,
+        "rmse": [
+          0.00654071288339542,
+          0.006119070422303092,
+          0.0036482543559148983,
+          0.012232858091817986,
+          0.011586588150008775,
+          0.0058021701374256504,
+          0.0003205177901729943,
+          0.00029208518809991534,
+          0.00029502583457902934
+        ]
+      }
+    },
+    "effort": [
+      3.7693649664161164e-06,
+      2.1642502725785157e-06,
+      1.8016713383947974e-08,
+      3.391271241827591e-05
+    ],
+    "increment_rms": [
+      0.0002872413629300752,
+      0.00020129118497801818,
+      1.5862370545464804e-05,
+      0.001373764827241326
+    ],
+    "deadline_misses": 0,
+    "fallback": 0,
+    "solver_statuses": [
+      "solved"
+    ],
+    "hard_input_violation_steps": 0,
+    "truth_envelope_violation_tracking_steps": 0,
+    "solver_p99_ms": 1.0318055400330195,
+    "solver_ms_percentiles": [
+      0.5803324997941672,
+      0.9366507995764548,
+      1.0318055400330195,
+      2.9696219999095774
+    ],
+    "loop_ms_percentiles": [
+      1.6032365001592552,
+      2.6314791501590653,
+      3.161246870095056,
+      4.1653970001789276
+    ],
+    "max_slack": 1.1291022379266457e-09,
+    "soft_activation_steps": 0,
+    "input_activation_steps": 0,
+    "first_sent_input": [
+      -0.0085720270926837,
+      -8.312754784126148e-05,
+      -1.6650226685239342e-17,
+      0.4424602308426692
+    ],
+    "feasible": true,
+    "phase_lag_s": 0.08964884894963646
+  }
+]

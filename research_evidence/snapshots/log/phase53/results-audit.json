@@ -1,0 +1,5712 @@
+{
+  "issues": [],
+  "stats": {
+    "screen": {
+      "counts": {
+        "attempts": 18,
+        "completed_windows": 18,
+        "fallback": 0,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "input_activation_steps": 2781,
+        "soft_activation_steps": 0,
+        "prediction_drops": 0,
+        "qp_overruns": 0,
+        "paired_ticks": 4800
+      },
+      "qp_ms": [
+        0.7266599986905931,
+        1.6825475506266234,
+        2.8568698392700793,
+        5.8175209996989
+      ],
+      "work_ms": [
+        2.1299415002431488,
+        3.537929050617095,
+        4.786920132864912,
+        8.101781997538637
+      ]
+    },
+    "confirm": {
+      "counts": {
+        "attempts": 6,
+        "completed_windows": 6,
+        "fallback": 0,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "input_activation_steps": 317,
+        "soft_activation_steps": 0,
+        "prediction_drops": 0,
+        "qp_overruns": 0,
+        "paired_ticks": 2600
+      },
+      "qp_ms": [
+        0.14364099843078293,
+        1.2823265487895694,
+        1.7231974794412956,
+        5.056789999798639
+      ],
+      "work_ms": [
+        1.6358420016331365,
+        3.0528109009537725,
+        3.6534975522226807,
+        7.2954019997268915
+      ]
+    },
+    "pressure": {
+      "counts": {
+        "attempts": 4,
+        "completed_windows": 4,
+        "fallback": 0,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "input_activation_steps": 1014,
+        "soft_activation_steps": 0,
+        "prediction_drops": 0,
+        "qp_overruns": 0,
+        "paired_ticks": 1440
+      },
+      "qp_ms": [
+        0.8107955000014044,
+        1.3626417503473929,
+        1.7199919206177572,
+        5.352250998839736
+      ],
+      "work_ms": [
+        2.3457539991795784,
+        3.6912040508468618,
+        4.680670579655267,
+        6.944747001398355
+      ]
+    },
+    "shared": {
+      "counts": {
+        "attempts": 12,
+        "completed_windows": 12,
+        "fallback": 0,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "input_activation_steps": 199,
+        "soft_activation_steps": 0,
+        "prediction_drops": 0,
+        "qp_overruns": 0,
+        "paired_ticks": 7200
+      },
+      "qp_ms": [
+        0.5113195002195425,
+        0.8766622508119326,
+        1.2677307824560577,
+        4.862358997343108
+      ],
+      "work_ms": [
+        1.6007685007934924,
+        2.69597790265834,
+        3.2017168990205396,
+        7.310080996830948
+      ]
+    }
+  },
+  "pair_groups": 8,
+  "rows": [
+    {
+      "case": {
+        "name": "hover-t6-baseline-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t6-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-baseline-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/001",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4999687359995733,
+        "start_reference_s": 3.9000601440020546,
+        "truth_rmse_xyz_yaw": [
+          0.0001475525341701606,
+          0.00023382213663139002,
+          0.0038076536403878814,
+          0.0008958145006957826
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005361104421285686,
+          "effort": 2.1796905555096217e-05,
+          "increment": 9.710616710971245e-07,
+          "total": 0.005383872388511877
+        },
+        "solver_ms": [
+          0.14391500008059666,
+          0.21708920176024546,
+          0.25202444121532624,
+          0.2749599989328999
+        ],
+        "runner_work_ms": [
+          1.144013000157429,
+          1.3418570000794716,
+          1.4169033190410119,
+          1.4255850001063664
+        ],
+        "actual_control_period_ms": [
+          20.000846998300403,
+          20.040529600373702,
+          20.062660960611538,
+          20.097919001273112
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00012838869818246527,
+        0.00020571093396205343,
+        0.00826455894430669,
+        0.000833502854746927
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11999757499870611,
+        "start_reference_s": 3.500059998001234,
+        "truth_rmse_xyz_yaw": [
+          2.479099875610549e-13,
+          5.824649463652399e-13,
+          0.02056847339240604,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0882470993150753,
+          "effort": 0.016994693376875206,
+          "increment": 0.002645212579040422,
+          "total": 0.10788700527099093
+        },
+        "solver_ms": [
+          0.6063835007807938,
+          3.8051207493481343,
+          4.479171349703393,
+          4.647683999792207
+        ],
+        "runner_work_ms": [
+          1.1217805003980175,
+          4.647451249184087,
+          5.4146582493558535,
+          5.606459999398794
+        ],
+        "actual_control_period_ms": [
+          19.998996000140323,
+          20.025218502269126,
+          20.031335702515207,
+          20.032865002576727
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.14752399874851108,
+        0.5028180028602945,
+        1.3111335280336962,
+        4.647683999792207
+      ],
+      "loop_ms_percentiles": [
+        1.140712498454377,
+        1.3741220980591604,
+        1.8087853485485734,
+        5.606459999398794
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.0232860759357489,
+        "g_norm": 0.5734974338534515,
+        "init_penalty": 0.014027338966463174,
+        "g_penalty": 0.002202697853640425
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-g3-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t6-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-g3-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/002",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000009089999367,
+        "start_reference_s": 3.9000628029971267,
+        "truth_rmse_xyz_yaw": [
+          0.0002924436329284962,
+          0.00026972283064981864,
+          0.003861539758752276,
+          0.0018013745354274184
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005445415816499421,
+          "effort": 2.6327192919116368e-05,
+          "increment": 4.036101175097014e-06,
+          "total": 0.005475779110593635
+        },
+        "solver_ms": [
+          0.17560800188221037,
+          0.2958150984341046,
+          0.3895631612249432,
+          0.6082820000301581
+        ],
+        "runner_work_ms": [
+          1.622232000954682,
+          2.304951501719188,
+          4.910693579586223,
+          4.958855002769269
+        ],
+        "actual_control_period_ms": [
+          19.99973800047883,
+          20.017336600722047,
+          20.904874420084525,
+          20.996536000893684
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0002623112228573899,
+        0.0002351926919208368,
+        0.00830682459593454,
+        0.0016997913846423874
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.1199911619987688,
+        "start_reference_s": 3.500063092997152,
+        "truth_rmse_xyz_yaw": [
+          1.491754503241221e-13,
+          3.553525937067594e-13,
+          0.02059874079491139,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08749742259268685,
+          "effort": 0.018351741152711567,
+          "increment": 0.0026529542244175504,
+          "total": 0.10850211796981597
+        },
+        "solver_ms": [
+          0.7416989992634626,
+          2.931238999735797,
+          3.354248600226129,
+          3.4600010003487114
+        ],
+        "runner_work_ms": [
+          1.4831259995844448,
+          4.022642501695373,
+          4.5624325017342935,
+          4.697380001744023
+        ],
+        "actual_control_period_ms": [
+          19.999111002107384,
+          20.002463999844622,
+          20.00278640043689,
+          20.002867000584956
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.1766795012372313,
+        0.5829027510117156,
+        1.3661034779215806,
+        3.4600010003487114
+      ],
+      "loop_ms_percentiles": [
+        1.583281500643352,
+        2.340096950320003,
+        4.894422828510869,
+        4.958855002769269
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.015758769484931122,
+        "g_norm": 0.36427815194881663,
+        "init_penalty": 0.006332823391853544,
+        "g_penalty": 0.007950595789265267
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-init-quarter-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/003",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4999968589982018,
+        "start_reference_s": 3.900063520999538,
+        "truth_rmse_xyz_yaw": [
+          0.0004372888755698854,
+          0.00037807038307994184,
+          0.004050913187857895,
+          0.0006160929316509037
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005575953885215929,
+          "effort": 1.621856473804814e-05,
+          "increment": 3.2389307821433926e-06,
+          "total": 0.005595411380736114
+        },
+        "solver_ms": [
+          0.15652799993404187,
+          0.3224219992262078,
+          0.4277635594917234,
+          0.5049499995948281
+        ],
+        "runner_work_ms": [
+          1.3498879998223856,
+          2.047524598310701,
+          2.2597400023369123,
+          2.3160540004028007
+        ],
+        "actual_control_period_ms": [
+          20.00025900269975,
+          20.16971369885141,
+          20.184457419090904,
+          20.18602399766678
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00038879813623895744,
+        0.00033018739771687654,
+        0.00836812372709158,
+        0.0005528644110471227
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11999864300014451,
+        "start_reference_s": 3.5000629109999863,
+        "truth_rmse_xyz_yaw": [
+          9.198547205590012e-14,
+          2.1999151919787627e-13,
+          0.020539936677919785,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0873246931546971,
+          "effort": 0.018489717423709535,
+          "increment": 0.002606261538662505,
+          "total": 0.10842067211706916
+        },
+        "solver_ms": [
+          0.7589284996356582,
+          4.291024998565263,
+          4.808776999016119,
+          4.9382149991288316
+        ],
+        "runner_work_ms": [
+          1.534644001367269,
+          5.380470997806697,
+          5.963535797673104,
+          6.1093019976397045
+        ],
+        "actual_control_period_ms": [
+          20.001010001578834,
+          20.164948499768798,
+          20.207976900019275,
+          20.218734000081895
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.17233900143764913,
+        0.508607949632278,
+        2.375342596897112,
+        4.9382149991288316
+      ],
+      "loop_ms_percentiles": [
+        1.4071370005694916,
+        2.2096792517913855,
+        3.2231312383010087,
+        6.1093019976397045
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.04378234301955291,
+        "g_norm": 0.6709950542767847,
+        "init_penalty": 0.012236280414995747,
+        "g_penalty": 0.0029959420039901118
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-baseline-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t12-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-baseline-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/004",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000018569990061,
+        "start_reference_s": 3.9000867779977852,
+        "truth_rmse_xyz_yaw": [
+          0.00020716782695267665,
+          6.800103942410968e-05,
+          0.002704208867003356,
+          0.0009108879744319341
+        ],
+        "physical_cost_s": {
+          "tracking": 0.00319587498109291,
+          "effort": 6.56761268838473e-05,
+          "increment": 1.7485819576006192e-05,
+          "total": 0.003279036927552765
+        },
+        "solver_ms": [
+          0.13709700215258636,
+          0.2028473994869273,
+          0.22859602002426985,
+          0.23449900254490785
+        ],
+        "runner_work_ms": [
+          1.1793699995905627,
+          1.7568174993357386,
+          1.9095353795273697,
+          1.944620998983737
+        ],
+        "actual_control_period_ms": [
+          20.000775999506004,
+          20.101410800634767,
+          20.23381855993648,
+          20.26397800000268
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00018385634052557937,
+        6.276853566331143e-05,
+        0.007734190702236879,
+        0.0008134741335845294
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.24007821299892385,
+        "start_reference_s": 3.5001012469983834,
+        "truth_rmse_xyz_yaw": [
+          2.474523608074941e-13,
+          5.807819162744446e-13,
+          0.019161890773225637,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0986624090377124,
+          "effort": 0.010134358100133328,
+          "increment": 0.0017987943515538267,
+          "total": 0.11059556148939954
+        },
+        "solver_ms": [
+          0.5381204991863342,
+          2.316799898835596,
+          3.3093967787863234,
+          3.5575459987740032
+        ],
+        "runner_work_ms": [
+          1.113428999815369,
+          3.0645661985545285,
+          4.300374839185681,
+          4.609326999343466
+        ],
+        "actual_control_period_ms": [
+          20.000580998384976,
+          20.057195748631784,
+          20.07862154754548,
+          20.083977997273905
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.13912100075685885,
+        0.5444615500891812,
+        1.3242030188848846,
+        3.5575459987740032
+      ],
+      "loop_ms_percentiles": [
+        1.147290500739473,
+        1.8006995980613283,
+        1.971268058987348,
+        4.609326999343466
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.0318712013384172,
+        "g_norm": 0.3557524076931978,
+        "init_penalty": 0.05333074332074518,
+        "g_penalty": 0.000993108850090774
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-g3-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t12-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-g3-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/005",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4999991450022208,
+        "start_reference_s": 3.9000602970008913,
+        "truth_rmse_xyz_yaw": [
+          0.00027324464342371645,
+          5.260996624488058e-05,
+          0.002687362296908037,
+          0.0008365950397521085
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0031102003783999473,
+          "effort": 3.69273151517194e-05,
+          "increment": 8.64754881023595e-06,
+          "total": 0.0031557752423619074
+        },
+        "solver_ms": [
+          0.15224700109683909,
+          0.20959909961675294,
+          0.22269137953117024,
+          0.2243290000478737
+        ],
+        "runner_work_ms": [
+          1.2937339997733943,
+          1.8955783016281202,
+          1.9974854185420554,
+          2.0124829970882274
+        ],
+        "actual_control_period_ms": [
+          20.00058799967519,
+          20.063144400774036,
+          20.108876579397474,
+          20.13395000176388
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00023975656168019396,
+        5.2495161691074854e-05,
+        0.0077696232752652,
+        0.0008182947383601875
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999691899734898,
+        "start_reference_s": 3.500062290000642,
+        "truth_rmse_xyz_yaw": [
+          2.6300164303529503e-13,
+          6.174602530592353e-13,
+          0.019311870511612428,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09973095333656234,
+          "effort": 0.010424790448665606,
+          "increment": 0.0018178800643729363,
+          "total": 0.11197362384960088
+        },
+        "solver_ms": [
+          0.8679714974277886,
+          3.6614266993637994,
+          4.666855738869345,
+          4.91821299874573
+        ],
+        "runner_work_ms": [
+          1.5542854998784605,
+          4.716570100936222,
+          5.922098819646637,
+          6.223480999324238
+        ],
+        "actual_control_period_ms": [
+          19.999502999780816,
+          20.018884800811065,
+          20.02028576200246,
+          20.020636002300307
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.15693249952164479,
+        0.8756450479268095,
+        2.6559976598582695,
+        4.91821299874573
+      ],
+      "loop_ms_percentiles": [
+        1.2739800022245618,
+        1.9562338011382963,
+        3.5110413822258266,
+        6.223480999324238
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.023169110679692597,
+        "g_norm": 0.2472809861853327,
+        "init_penalty": 0.028191134815988093,
+        "g_penalty": 0.0043184835352970624
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-init-quarter-s1-L0-53010",
+        "scene": "hover",
+        "level": 0,
+        "seed": 53010,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/006",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.49989894400278,
+        "start_reference_s": 3.9000585840003623,
+        "truth_rmse_xyz_yaw": [
+          0.0001758625370474136,
+          6.62647223551986e-05,
+          0.0027316465899689785,
+          0.00040368933085222104
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0032452680873945794,
+          "effort": 3.0491731005145023e-05,
+          "increment": 7.902574491724335e-06,
+          "total": 0.0032836623928914465
+        },
+        "solver_ms": [
+          0.17705000209389254,
+          0.40549310069764033,
+          0.5950155798200293,
+          0.7024879996606614
+        ],
+        "runner_work_ms": [
+          1.5911260015855078,
+          2.1983116024784977,
+          2.4047282217361508,
+          2.5061800006369594
+        ],
+        "actual_control_period_ms": [
+          20.000396001705667,
+          20.04865769922617,
+          20.22419599918067,
+          20.493075000558747
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00015454307362623221,
+        5.816399716743408e-05,
+        0.007773387085521827,
+        0.0003936558830008705
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999671400088118,
+        "start_reference_s": 3.500068244000431,
+        "truth_rmse_xyz_yaw": [
+          2.550076199085607e-13,
+          5.977495037711956e-13,
+          0.01922002643244005,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09946815494241229,
+          "effort": 0.009883018051029662,
+          "increment": 0.0018182110165716192,
+          "total": 0.11116938401001357
+        },
+        "solver_ms": [
+          0.5622224998660386,
+          2.3088032012310564,
+          3.0674406410980746,
+          3.2571000010648277
+        ],
+        "runner_work_ms": [
+          1.1413874999561813,
+          3.1725911981993686,
+          4.234177438884219,
+          4.499573999055428
+        ],
+        "actual_control_period_ms": [
+          20.002306999231223,
+          20.28190915043524,
+          20.387380229731207,
+          20.4137479995552
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.18288299906998873,
+        0.6562477004990795,
+        1.5501657613640507,
+        3.2571000010648277
+      ],
+      "loop_ms_percentiles": [
+        1.582976499776123,
+        2.1963811026580515,
+        2.5261139406211544,
+        4.499573999055428
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.04497798890680056,
+        "g_norm": 0.33461946262005166,
+        "init_penalty": 0.026553189206188318,
+        "g_penalty": 0.0008795325085916013
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-init-quarter-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/007",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4999986149996403,
+        "start_reference_s": 3.9000626459965133,
+        "truth_rmse_xyz_yaw": [
+          0.0006576443280056212,
+          0.0006166833542328378,
+          0.004190255610843788,
+          0.002837264430311395
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0063474709782562885,
+          "effort": 0.011458992101364574,
+          "increment": 0.011812889233845979,
+          "total": 0.029619352313466837
+        },
+        "solver_ms": [
+          0.13032800052314997,
+          0.20731779768539121,
+          0.7120344987924913,
+          0.756156998249935
+        ],
+        "runner_work_ms": [
+          1.2556430010590702,
+          1.5496703992539549,
+          1.8752741402568076,
+          2.0718840023619123
+        ],
+        "actual_control_period_ms": [
+          19.999791998998262,
+          20.11037829943234,
+          20.232273019937566,
+          20.26792400283739
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0005739887228669525,
+        0.0005420541413683398,
+        0.008415799245796796,
+        0.0024696811810608833
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11999679699874832,
+        "start_reference_s": 3.500095899998996,
+        "truth_rmse_xyz_yaw": [
+          1.4161986067675896e-07,
+          1.6398663159609193e-06,
+          0.020523480315904615,
+          3.724101743890214e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08758832917375,
+          "effort": 0.018480729519875456,
+          "increment": 0.003429929237160613,
+          "total": 0.10949898793078608
+        },
+        "solver_ms": [
+          0.6422589995054295,
+          2.2454487498180242,
+          2.655321749989526,
+          2.7577900000324007
+        ],
+        "runner_work_ms": [
+          1.2644239996006945,
+          3.1121685005928157,
+          3.573803300605505,
+          3.689212000608677
+        ],
+        "actual_control_period_ms": [
+          19.984010999905877,
+          20.122799749515252,
+          20.147599149640882,
+          20.15379899967229
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.1337115008936962,
+        0.5956605995379501,
+        0.7761733282677699,
+        2.7577900000324007
+      ],
+      "loop_ms_percentiles": [
+        1.256452000234276,
+        1.5937731501253438,
+        2.0880572823443884,
+        3.689212000608677
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 2,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.1339857904532333,
+        "g_norm": 5.46660231071885,
+        "init_penalty": 8.197774550461988,
+        "g_penalty": 0.19883999592976243
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-baseline-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t12-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-baseline-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/008",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4999849819978408,
+        "start_reference_s": 3.900062115997571,
+        "truth_rmse_xyz_yaw": [
+          0.0008942006269310311,
+          0.0018992760647570017,
+          0.0019315153641381614,
+          0.005368378950937469
+        ],
+        "physical_cost_s": {
+          "tracking": 0.007195656507227579,
+          "effort": 0.06996945315868917,
+          "increment": 0.10843691057130814,
+          "total": 0.18560202023722489
+        },
+        "solver_ms": [
+          0.9656370020820759,
+          1.685153799917316,
+          2.3533918208704634,
+          3.3974260004470125
+        ],
+        "runner_work_ms": [
+          2.0563719990605023,
+          3.4236589992360673,
+          3.903152258208143,
+          4.616402002284303
+        ],
+        "actual_control_period_ms": [
+          19.999430998723255,
+          20.081590199333732,
+          20.165905318572186,
+          20.210994996887166
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0007920535339054564,
+        0.0016808133467668873,
+        0.0075196489774330905,
+        0.004657339274996772
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.2400005390009028,
+        "start_reference_s": 3.500062226998125,
+        "truth_rmse_xyz_yaw": [
+          1.7726073966702374e-05,
+          6.913867535476603e-06,
+          0.01911607072575545,
+          1.292468141240387e-06
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0989097772421169,
+          "effort": 0.010118580910462605,
+          "increment": 0.002780420273831091,
+          "total": 0.1118087784264106
+        },
+        "solver_ms": [
+          0.5358394992072135,
+          1.6869652010427656,
+          2.656899441753923,
+          2.89938300193171
+        ],
+        "runner_work_ms": [
+          1.2028245018882444,
+          2.605364699957134,
+          3.758334539852514,
+          4.046576999826357
+        ],
+        "actual_control_period_ms": [
+          20.00132949979161,
+          20.228966099602985,
+          20.306202819556347,
+          20.325511999544688
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.9668825005064718,
+        2.6022105997981266,
+        3.1425693085111575,
+        3.3974260004470125
+      ],
+      "loop_ms_percentiles": [
+        2.0658349985751556,
+        3.929267201419861,
+        4.334952921999504,
+        4.616402002284303
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 87,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.02349198605928,
+        "g_norm": 7.192869462541641,
+        "init_penalty": 54.99582221291911,
+        "g_penalty": 0.40597507805107
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-g3-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t12-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-g3-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/009",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.49996435200228,
+        "start_reference_s": 3.9000608020032814,
+        "truth_rmse_xyz_yaw": [
+          0.0007621322277048718,
+          0.002611994208644223,
+          0.0019401518177164846,
+          0.006742130867230257
+        ],
+        "physical_cost_s": {
+          "tracking": 0.007877790230002388,
+          "effort": 0.06306387495065419,
+          "increment": 0.08279893057544022,
+          "total": 0.15374059575609678
+        },
+        "solver_ms": [
+          1.145722999353893,
+          1.5420713982166487,
+          1.8031640216941016,
+          1.8223130027763546
+        ],
+        "runner_work_ms": [
+          2.2321069991448894,
+          2.6330174980103034,
+          3.1066394803929165,
+          3.418178002903005
+        ],
+        "actual_control_period_ms": [
+          19.999821997771505,
+          20.00914720010769,
+          20.039238661629497,
+          20.108903001528233
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0007102551382285152,
+        0.0022948259186581286,
+        0.0075091703482687115,
+        0.005844096297473605
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.2399966939992737,
+        "start_reference_s": 3.5000644930005365,
+        "truth_rmse_xyz_yaw": [
+          1.7408807027752378e-05,
+          6.7500407854918295e-06,
+          0.019109597629339562,
+          9.758915424289295e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09797828930909097,
+          "effort": 0.010792929699845709,
+          "increment": 0.002842025688271336,
+          "total": 0.11161324469720801
+        },
+        "solver_ms": [
+          0.540983501196024,
+          2.622537049865056,
+          4.542745008911882,
+          5.022796998673584
+        ],
+        "runner_work_ms": [
+          1.1843114989460446,
+          3.817411300042291,
+          6.157117459297299,
+          6.742043999111047
+        ],
+        "actual_control_period_ms": [
+          20.000042999527068,
+          20.00682214893459,
+          20.00719482959539,
+          20.007287999760592
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        1.1139759990328457,
+        1.8437247526890121,
+        2.7581403194926795,
+        5.022796998673584
+      ],
+      "loop_ms_percentiles": [
+        2.217822999227792,
+        3.419665202818578,
+        3.961470599533655,
+        6.742043999111047
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 84,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.038302705367058,
+        "g_norm": 4.870293960347305,
+        "init_penalty": 56.599264914111295,
+        "g_penalty": 1.6751288958973556
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-init-quarter-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/010",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000050449998525,
+        "start_reference_s": 3.900063864999538,
+        "truth_rmse_xyz_yaw": [
+          0.0003697357785117123,
+          0.0008201500006730538,
+          0.0021788513905692543,
+          0.006844141575615931
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004049938806033582,
+          "effort": 0.01585698638650519,
+          "increment": 0.0202377942071612,
+          "total": 0.04014471939969997
+        },
+        "solver_ms": [
+          0.1641749986447394,
+          1.5356704992882442,
+          1.8721866021223879,
+          2.549738001107471
+        ],
+        "runner_work_ms": [
+          1.8015360001299996,
+          2.95044379781757,
+          3.4830155804229492,
+          4.293155001505511
+        ],
+        "actual_control_period_ms": [
+          20.000554002763238,
+          20.036473900836427,
+          20.07254371936142,
+          20.11140999820782
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0003270915060414302,
+        0.0007306454954650247,
+        0.00770088341783909,
+        0.0061102324582568155
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999491699942155,
+        "start_reference_s": 3.5000626719993306,
+        "truth_rmse_xyz_yaw": [
+          1.3375333369494026e-05,
+          5.032465403731031e-06,
+          0.01948589512134098,
+          1.4910546309188086e-06
+        ],
+        "physical_cost_s": {
+          "tracking": 0.1008498356840154,
+          "effort": 0.011203983912368253,
+          "increment": 0.0028249697117773073,
+          "total": 0.11487878930816095
+        },
+        "solver_ms": [
+          0.678159000017331,
+          1.779044149770924,
+          2.553429629369931,
+          2.747025999269681
+        ],
+        "runner_work_ms": [
+          1.3237604998721508,
+          2.648355502242337,
+          3.614811102524983,
+          3.8564250025956426
+        ],
+        "actual_control_period_ms": [
+          19.99859150055272,
+          20.043718600572902,
+          20.07602691905049,
+          20.08410399866989
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.1787684996088501,
+        1.5280267492926214,
+        2.551710881089094,
+        2.747025999269681
+      ],
+      "loop_ms_percentiles": [
+        1.7251775007025572,
+        2.945054797055491,
+        3.8607923025847435,
+        4.293155001505511
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 23,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.0855023415047251,
+        "g_norm": 3.8481243648366408,
+        "init_penalty": 15.46561428402393,
+        "g_penalty": 0.11619696582467405
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-baseline-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t6-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-baseline-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/011",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000041759994929,
+        "start_reference_s": 3.9000666909996653,
+        "truth_rmse_xyz_yaw": [
+          0.0004790745058294832,
+          0.0006616061238496982,
+          0.0035865407099863523,
+          0.005404113448168089
+        ],
+        "physical_cost_s": {
+          "tracking": 0.00730348533202308,
+          "effort": 0.05096208093038595,
+          "increment": 0.06335799668382991,
+          "total": 0.12162356294623893
+        },
+        "solver_ms": [
+          1.043080999806989,
+          2.451945600842009,
+          3.648121538280977,
+          3.8948219989833888
+        ],
+        "runner_work_ms": [
+          2.7565349992073607,
+          4.186353500699624,
+          5.228445278407895,
+          6.048830000509042
+        ],
+        "actual_control_period_ms": [
+          19.999760999780847,
+          20.007947000704007,
+          20.049014000760508,
+          20.13988600083394
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00042414933802693735,
+        0.000573867576398267,
+        0.008219854916621009,
+        0.00517457265169437
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12000175499997567,
+        "start_reference_s": 3.500056967997807,
+        "truth_rmse_xyz_yaw": [
+          3.532328125052833e-07,
+          1.6369670709301732e-06,
+          0.02031162676351688,
+          3.0572602049022856e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08577019962699169,
+          "effort": 0.01765437053136216,
+          "increment": 0.003351734595670519,
+          "total": 0.10677630475402436
+        },
+        "solver_ms": [
+          0.531015499291243,
+          2.5527994976073387,
+          3.0879070973242055,
+          3.2216839972534217
+        ],
+        "runner_work_ms": [
+          1.206786002512672,
+          3.465466998932243,
+          4.034110999236874,
+          4.17627199931303
+        ],
+        "actual_control_period_ms": [
+          19.999785501568113,
+          20.022139251523186,
+          20.0273846523487,
+          20.02869600255508
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        1.0605169973132433,
+        2.649774448400421,
+        3.905304758991411,
+        4.9430979997850955
+      ],
+      "loop_ms_percentiles": [
+        2.836597499481286,
+        4.303739401439088,
+        6.060257580502372,
+        7.191587999841431
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 79,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.047443644940759,
+        "g_norm": 9.157703931467745,
+        "init_penalty": 27.98430563869666,
+        "g_penalty": 0.5580088159896677
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-g3-s1-L1-53010",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53010,
+        "candidate": "t6-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-g3-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53010"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/012",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000018530008674,
+        "start_reference_s": 3.9000582799999393,
+        "truth_rmse_xyz_yaw": [
+          0.00045853609666101145,
+          0.0014274608558535542,
+          0.0035458070083916396,
+          0.004581359772046586
+        ],
+        "physical_cost_s": {
+          "tracking": 0.006929980939551403,
+          "effort": 0.04303631254331244,
+          "increment": 0.049741554874031875,
+          "total": 0.0997078483568957
+        },
+        "solver_ms": [
+          0.8782090008025989,
+          1.6971311019005952,
+          2.348729020086468,
+          2.6159999979427084
+        ],
+        "runner_work_ms": [
+          2.0874339970760047,
+          3.4912346007331503,
+          3.7866473388567106,
+          3.820842001005076
+        ],
+        "actual_control_period_ms": [
+          20.00022499851184,
+          20.021658099722117,
+          20.09790273878025,
+          20.12787199782906
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00042545163838902006,
+        0.001240777350029208,
+        0.008166509932640599,
+        0.0040594416612594565
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11997504900136846,
+        "start_reference_s": 3.500060999998823,
+        "truth_rmse_xyz_yaw": [
+          2.4896785662260097e-07,
+          1.6326010860975642e-06,
+          0.020516200442785945,
+          3.3254501219250127e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08775760238326762,
+          "effort": 0.01782896613639157,
+          "increment": 0.0033374043326047345,
+          "total": 0.10892397285226392
+        },
+        "solver_ms": [
+          0.5317354989529122,
+          2.535701749366126,
+          3.0681835498398873,
+          3.201303999958327
+        ],
+        "runner_work_ms": [
+          1.1350924996804679,
+          3.7144460020499537,
+          4.389311602062663,
+          4.558028002065839
+        ],
+        "actual_control_period_ms": [
+          19.998481999209616,
+          20.016134251818585,
+          20.02041085233941,
+          20.021480002469616
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.8250460014096461,
+        1.8080326501149095,
+        2.6218530379628677,
+        3.201303999958327
+      ],
+      "loop_ms_percentiles": [
+        2.0766590005223406,
+        3.4449566008333927,
+        3.828213861015687,
+        4.558028002065839
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 72,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.0746448573865717,
+        "g_norm": 5.266700210900592,
+        "init_penalty": 29.452767076301576,
+        "g_penalty": 1.6611084433765138
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-g3-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t12-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-g3-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/013",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199930760001735,
+        "start_reference_s": 3.9002766880003037,
+        "truth_rmse_xyz_yaw": [
+          0.005454602420274108,
+          0.007457475749347622,
+          0.0027477165804646684,
+          0.01759265340056225
+        ],
+        "physical_cost_s": {
+          "tracking": 0.019949458645787007,
+          "effort": 0.07282793983983378,
+          "increment": 0.09125020509680587,
+          "total": 0.18402760358242667
+        },
+        "solver_ms": [
+          1.288557999941986,
+          2.4948339992988604,
+          3.2437429288984263,
+          4.508198002440622
+        ],
+        "runner_work_ms": [
+          2.7900940003746655,
+          4.167084150139999,
+          5.238751750730443,
+          6.516849000036018
+        ],
+        "actual_control_period_ms": [
+          20.000272499601124,
+          20.21036869937234,
+          20.341491209292144,
+          20.485293000092497
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.005313013448541088,
+        0.007244662695013565,
+        0.004039666704403427,
+        0.017129321351849938
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23998856899925158,
+        "start_reference_s": 3.5001493400013715,
+        "truth_rmse_xyz_yaw": [
+          8.21063971675152e-06,
+          0.00010732054056933105,
+          0.019317929262008135,
+          1.8267482424838097e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09858178103137896,
+          "effort": 0.009923689304673468,
+          "increment": 0.003010266763647636,
+          "total": 0.11151573709970007
+        },
+        "solver_ms": [
+          0.5725539976992877,
+          1.9646337012090938,
+          2.946760342238123,
+          3.1922920024953783
+        ],
+        "runner_work_ms": [
+          1.7773544986994239,
+          3.863454798920428,
+          4.667010959165055,
+          4.867899999226211
+        ],
+        "actual_control_period_ms": [
+          19.997979999970994,
+          20.133745249768253,
+          20.153204250673298,
+          20.15806900089956
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        1.2634555005206494,
+        2.599174698843853,
+        3.2927996003127187,
+        4.508198002440622
+      ],
+      "loop_ms_percentiles": [
+        2.761287500106846,
+        4.264378048901561,
+        5.251223210507305,
+        6.516849000036018
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 576,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2158076137088945,
+        "g_norm": 5.921616706492718,
+        "init_penalty": 77.60487823701254,
+        "g_penalty": 2.4763813227037925
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/014",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.20000209600039,
+        "start_reference_s": 3.9000605889996223,
+        "truth_rmse_xyz_yaw": [
+          0.0029922576417397836,
+          0.002754717280936409,
+          0.001343474628892257,
+          0.01550333034379604
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005709794614896729,
+          "effort": 0.02017941704721979,
+          "increment": 0.02383998678466481,
+          "total": 0.04972919844678133
+        },
+        "solver_ms": [
+          0.14205899788066745,
+          1.4644527491327606,
+          2.1368442882521754,
+          2.979458000481827
+        ],
+        "runner_work_ms": [
+          1.611081001101411,
+          3.225367748746066,
+          3.8846114698753778,
+          5.541829003050225
+        ],
+        "actual_control_period_ms": [
+          20.000045000415412,
+          20.036074698145967,
+          20.102723579257145,
+          20.294454003305873
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002912205836726075,
+        0.002670350669312635,
+        0.003299083917215375,
+        0.014998640723199931
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999795399868162,
+        "start_reference_s": 3.5000608769987593,
+        "truth_rmse_xyz_yaw": [
+          3.1756500272848297e-06,
+          0.00010871868139711275,
+          0.019325904380206992,
+          1.9516681510177313e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09930613872497789,
+          "effort": 0.009993288964826708,
+          "increment": 0.0030409946622718597,
+          "total": 0.11234042235207646
+        },
+        "solver_ms": [
+          0.5211290008446667,
+          2.0496518003710644,
+          3.2132775616264566,
+          3.5041840019403026
+        ],
+        "runner_work_ms": [
+          1.9088999997620704,
+          4.38121375027549,
+          5.725596348602268,
+          6.06169199818396
+        ],
+        "actual_control_period_ms": [
+          19.99936850006634,
+          20.02458984788973,
+          20.042864367715083,
+          20.04743299767142
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.14399999963643495,
+        1.4644527491327606,
+        2.1746762971815765,
+        3.5041840019403026
+      ],
+      "loop_ms_percentiles": [
+        1.6152065018104622,
+        3.172206298768285,
+        3.945006079920857,
+        6.06169199818396
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 245,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2572666098561192,
+        "g_norm": 4.578340190041206,
+        "init_penalty": 20.74728663918437,
+        "g_penalty": 0.1644854366958836
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-baseline-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t6-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-baseline-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/015",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199888782997732,
+        "start_reference_s": 3.900087451998843,
+        "truth_rmse_xyz_yaw": [
+          0.0025486700450854465,
+          0.001256663467020976,
+          0.0017725546415369425,
+          0.013600431148172299
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004880450482829572,
+          "effort": 0.05102778170130543,
+          "increment": 0.08069779059258726,
+          "total": 0.13660602277672226
+        },
+        "solver_ms": [
+          0.7976200013217749,
+          1.0974702483508734,
+          1.5131902626671945,
+          1.958878001460107
+        ],
+        "runner_work_ms": [
+          2.1382300001278054,
+          2.888495500701538,
+          4.12990922031895,
+          4.830244000913808
+        ],
+        "actual_control_period_ms": [
+          20.0000375007221,
+          20.038162400123838,
+          20.107315370732977,
+          20.265477000066312
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002471923319533846,
+        0.0012245917119036592,
+        0.003597330918251407,
+        0.013146917161227106
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11999989399919286,
+        "start_reference_s": 3.5000668479988235,
+        "truth_rmse_xyz_yaw": [
+          1.3335043458108547e-06,
+          2.664313006242221e-05,
+          0.02051187347189406,
+          6.36651874427705e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08740214147505462,
+          "effort": 0.015665290861652675,
+          "increment": 0.003919491425108715,
+          "total": 0.10698692376181601
+        },
+        "solver_ms": [
+          0.6885299990244675,
+          2.294220252224477,
+          2.6696992521465295,
+          2.763569002127042
+        ],
+        "runner_work_ms": [
+          1.8456524994689971,
+          3.9404357494277065,
+          4.313586349053367,
+          4.406873998959782
+        ],
+        "actual_control_period_ms": [
+          20.000538999738637,
+          20.019900250190403,
+          20.023336850863416,
+          20.02419600103167
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.8000819998414954,
+        1.1866228978760773,
+        1.676530379336327,
+        2.763569002127042
+      ],
+      "loop_ms_percentiles": [
+        2.1452205000969116,
+        3.037909249724179,
+        4.135963327862555,
+        4.830244000913808
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 541,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2029460353843409,
+        "g_norm": 9.873598422357903,
+        "init_penalty": 36.90059148503336,
+        "g_penalty": 0.6486626113095724
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-g3-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t6-g3",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-g3-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/016",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200002573998063,
+        "start_reference_s": 3.9000652649992844,
+        "truth_rmse_xyz_yaw": [
+          0.0036257874944126507,
+          0.003153305724022459,
+          0.0018991318413980715,
+          0.00861109912406421
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005789165319449345,
+          "effort": 0.0439863844522403,
+          "increment": 0.060016166535600095,
+          "total": 0.10979171630728973
+        },
+        "solver_ms": [
+          0.7405074993585004,
+          1.146874750884308,
+          1.8988420312598435,
+          2.8428280020307284
+        ],
+        "runner_work_ms": [
+          2.1352195017243503,
+          3.0115797995676927,
+          3.7530111000523902,
+          4.889944000751711
+        ],
+        "actual_control_period_ms": [
+          20.000206499389606,
+          20.042683300198405,
+          20.123674918577308,
+          20.247061998816207
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.003507729306542067,
+        0.00309938427818953,
+        0.0036453187636834397,
+        0.008333541657365074
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.1199906279980496,
+        "start_reference_s": 3.50016124800095,
+        "truth_rmse_xyz_yaw": [
+          1.0092128253806427e-06,
+          2.671579270509327e-05,
+          0.020552299479905972,
+          6.676940934445389e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08765018099529215,
+          "effort": 0.015604901757157829,
+          "increment": 0.00391832816955305,
+          "total": 0.10717341092200303
+        },
+        "solver_ms": [
+          0.5178084993531229,
+          2.2984747502050595,
+          2.688748549917364,
+          2.7863169998454396
+        ],
+        "runner_work_ms": [
+          1.779561000148533,
+          3.8695837483828655,
+          4.3822751478728605,
+          4.510447997745359
+        ],
+        "actual_control_period_ms": [
+          20.00349149966496,
+          20.051760749993264,
+          20.057934549913625,
+          20.059477999893716
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.7428275002894225,
+        1.243659849933465,
+        1.9536083125785788,
+        2.8428280020307284
+      ],
+      "loop_ms_percentiles": [
+        2.1399825000116834,
+        3.1866158482444003,
+        4.167935939731251,
+        4.889944000751711
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 468,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.245601719133852,
+        "g_norm": 5.866702606497565,
+        "init_penalty": 39.56385602053101,
+        "g_penalty": 2.061130083207002
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/017",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199999178003054,
+        "start_reference_s": 3.900061979002203,
+        "truth_rmse_xyz_yaw": [
+          0.0021662289114718404,
+          0.0007980763993707607,
+          0.0016555614481194624,
+          0.009272638726012538
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0027480553596920397,
+          "effort": 0.010298010311292544,
+          "increment": 0.013318388824902863,
+          "total": 0.026364454495887448
+        },
+        "solver_ms": [
+          0.14006250057718717,
+          0.3434518997892153,
+          0.9399170389588103,
+          1.1261360014032107
+        ],
+        "runner_work_ms": [
+          1.6834569996717619,
+          2.8985684990402656,
+          3.3942594195468687,
+          4.377399000077276
+        ],
+        "actual_control_period_ms": [
+          20.000052001705626,
+          20.153904051403515,
+          20.249068949306093,
+          20.31809400068596
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0020950968857283998,
+        0.0007944207684960201,
+        0.003509189665049987,
+        0.009025767399377566
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12014151300172671,
+        "start_reference_s": 3.5000602830004937,
+        "truth_rmse_xyz_yaw": [
+          1.4471442898324993e-06,
+          2.673393980396727e-05,
+          0.020524888299833018,
+          7.764346992977557e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08789083625596354,
+          "effort": 0.016076346432682135,
+          "increment": 0.0039446292896896055,
+          "total": 0.10791181197833527
+        },
+        "solver_ms": [
+          0.9001215003081597,
+          2.4528372505301377,
+          2.8005570504319626,
+          2.8874870004074182
+        ],
+        "runner_work_ms": [
+          2.9102789994794875,
+          4.151960501985741,
+          4.35668410245853,
+          4.407865002576727
+        ],
+        "actual_control_period_ms": [
+          20.001518500066595,
+          20.117873000344844,
+          20.11794739992183,
+          20.11796599981608
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.14055449901206885,
+        0.4092341499926985,
+        1.030419229500694,
+        2.8874870004074182
+      ],
+      "loop_ms_percentiles": [
+        1.690832499662065,
+        2.9126027002348565,
+        3.4227398308576085,
+        4.407865002576727
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 18,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2946661171801606,
+        "g_norm": 5.723661126838285,
+        "init_penalty": 10.685564541849416,
+        "g_penalty": 0.2179796453229316
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-baseline-s1-L1-53011",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53011,
+        "candidate": "t12-baseline",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-baseline-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53011"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/screen/018",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200010919998022,
+        "start_reference_s": 3.9000665790008497,
+        "truth_rmse_xyz_yaw": [
+          0.00384252101953197,
+          0.00654328017343299,
+          0.0027463263674978467,
+          0.019643027078135058
+        ],
+        "physical_cost_s": {
+          "tracking": 0.017767386381514216,
+          "effort": 0.08212792720638276,
+          "increment": 0.12582113839620132,
+          "total": 0.2257164519840983
+        },
+        "solver_ms": [
+          1.2215355000080308,
+          1.735040600760839,
+          3.4740698318637335,
+          5.8175209996989
+        ],
+        "runner_work_ms": [
+          2.7715169999282807,
+          4.136034549992472,
+          5.471635939902625,
+          7.493394001357956
+        ],
+        "actual_control_period_ms": [
+          19.999648999146302,
+          20.016371448946302,
+          20.069383329355333,
+          21.637962003296707
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0037553826682550262,
+        0.006324355867711334,
+        0.004053427226136259,
+        0.019040661121012027
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999567399732769,
+        "start_reference_s": 3.5000701210010448,
+        "truth_rmse_xyz_yaw": [
+          3.977958389677319e-06,
+          0.00011060781277697765,
+          0.019314818665113857,
+          1.5364290749250546e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09613046638211215,
+          "effort": 0.010706808876493033,
+          "increment": 0.003056019166886983,
+          "total": 0.10989329442549217
+        },
+        "solver_ms": [
+          0.6922824995854171,
+          3.174559699982635,
+          4.7603311408602185,
+          5.1567740010796115
+        ],
+        "runner_work_ms": [
+          2.5710304980748333,
+          5.727590948663416,
+          7.626943787763596,
+          8.101781997538637
+        ],
+        "actual_control_period_ms": [
+          19.999265499791363,
+          20.012389300427458,
+          20.01597705810127,
+          20.016873997519724
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        1.2209055003040703,
+        1.9564425008866193,
+        3.8592951399914397,
+        5.8175209996989
+      ],
+      "loop_ms_percentiles": [
+        2.775104998363531,
+        4.207072601820982,
+        5.939887140630162,
+        8.101781997538637
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 586,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.202638736167602,
+        "g_norm": 8.489174317815575,
+        "init_penalty": 75.93287519933641,
+        "g_penalty": 0.5654907159131435
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t6-init-quarter-s1-L1-53020",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53020,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53020"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/001",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.5000160700001288,
+        "start_reference_s": 3.9000612729978457,
+        "truth_rmse_xyz_yaw": [
+          0.0006379931599015032,
+          0.0005577812754569005,
+          0.0037567953553635895,
+          0.001861208802380051
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005242073692637272,
+          "effort": 0.009986898319846458,
+          "increment": 0.014395417679027961,
+          "total": 0.02962438969151169
+        },
+        "solver_ms": [
+          0.14285100041888654,
+          0.22101539907453113,
+          0.31536271817458356,
+          0.358002998837037
+        ],
+        "runner_work_ms": [
+          1.3120370022079442,
+          1.9957106007495893,
+          2.1593649395799743,
+          2.3362389983958565
+        ],
+        "actual_control_period_ms": [
+          19.999430001917062,
+          20.192576900080894,
+          20.313927839160897,
+          20.451666998269502
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0006016944917547457,
+        0.0005040374440591311,
+        0.008247355516759269,
+        0.0016600740697755038
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12000777799767093,
+        "start_reference_s": 3.5000620579994575,
+        "truth_rmse_xyz_yaw": [
+          3.7639987335889704e-07,
+          2.201222724135359e-06,
+          0.020612447245532232,
+          9.115744644051805e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08784965607601798,
+          "effort": 0.02020552955355117,
+          "increment": 0.0038074147726276744,
+          "total": 0.11186260040219684
+        },
+        "solver_ms": [
+          0.8880815021257149,
+          4.019014750156202,
+          4.849234949870152,
+          5.056789999798639
+        ],
+        "runner_work_ms": [
+          1.673881499300478,
+          5.37802550024935,
+          6.322357900353382,
+          6.558441000379389
+        ],
+        "actual_control_period_ms": [
+          19.99822099969606,
+          20.01995449882088,
+          20.02428049872833,
+          20.025361998705193
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.1499365007475717,
+        0.5405913019785649,
+        0.9472000112146118,
+        5.056789999798639
+      ],
+      "loop_ms_percentiles": [
+        1.361198999802582,
+        2.3011174991552252,
+        2.500124102953144,
+        6.558441000379389
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2992916551938574,
+        "g_norm": 5.261811244579557,
+        "init_penalty": 10.762472258838322,
+        "g_penalty": 0.1842232950846033
+      }
+    },
+    {
+      "case": {
+        "name": "hover-t12-init-quarter-s1-L1-53020",
+        "scene": "hover",
+        "level": 1,
+        "seed": 53020,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53020"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/002",
+      "common_tracking": {
+        "samples": 75,
+        "duration_s": 1.4996684639991145,
+        "start_reference_s": 3.9003252830007114,
+        "truth_rmse_xyz_yaw": [
+          0.0004880736130582835,
+          0.00029893449298085015,
+          0.002388750086203041,
+          0.003441563512804834
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0033532900326991486,
+          "effort": 0.018693242443421867,
+          "increment": 0.02571258168382485,
+          "total": 0.047759114159945874
+        },
+        "solver_ms": [
+          0.21628199829137884,
+          1.985340699320659,
+          2.928449559767621,
+          3.8755800014769193
+        ],
+        "runner_work_ms": [
+          1.9991460030723829,
+          3.992041197852813,
+          4.932982437894688,
+          6.145467999886023
+        ],
+        "actual_control_period_ms": [
+          19.99955700011924,
+          20.384735597326653,
+          20.48190113971941,
+          20.539316999929724
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.000429667877095673,
+        0.0002939518393479958,
+        0.007649432077200434,
+        0.002998959657680953
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23958229400159325,
+        "start_reference_s": 3.5000662700003886,
+        "truth_rmse_xyz_yaw": [
+          2.067669811918182e-05,
+          3.59517133016447e-05,
+          0.01928444674381974,
+          1.7351080870206867e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.10070214605231624,
+          "effort": 0.01133555402643869,
+          "increment": 0.0030603264593738783,
+          "total": 0.11509802653812881
+        },
+        "solver_ms": [
+          0.8496800001012161,
+          2.897075248802137,
+          4.084091849399558,
+          4.38084599954891
+        ],
+        "runner_work_ms": [
+          1.4733554980921326,
+          4.027614448568782,
+          5.306703688693235,
+          5.626475998724345
+        ],
+        "actual_control_period_ms": [
+          19.98905100117554,
+          20.298492000256374,
+          20.299548000293726,
+          20.299812000303064
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.30058849915803876,
+        1.9832434500131058,
+        3.880632661457642,
+        4.38084599954891
+      ],
+      "loop_ms_percentiles": [
+        1.8834399998013396,
+        3.9578101974257147,
+        5.631665918735965,
+        6.145467999886023
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 37,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2908085735713706,
+        "g_norm": 4.262989239921635,
+        "init_penalty": 21.870270104978175,
+        "g_penalty": 0.14261498642510764
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s1-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/003",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199999553002272,
+        "start_reference_s": 3.900063521999982,
+        "truth_rmse_xyz_yaw": [
+          0.0020899918569154937,
+          0.001402221699841937,
+          0.0017894680809816296,
+          0.011654885610861946
+        ],
+        "physical_cost_s": {
+          "tracking": 0.003131991358636242,
+          "effort": 8.709991871999403e-05,
+          "increment": 7.673720192668337e-06,
+          "total": 0.003226764997548905
+        },
+        "solver_ms": [
+          0.13541700172936544,
+          0.19789914967986985,
+          0.2252341605708352,
+          0.2559530003054533
+        ],
+        "runner_work_ms": [
+          1.437744500435656,
+          2.533871199739224,
+          2.8287199014084736,
+          3.008177998708561
+        ],
+        "actual_control_period_ms": [
+          20.00002499880793,
+          20.022955150307098,
+          20.039108861201385,
+          20.10732200142229
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002031362690295869,
+        0.001419729394034995,
+        0.003538838557623091,
+        0.011262686837756657
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12000192500272533,
+        "start_reference_s": 3.500060073998611,
+        "truth_rmse_xyz_yaw": [
+          1.2975575853459265e-08,
+          2.561460255670872e-05,
+          0.020513017606532277,
+          7.674947762367308e-10
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08769166161814758,
+          "effort": 0.017484221740929135,
+          "increment": 0.0026367659858608167,
+          "total": 0.10781264934493755
+        },
+        "solver_ms": [
+          0.6074140001146588,
+          2.5045770016731694,
+          2.8081362019293015,
+          2.884026001993334
+        ],
+        "runner_work_ms": [
+          1.7350509988318663,
+          3.9405634997820016,
+          4.37725669980864,
+          4.4864299998153
+        ],
+        "actual_control_period_ms": [
+          20.001135002530646,
+          20.004402749691508,
+          20.005006949577364,
+          20.00515799954883
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.13536700134864077,
+        0.20130799748585557,
+        0.25877822030451825,
+        2.884026001993334
+      ],
+      "loop_ms_percentiles": [
+        1.4374509992194362,
+        2.533871199739224,
+        2.8744719529640856,
+        4.4864299998153
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.09664067550621662,
+        "g_norm": 1.7799266180134008,
+        "init_penalty": 0.05953882000429735,
+        "g_penalty": 0.0210800774508051
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s1-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/004",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.20000034700206,
+        "start_reference_s": 3.900059585001145,
+        "truth_rmse_xyz_yaw": [
+          0.0030468056171625442,
+          0.0025370510169223075,
+          0.001109912684552571,
+          0.015191841970541065
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004748684754497226,
+          "effort": 0.00023344544646612637,
+          "increment": 2.86173268198967e-05,
+          "total": 0.00501074752778325
+        },
+        "solver_ms": [
+          0.15037400044093374,
+          0.360711351459031,
+          0.5104916594063977,
+          0.6437289994210005
+        ],
+        "runner_work_ms": [
+          1.7192870000144467,
+          3.0083067509622192,
+          3.2505868812950207,
+          3.4243979971506633
+        ],
+        "actual_control_period_ms": [
+          19.999729998744442,
+          20.024180347536458,
+          20.109946789707465,
+          20.379079000122147
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0029494089376945,
+        0.0024877682313915444,
+        0.003202018656476352,
+        0.014692375391545163
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.2400048119998246,
+        "start_reference_s": 3.500062325001636,
+        "truth_rmse_xyz_yaw": [
+          1.85044062100403e-07,
+          9.35636008049609e-05,
+          0.01928047431479624,
+          4.3077816485361206e-08
+        ],
+        "physical_cost_s": {
+          "tracking": 0.10084858874080332,
+          "effort": 0.010606750432595418,
+          "increment": 0.0018602994884256265,
+          "total": 0.11331563866182436
+        },
+        "solver_ms": [
+          0.8701009992364561,
+          2.0343293002952114,
+          2.645002660647152,
+          2.7976710007351357
+        ],
+        "runner_work_ms": [
+          2.4209695002355147,
+          3.7056756989841224,
+          4.340589538296627,
+          4.499317998124752
+        ],
+        "actual_control_period_ms": [
+          20.002153500172426,
+          20.04313229881518,
+          20.078188858242356,
+          20.08695299809915
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.15053149763843976,
+        0.42952234816766555,
+        0.8451041402076949,
+        2.7976710007351357
+      ],
+      "loop_ms_percentiles": [
+        1.7169179991469719,
+        3.027393699994718,
+        3.2619611502013868,
+        4.499317998124752
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.10649996806578228,
+        "g_norm": 1.663891008929583,
+        "init_penalty": 0.14886759428018154,
+        "g_penalty": 0.021724234061681235
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s1-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/005",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200023983001302,
+        "start_reference_s": 3.900061051001103,
+        "truth_rmse_xyz_yaw": [
+          0.0021380216823065623,
+          0.0009319524363477652,
+          0.0020095922637964475,
+          0.008623571386912927
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0028972128601172714,
+          "effort": 0.011312292842604564,
+          "increment": 0.014134877255514752,
+          "total": 0.02834438295823659
+        },
+        "solver_ms": [
+          0.13703399963560514,
+          0.42954030031978485,
+          0.8163007705297783,
+          1.33705999905942
+        ],
+        "runner_work_ms": [
+          1.6152214993780944,
+          2.8577805493114274,
+          3.254701399564509,
+          4.140803997870535
+        ],
+        "actual_control_period_ms": [
+          20.00000750012987,
+          20.02348685218749,
+          20.07737512998574,
+          20.105685998714762
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0020662271915365877,
+        0.0009016502619653133,
+        0.0036689284360998478,
+        0.00842141539951404
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11999744299828308,
+        "start_reference_s": 3.5000644639985694,
+        "truth_rmse_xyz_yaw": [
+          5.95041203897873e-07,
+          2.722500887611834e-05,
+          0.0204593439510714,
+          3.3760146878629866e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08615620882172352,
+          "effort": 0.019935407510990783,
+          "increment": 0.004179944220512723,
+          "total": 0.11027156055322701
+        },
+        "solver_ms": [
+          0.5525734995899256,
+          4.058332250679086,
+          4.663930451170018,
+          4.81533000129275
+        ],
+        "runner_work_ms": [
+          1.7687435010884656,
+          6.447396249313897,
+          7.1258008496442935,
+          7.2954019997268915
+        ],
+        "actual_control_period_ms": [
+          19.998917501652613,
+          20.006044998808648,
+          20.007416998487315,
+          20.007759998406982
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.13665050028066617,
+        0.49068555053963725,
+        0.87055094732932,
+        4.81533000129275
+      ],
+      "loop_ms_percentiles": [
+        1.6123674995469628,
+        2.8577805493114274,
+        3.285589419901951,
+        7.2954019997268915
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 22,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.3303981456463885,
+        "g_norm": 5.816425623509017,
+        "init_penalty": 11.283925417824523,
+        "g_penalty": 0.2251025268001909
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s1-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/confirm/006",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200007346000348,
+        "start_reference_s": 3.9000585670000874,
+        "truth_rmse_xyz_yaw": [
+          0.0031394642018346777,
+          0.002777024780552263,
+          0.0013689826735942842,
+          0.013417662800705442
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005220729002905978,
+          "effort": 0.02127691999190898,
+          "increment": 0.025673932877118423,
+          "total": 0.05217158187193339
+        },
+        "solver_ms": [
+          0.20881250020465814,
+          1.5841270513192283,
+          1.8293544198240832,
+          2.820427002006909
+        ],
+        "runner_work_ms": [
+          2.089842999339453,
+          3.3617365006648456,
+          3.89390953041584,
+          4.6862919989507645
+        ],
+        "actual_control_period_ms": [
+          20.000024498585844,
+          20.037628451245837,
+          20.100003700463276,
+          20.1404299987189
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.003033929430873907,
+        0.002688434031860455,
+        0.0032757826713906697,
+        0.012981876391386503
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999524900136748,
+        "start_reference_s": 3.5000615589997324,
+        "truth_rmse_xyz_yaw": [
+          7.351937780750166e-06,
+          0.0001186210831756857,
+          0.01920854412867452,
+          1.0451657588781668e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.10053957318431427,
+          "effort": 0.012280071106458137,
+          "increment": 0.003476374752033198,
+          "total": 0.11629601904280559
+        },
+        "solver_ms": [
+          0.5890555003134068,
+          1.8864420984755261,
+          2.477185218303931,
+          2.6248709982610308
+        ],
+        "runner_work_ms": [
+          1.7055349999282043,
+          3.501799100558854,
+          4.586891020371697,
+          4.858164000324905
+        ],
+        "actual_control_period_ms": [
+          19.999516998723266,
+          20.00436685029854,
+          20.0058685714248,
+          20.006244001706364
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.21928500063950196,
+        1.5812813508091492,
+        1.8649830500726234,
+        2.820427002006909
+      ],
+      "loop_ms_percentiles": [
+        2.0719474996440113,
+        3.354426600890292,
+        3.8971462185872943,
+        4.858164000324905
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 258,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.2877971766775942,
+        "g_norm": 4.565450568683205,
+        "init_penalty": 21.76680395721054,
+        "g_penalty": 0.16355651527913068
+      }
+    },
+    {
+      "case": {
+        "name": "yaw-neg-t6-init-quarter-s1-L2-53030",
+        "scene": "yaw-neg",
+        "level": 2,
+        "seed": 53030,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--step-axis",
+          "yaw",
+          "--step-amplitude",
+          "-0.08726646259971647",
+          "--step-hold",
+          "2",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "2",
+          "--noise-seed",
+          "53030"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/pressure/001",
+      "common_tracking": {
+        "samples": 90,
+        "duration_s": 1.7998399739990418,
+        "start_reference_s": 3.9002651890004927,
+        "truth_rmse_xyz_yaw": [
+          0.0003379282860177361,
+          0.0049023453399731085,
+          0.002463480728310735,
+          0.07315846075811892
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0608463042308933,
+          "effort": 0.0439871331887529,
+          "increment": 0.054250393824957145,
+          "total": 0.15908383124460335
+        },
+        "solver_ms": [
+          0.18387999989499804,
+          1.0794394511322023,
+          1.2820711012318498,
+          1.2866190008935519
+        ],
+        "runner_work_ms": [
+          1.749551500324742,
+          2.748619398153096,
+          2.8791041401564144,
+          2.911743998993188
+        ],
+        "actual_control_period_ms": [
+          19.999804500912433,
+          20.142946250234672,
+          20.1822682405691,
+          20.230492002156097
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00032749723015477734,
+        0.004704846034594145,
+        0.006906677854637722,
+        0.06597318133258083
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12026065200188896,
+        "start_reference_s": 3.500074041003245,
+        "truth_rmse_xyz_yaw": [
+          3.338622522143778e-06,
+          3.4208194524185535e-06,
+          0.020344209111636376,
+          2.5561230576258005e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08803641262021841,
+          "effort": 0.027980972211434228,
+          "increment": 0.00858186515806653,
+          "total": 0.12459924998971916
+        },
+        "solver_ms": [
+          0.8763619989622384,
+          2.271900500090851,
+          2.633419299854723,
+          2.72379899979569
+        ],
+        "runner_work_ms": [
+          1.7985889990086434,
+          3.5769409987551626,
+          4.027887398115126,
+          4.140623997955117
+        ],
+        "actual_control_period_ms": [
+          20.006321001346805,
+          20.19980400109489,
+          20.247082400965155,
+          20.25890200093272
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.2387255008216016,
+        1.2321679992965073,
+        1.3507175400445706,
+        2.72379899979569
+      ],
+      "loop_ms_percentiles": [
+        1.7684189988358412,
+        2.914604149009392,
+        3.4928476511413473,
+        4.140623997955117
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 54,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 2.446809289574136,
+        "g_norm": 12.170886885302984,
+        "init_penalty": 38.16636394887881,
+        "g_penalty": 0.985640301152228
+      }
+    },
+    {
+      "case": {
+        "name": "yaw-neg-t12-init-quarter-s1-L2-53030",
+        "scene": "yaw-neg",
+        "level": 2,
+        "seed": 53030,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--step-axis",
+          "yaw",
+          "--step-amplitude",
+          "-0.08726646259971647",
+          "--step-hold",
+          "2",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "2",
+          "--noise-seed",
+          "53030"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/pressure/002",
+      "common_tracking": {
+        "samples": 90,
+        "duration_s": 1.8000282860011794,
+        "start_reference_s": 3.9000645309970423,
+        "truth_rmse_xyz_yaw": [
+          0.0011268314387401725,
+          0.0011211383285735042,
+          0.002321471607737958,
+          0.0681008244982956
+        ],
+        "physical_cost_s": {
+          "tracking": 0.051073669823484616,
+          "effort": 0.05222893858959217,
+          "increment": 0.0703685694919582,
+          "total": 0.173671177905035
+        },
+        "solver_ms": [
+          0.988591500572511,
+          1.454705499963893,
+          1.62136115879548,
+          1.8164100001740735
+        ],
+        "runner_work_ms": [
+          2.3160684995673364,
+          3.0744015482923714,
+          3.5796970221053925,
+          3.5832409994327463
+        ],
+        "actual_control_period_ms": [
+          20.000648499262752,
+          20.031775001916685,
+          20.046003199749975,
+          20.050559996889206
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0009784885458247149,
+        0.0010002939133521786,
+        0.006882704309068482,
+        0.06244437232246322
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999199500030954,
+        "start_reference_s": 3.5000631000002613,
+        "truth_rmse_xyz_yaw": [
+          2.876235854569269e-05,
+          1.549056499299354e-05,
+          0.019114079518859694,
+          1.274512628004444e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.1073026951290951,
+          "effort": 0.01867933547092217,
+          "increment": 0.007034537834243356,
+          "total": 0.13301656843426063
+        },
+        "solver_ms": [
+          0.5428200001915684,
+          2.953429298577245,
+          4.872486658787241,
+          5.352250998839736
+        ],
+        "runner_work_ms": [
+          1.2286575001780875,
+          4.0221187498900655,
+          6.149965349650304,
+          6.68192699959036
+        ],
+        "actual_control_period_ms": [
+          19.998886999019305,
+          20.033207598498848,
+          20.062946320140327,
+          20.070381000550697
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.9821804997045547,
+        1.4907180999216505,
+        2.218894141078637,
+        5.352250998839736
+      ],
+      "loop_ms_percentiles": [
+        2.288968500579358,
+        3.303009448427474,
+        3.5824844200033112,
+        6.68192699959036
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 101,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 2.4947654545188382,
+        "g_norm": 8.144449732648283,
+        "init_penalty": 81.69032883944337,
+        "g_penalty": 0.520509431042117
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s1-L2-53031",
+        "scene": "circle",
+        "level": 2,
+        "seed": 53031,
+        "candidate": "t6-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "2",
+          "--noise-seed",
+          "53031"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/pressure/003",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199992322999606,
+        "start_reference_s": 3.9000726749982277,
+        "truth_rmse_xyz_yaw": [
+          0.0025847407150806946,
+          0.0014059181080182952,
+          0.0015808655826746567,
+          0.01195886319139621
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004569462524512194,
+          "effort": 0.04607445232202612,
+          "increment": 0.053183826775465064,
+          "total": 0.10382774162200338
+        },
+        "solver_ms": [
+          0.6495145007647807,
+          1.3003971003854524,
+          1.6613072808831917,
+          1.9642689985630568
+        ],
+        "runner_work_ms": [
+          2.2715949980920414,
+          4.131710147885315,
+          5.008099510923785,
+          5.617454000457656
+        ],
+        "actual_control_period_ms": [
+          20.0001555003837,
+          20.03480040020804,
+          20.100556569923356,
+          20.419663000211585
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002502003293725012,
+        0.0013706489008991885,
+        0.0034241742890735605,
+        0.011562046972111228
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.1200028490020486,
+        "start_reference_s": 3.5000680729972373,
+        "truth_rmse_xyz_yaw": [
+          1.1397313558301011e-07,
+          2.4006679733255512e-05,
+          0.02052924276130681,
+          1.020906259533257e-06
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08777222604616725,
+          "effort": 0.022744306181635948,
+          "increment": 0.004415743185363717,
+          "total": 0.1149322754131669
+        },
+        "solver_ms": [
+          1.1538304988789605,
+          3.4076810006808955,
+          3.8619402017502584,
+          3.9755050020175986
+        ],
+        "runner_work_ms": [
+          3.572079500372638,
+          6.26191625087813,
+          6.808180851294311,
+          6.944747001398355
+        ],
+        "actual_control_period_ms": [
+          19.99853850065847,
+          20.031201997881,
+          20.038197197391128,
+          20.03994599726866
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.6482615008280845,
+        1.3003971003854524,
+        1.7043023366932175,
+        3.9755050020175986
+      ],
+      "loop_ms_percentiles": [
+        2.2752379991288763,
+        4.136815750644018,
+        5.013999051734571,
+        6.944747001398355
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 315,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 2.681600004826283,
+        "g_norm": 11.923136898087785,
+        "init_penalty": 45.84251093134833,
+        "g_penalty": 0.9459115489409383
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s1-L2-53031",
+        "scene": "circle",
+        "level": 2,
+        "seed": 53031,
+        "candidate": "t12-init-quarter",
+        "weights": "s1",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s1.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "2",
+          "--noise-seed",
+          "53031"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/pressure/004",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200009084001067,
+        "start_reference_s": 3.900106215998676,
+        "truth_rmse_xyz_yaw": [
+          0.0029627487535072027,
+          0.0030235945118027986,
+          0.001445373035858996,
+          0.01739454449605987
+        ],
+        "physical_cost_s": {
+          "tracking": 0.008271293855744159,
+          "effort": 0.061678590053838245,
+          "increment": 0.08216995047008763,
+          "total": 0.15211983437967003
+        },
+        "solver_ms": [
+          0.9177859992632875,
+          1.3982174985358138,
+          1.5746746719378268,
+          2.1254510029393714
+        ],
+        "runner_work_ms": [
+          2.4619020005047787,
+          3.26021330001822,
+          4.27172361916746,
+          4.814001997146988
+        ],
+        "actual_control_period_ms": [
+          20.000044998596422,
+          20.09829045182414,
+          20.16542339028092,
+          20.24438200169243
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0028812789503226766,
+        0.0029448723650954715,
+        0.0032858165683849107,
+        0.01712202862190015
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.23999919700145256,
+        "start_reference_s": 3.5000586220012337,
+        "truth_rmse_xyz_yaw": [
+          1.2005815151201155e-05,
+          7.598205829802226e-05,
+          0.019105117296896262,
+          1.975113185646201e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.10382735702238759,
+          "effort": 0.015368495574982668,
+          "increment": 0.004941061758059649,
+          "total": 0.12413691435542991
+        },
+        "solver_ms": [
+          0.6829329995525768,
+          1.735926901346828,
+          2.5370005818331274,
+          2.737269001954701
+        ],
+        "runner_work_ms": [
+          1.809031000448158,
+          3.1065775512615788,
+          4.001748310874974,
+          4.225541000778321
+        ],
+        "actual_control_period_ms": [
+          19.999092000944074,
+          20.042673750322137,
+          20.0779067512849,
+          20.08671500152559
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.916908500585123,
+        1.3906345024224716,
+        1.594049881605315,
+        2.737269001954701
+      ],
+      "loop_ms_percentiles": [
+        2.4546565000491682,
+        3.2542893479330814,
+        4.271650818845956,
+        4.814001997146988
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 544,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 2.594523820662946,
+        "g_norm": 8.525146117339892,
+        "init_penalty": 88.35164772736773,
+        "g_penalty": 0.5702933600185853
+      }
+    },
+    {
+      "case": {
+        "name": "circle-m0-s1-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "m0",
+        "weights": "s1",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/m0-s1.json",
+          "--mpc-model",
+          "m0",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/001",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200007307001215,
+        "start_reference_s": 3.9000625509979727,
+        "truth_rmse_xyz_yaw": [
+          0.002475148479136792,
+          0.0021745677728760324,
+          0.0011757539229509807,
+          0.00043346686532482295
+        ],
+        "physical_cost_s": {
+          "tracking": 0.001961389578030131,
+          "effort": 0.00020344151464970605,
+          "increment": 1.6733140187325382e-05,
+          "total": 0.0021815642328671626
+        },
+        "solver_ms": [
+          0.5808400001114933,
+          0.8791923974058591,
+          0.9418178000851183,
+          1.0784050027723424
+        ],
+        "runner_work_ms": [
+          1.6262210010609124,
+          2.7566298009332963,
+          3.1519947307970138,
+          3.378122997673927
+        ],
+        "actual_control_period_ms": [
+          20.000310001705657,
+          20.27622209934634,
+          20.386553621065104,
+          20.492731000558706
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002424542143666857,
+        0.002234628170224693,
+        0.0031975731104486585,
+        0.0004415442544526964
+      ],
+      "bridge": null,
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5815909989905776,
+        0.8805961499092516,
+        0.9647017699171556,
+        4.862358997343108
+      ],
+      "loop_ms_percentiles": [
+        1.6283955010294449,
+        2.7836464489155333,
+        3.201838019012939,
+        7.310080996830948
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-joint-fir6-s1-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "joint-fir6",
+        "weights": "s1",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/joint-fir6-s1.json",
+          "--mpc-model",
+          "joint-fir6",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/002",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200024914000096,
+        "start_reference_s": 3.9000602179985435,
+        "truth_rmse_xyz_yaw": [
+          0.002884582349038409,
+          0.0024412619855875943,
+          0.0016086663937600128,
+          0.0009364930928122893
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0025919168942455397,
+          "effort": 4.72762887573e-06,
+          "increment": 1.6352602889590153e-07,
+          "total": 0.0025968080491501648
+        },
+        "solver_ms": [
+          0.5230325004959013,
+          0.8641756010547397,
+          0.9102448571866261,
+          0.946956999541726
+        ],
+        "runner_work_ms": [
+          1.5706225003668806,
+          2.7774364973083716,
+          2.88947656907112,
+          2.9547699996328447
+        ],
+        "actual_control_period_ms": [
+          20.000024498585844,
+          20.03487564797979,
+          20.10152771763387,
+          20.16105100119603
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.002853331439783922,
+        0.002533921217754749,
+        0.0034863175687320424,
+        0.000914621617478652
+      ],
+      "bridge": {
+        "samples": 5,
+        "duration_s": 0.10000021700034267,
+        "start_reference_s": 3.500061631999415,
+        "truth_rmse_xyz_yaw": [
+          6.271490072185276e-09,
+          1.726171371989083e-05,
+          0.020665320963464552,
+          1.413453131765218e-10
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0871790686208471,
+          "effort": 0.01929697875445645,
+          "increment": 0.0030707367877465643,
+          "total": 0.10954678416305012
+        },
+        "solver_ms": [
+          0.5621630007226486,
+          3.416927800572011,
+          3.8423343605245464,
+          3.94868600051268
+        ],
+        "runner_work_ms": [
+          2.304222001839662,
+          5.320281400054227,
+          5.914357080182526,
+          6.062876000214601
+        ],
+        "actual_control_period_ms": [
+          20.000374999654014,
+          20.00151760148583,
+          20.00167632213561,
+          20.001716002298053
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5227554993325612,
+        0.8660144992973072,
+        0.9365634614005102,
+        3.94868600051268
+      ],
+      "loop_ms_percentiles": [
+        1.5700399999332149,
+        2.7847242008647295,
+        2.9070346511434764,
+        6.062876000214601
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-m0-s1-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "m0",
+        "weights": "s1",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/m0-s1.json",
+          "--mpc-model",
+          "m0",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/003",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199999705000664,
+        "start_reference_s": 3.9000650769994536,
+        "truth_rmse_xyz_yaw": [
+          0.002388576017641697,
+          0.002505969999823489,
+          0.001334720509333398,
+          0.00041516797999673494
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002424253043730405,
+          "effort": 0.0012954182818807926,
+          "increment": 0.001228926029766999,
+          "total": 0.004948597355378197
+        },
+        "solver_ms": [
+          0.5173959998501232,
+          0.6713696031511058,
+          0.889549582316249,
+          0.9448509990761522
+        ],
+        "runner_work_ms": [
+          1.6344250016118167,
+          2.439140398928425,
+          3.019568199961213,
+          3.1170919974101707
+        ],
+        "actual_control_period_ms": [
+          19.999952000944177,
+          20.031812250999792,
+          20.117543050509994,
+          20.13290099785081
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0023080353869810943,
+        0.0024306551307677264,
+        0.0032712807955314026,
+        0.0004158475528309536
+      ],
+      "bridge": null,
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5180209991522133,
+        0.6811003999246164,
+        0.896682900165615,
+        2.5964800006477162
+      ],
+      "loop_ms_percentiles": [
+        1.6367134994652588,
+        2.4928980485128682,
+        3.030147908430081,
+        4.745916998217581
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-joint-fir6-s1-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "joint-fir6",
+        "weights": "s1",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/joint-fir6-s1.json",
+          "--mpc-model",
+          "joint-fir6",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/004",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199895809000736,
+        "start_reference_s": 3.900062426000659,
+        "truth_rmse_xyz_yaw": [
+          0.0024493412647104205,
+          0.0025928506363687375,
+          0.0016666909849541078,
+          0.0009167529425205761
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002571073558396111,
+          "effort": 0.000988754703199173,
+          "increment": 0.0015213909106444469,
+          "total": 0.005081219172239732
+        },
+        "solver_ms": [
+          0.5393920000642538,
+          0.902074149598775,
+          1.1188002007111195,
+          1.529498000309104
+        ],
+        "runner_work_ms": [
+          1.7110879998654127,
+          2.1260951001750072,
+          2.945315989309164,
+          3.710102999320952
+        ],
+        "actual_control_period_ms": [
+          20.000113998321467,
+          20.035758849371632,
+          20.06491708023532,
+          20.118912998441374
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.00237341535493644,
+        0.0025085153208132967,
+        0.0035052421146377654,
+        0.0008858290662926035
+      ],
+      "bridge": {
+        "samples": 5,
+        "duration_s": 0.10002956400057883,
+        "start_reference_s": 3.5000853599995025,
+        "truth_rmse_xyz_yaw": [
+          3.5397459923456867e-07,
+          1.8059307377939776e-05,
+          0.02063134450237315,
+          1.4322810802994977e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08698480800218274,
+          "effort": 0.020341979449521003,
+          "increment": 0.0046203435810671135,
+          "total": 0.11194713103277086
+        },
+        "solver_ms": [
+          0.552654000784969,
+          2.3724748003587592,
+          2.5822053600859363,
+          2.6346380000177305
+        ],
+        "runner_work_ms": [
+          1.666538999415934,
+          3.6649642017437145,
+          3.8747512421105057,
+          3.9271980022022035
+        ],
+        "actual_control_period_ms": [
+          20.008501000120305,
+          20.021125798666617,
+          20.023445958358934,
+          20.024025998282013
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5402330007200362,
+        0.9056971979589434,
+        1.4385687413960107,
+        2.706542996747885
+      ],
+      "loop_ms_percentiles": [
+        1.707815499685239,
+        2.1416505489469273,
+        2.9949010187920053,
+        3.9271980022022035
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-m0-s2-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "m0",
+        "weights": "s2",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/m0-s2.json",
+          "--mpc-model",
+          "m0",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/005",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200015129998064,
+        "start_reference_s": 3.9000952750029683,
+        "truth_rmse_xyz_yaw": [
+          0.0023680426229812242,
+          0.0025356481960914787,
+          0.001219063187281806,
+          0.00041094684236084685
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002081849819045839,
+          "effort": 0.00011789956518644279,
+          "increment": 9.736527459500188e-06,
+          "total": 0.0022094859116917813
+        },
+        "solver_ms": [
+          0.5178679984965129,
+          0.8508800510753644,
+          0.8917712718539406,
+          0.9158489992842078
+        ],
+        "runner_work_ms": [
+          1.5023760006442899,
+          2.715649700439825,
+          2.867317488780827,
+          2.9575609987659846
+        ],
+        "actual_control_period_ms": [
+          20.000233000246226,
+          20.091830250203202,
+          20.18931505830551,
+          20.285369999328395
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0023114741438407384,
+        0.0026007100795987282,
+        0.0032734792381604004,
+        0.0004081284635460625
+      ],
+      "bridge": null,
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5175825026526581,
+        0.8508800510753644,
+        0.8954160112989484,
+        2.565151000453625
+      ],
+      "loop_ms_percentiles": [
+        1.5022805018816143,
+        2.674434201071561,
+        2.8738528398025665,
+        4.574548998789396
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-joint-fir6-s2-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "joint-fir6",
+        "weights": "s2",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/joint-fir6-s2.json",
+          "--mpc-model",
+          "joint-fir6",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/006",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199953893999918,
+        "start_reference_s": 3.90009259299768,
+        "truth_rmse_xyz_yaw": [
+          0.002608800018535958,
+          0.002926111032862152,
+          0.001647181015956252,
+          0.000635946400457559
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0027518770027326472,
+          "effort": 4.5535351952350554e-06,
+          "increment": 1.5987428483094273e-07,
+          "total": 0.002756590412212714
+        },
+        "solver_ms": [
+          0.5267579999781447,
+          0.633930051481002,
+          0.8682006904200531,
+          0.9023029997479171
+        ],
+        "runner_work_ms": [
+          1.5559914991172263,
+          1.8623984989972087,
+          2.828543089963204,
+          3.117525000561727
+        ],
+        "actual_control_period_ms": [
+          20.000023499960662,
+          20.05962874936813,
+          20.105236529452668,
+          20.129119999182876
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0025690027655424033,
+        0.003021318839730532,
+        0.0035337349176845167,
+        0.0006162926145707609
+      ],
+      "bridge": {
+        "samples": 5,
+        "duration_s": 0.10003769199829549,
+        "start_reference_s": 3.5000614749988017,
+        "truth_rmse_xyz_yaw": [
+          6.565971015106882e-09,
+          1.727744510086796e-05,
+          0.020746850196592496,
+          1.3795541613834148e-11
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08756704123204731,
+          "effort": 0.015699372531772615,
+          "increment": 0.0021163570483034183,
+          "total": 0.10538277081212333
+        },
+        "solver_ms": [
+          0.6381759994837921,
+          2.587153401691466,
+          2.821794681949541,
+          2.8804550020140596
+        ],
+        "runner_work_ms": [
+          1.6735479985072743,
+          3.8502824005263387,
+          4.114530080842087,
+          4.180592000921024
+        ],
+        "actual_control_period_ms": [
+          20.001814998977352,
+          20.0223185995128,
+          20.023948519374244,
+          20.024355999339605
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5267579999781447,
+        0.6366807023368891,
+        0.893245938787004,
+        2.8804550020140596
+      ],
+      "loop_ms_percentiles": [
+        1.5612345014233142,
+        1.8761933513815152,
+        2.89205054177728,
+        4.180592000921024
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s2-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "t6-init-quarter",
+        "weights": "s2",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s2.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/007",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200090008998814,
+        "start_reference_s": 3.900063085999136,
+        "truth_rmse_xyz_yaw": [
+          0.00210061282032965,
+          0.0016305170705447067,
+          0.0019273757463690254,
+          0.01206510235404063
+        ],
+        "physical_cost_s": {
+          "tracking": 0.003440207267913645,
+          "effort": 8.975029834226533e-05,
+          "increment": 8.264268015596547e-06,
+          "total": 0.0035382218342715076
+        },
+        "solver_ms": [
+          0.12821899872506037,
+          0.19559174997993944,
+          0.2538622882639174,
+          0.3345339973748196
+        ],
+        "runner_work_ms": [
+          1.4018969995959196,
+          2.283325951066217,
+          2.5498707603765065,
+          2.7200509975955356
+        ],
+        "actual_control_period_ms": [
+          20.00059450074332,
+          20.176820048618538,
+          20.284710010600975,
+          20.707006002339767
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0020367697645004815,
+        0.0016497903337848944,
+        0.0036494889976536144,
+        0.01166145563217697
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.11995877900335472,
+        "start_reference_s": 3.5000748109996493,
+        "truth_rmse_xyz_yaw": [
+          1.4814278938714957e-08,
+          2.5643800115991597e-05,
+          0.020532996508863796,
+          2.3929389633669537e-10
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08730114293465012,
+          "effort": 0.013956749308951924,
+          "increment": 0.0018078244240210847,
+          "total": 0.10306571666762313
+        },
+        "solver_ms": [
+          0.5164030008018017,
+          2.9259272505441913,
+          3.3635918505751765,
+          3.4730080005829223
+        ],
+        "runner_work_ms": [
+          1.5248404997691978,
+          4.876104751019739,
+          5.570765750599095,
+          5.7444310004939325
+        ],
+        "actual_control_period_ms": [
+          19.98869650196866,
+          20.0346264982727,
+          20.03594849829824,
+          20.036278998304624
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.12836099995183758,
+        0.20965055082342587,
+        0.3359530673696996,
+        3.4730080005829223
+      ],
+      "loop_ms_percentiles": [
+        1.4019725003890926,
+        2.283325951066217,
+        2.555921380189829,
+        5.7444310004939325
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.09595765688529337,
+        "g_norm": 1.759461785719147,
+        "init_penalty": 0.05870234916088338,
+        "g_penalty": 0.020598118011887465
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s2-L0-53021",
+        "scene": "circle",
+        "level": 0,
+        "seed": 53021,
+        "candidate": "t12-init-quarter",
+        "weights": "s2",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s2.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "none",
+          "--noise-amplitude",
+          "0",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/008",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200024273999588,
+        "start_reference_s": 3.900058816998353,
+        "truth_rmse_xyz_yaw": [
+          0.0032239383174878524,
+          0.002756686266373141,
+          0.0011395693342046733,
+          0.016479502040786385
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005486152127179271,
+          "effort": 0.0002215763316211007,
+          "increment": 1.1562074693395566e-05,
+          "total": 0.0057192905334937675
+        },
+        "solver_ms": [
+          0.1283149995288113,
+          0.1742904505590559,
+          0.21352597934310305,
+          0.3017650014953688
+        ],
+        "runner_work_ms": [
+          1.4045754996914184,
+          1.6980067011900188,
+          2.5648020086373435,
+          2.7337009996699635
+        ],
+        "actual_control_period_ms": [
+          19.999877998998272,
+          20.03224255204259,
+          20.042186320170003,
+          20.098743996641133
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0031243974408409836,
+        0.002692418796289263,
+        0.00325457999262355,
+        0.01593358284822855
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.240038870000717,
+        "start_reference_s": 3.5000857550003275,
+        "truth_rmse_xyz_yaw": [
+          8.294135377140038e-08,
+          9.379514754663982e-05,
+          0.01942350231780125,
+          3.405878418720173e-08
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09761923636211432,
+          "effort": 0.00812099690851412,
+          "increment": 0.0012375414728651266,
+          "total": 0.10697777474349357
+        },
+        "solver_ms": [
+          0.5583474976447178,
+          1.9835728999169069,
+          2.5993537790782293,
+          2.7532989988685586
+        ],
+        "runner_work_ms": [
+          1.5716859998065047,
+          3.172402100790349,
+          3.9774516200486696,
+          4.178713999863248
+        ],
+        "actual_control_period_ms": [
+          20.004227500976413,
+          20.058612600587367,
+          20.085667321000074,
+          20.09243100110325
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.12886749937024433,
+        0.186863902308687,
+        0.5573924877171521,
+        2.7532989988685586
+      ],
+      "loop_ms_percentiles": [
+        1.4092099991103169,
+        2.0342332993095518,
+        2.565899319815798,
+        4.178713999863248
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 0.1111424354295401,
+        "g_norm": 1.7860119652226534,
+        "init_penalty": 0.16212841282817358,
+        "g_penalty": 0.025030138046671077
+      }
+    },
+    {
+      "case": {
+        "name": "circle-m0-s2-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "m0",
+        "weights": "s2",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/m0-s2.json",
+          "--mpc-model",
+          "m0",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/009",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200032695000118,
+        "start_reference_s": 3.9000644350016955,
+        "truth_rmse_xyz_yaw": [
+          0.0023859479770144943,
+          0.0026143519049123087,
+          0.0013284847090921168,
+          0.0005963863154110237
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002466371662238449,
+          "effort": 0.0009527607324477583,
+          "increment": 0.000767569844769105,
+          "total": 0.004186702239455312
+        },
+        "solver_ms": [
+          0.5167380004422739,
+          0.8683789004862773,
+          0.9132880121978814,
+          1.3284779997775331
+        ],
+        "runner_work_ms": [
+          1.6591610001341905,
+          2.9431896511596274,
+          3.0835435789413164,
+          3.443927002081182
+        ],
+        "actual_control_period_ms": [
+          20.000002999950084,
+          20.099904798553325,
+          20.20145943039097,
+          20.418069001607364
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0023085692127153153,
+        0.0025363045053219935,
+        0.0032978869518190137,
+        0.0005977949717381907
+      ],
+      "bridge": null,
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5173004992684582,
+        0.8698557499883464,
+        0.9337621890517767,
+        2.9731999966315925
+      ],
+      "loop_ms_percentiles": [
+        1.6641200018057134,
+        2.94930199997907,
+        3.1042405586413224,
+        5.376586999773281
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-joint-fir6-s2-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "joint-fir6",
+        "weights": "s2",
+        "controller": "outer-loop-mpc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/joint-fir6-s2.json",
+          "--mpc-model",
+          "joint-fir6",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/010",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200000224998803,
+        "start_reference_s": 3.9000589850002143,
+        "truth_rmse_xyz_yaw": [
+          0.0025237005402415527,
+          0.0025867947257730605,
+          0.001687349109843536,
+          0.0016331652992315996
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002649917359222301,
+          "effort": 0.0007174024285038045,
+          "increment": 0.0009344840032809708,
+          "total": 0.0043018037910070766
+        },
+        "solver_ms": [
+          0.5181614978937432,
+          0.8653653001601924,
+          1.0999352904764232,
+          1.3550719995691907
+        ],
+        "runner_work_ms": [
+          1.7236479998246068,
+          2.747439201084488,
+          3.257752381505269,
+          3.5598909998952877
+        ],
+        "actual_control_period_ms": [
+          19.99997950042598,
+          20.059965848486172,
+          20.148851441117586,
+          20.316588001151104
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0024410730128132303,
+        0.0025076053557683393,
+        0.003525333778116984,
+        0.0015892235389241705
+      ],
+      "bridge": {
+        "samples": 5,
+        "duration_s": 0.09999175000120886,
+        "start_reference_s": 3.5001177150006697,
+        "truth_rmse_xyz_yaw": [
+          3.061540872589812e-07,
+          1.7973755205951024e-05,
+          0.02059275988223627,
+          1.2488555934505937e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08639171270023209,
+          "effort": 0.0164972542328735,
+          "increment": 0.0029842345210061485,
+          "total": 0.10587320145411173
+        },
+        "solver_ms": [
+          0.5288380016281735,
+          2.344701399852056,
+          2.549903479812201,
+          2.6012039998022374
+        ],
+        "runner_work_ms": [
+          1.8594159992062487,
+          4.023536999739008,
+          4.327704199386062,
+          4.403745999297826
+        ],
+        "actual_control_period_ms": [
+          20.001425000373274,
+          20.108393000555225,
+          20.11975540081039,
+          20.122596000874182
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.5182144996069837,
+        0.8722553491679719,
+        1.3024955888977272,
+        2.688650998607045
+      ],
+      "loop_ms_percentiles": [
+        1.7236479998246068,
+        2.889561950723873,
+        3.3454530204107864,
+        4.403745999297826
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 0,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": []
+    },
+    {
+      "case": {
+        "name": "circle-t6-init-quarter-s2-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "t6-init-quarter",
+        "weights": "s2",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t6-init-quarter-s2.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/011",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.199985724000726,
+        "start_reference_s": 3.900064191999263,
+        "truth_rmse_xyz_yaw": [
+          0.002270723729097263,
+          0.0009703781366347355,
+          0.0019920029754423737,
+          0.009527640110983362
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0030878903587128834,
+          "effort": 0.007766797870795361,
+          "increment": 0.007925409455684537,
+          "total": 0.018780097685192784
+        },
+        "solver_ms": [
+          0.13162150025891606,
+          0.18861619901144874,
+          0.41358603033586305,
+          0.586971000302583
+        ],
+        "runner_work_ms": [
+          1.5257349987223279,
+          2.4179562020435688,
+          2.898363330132266,
+          4.043680000904715
+        ],
+        "actual_control_period_ms": [
+          19.999746000394225,
+          20.04098990237253,
+          20.17316634846793,
+          20.242733000486623
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0021943885700606044,
+        0.0009418193874710716,
+        0.003657171819198461,
+        0.009342870623276186
+      ],
+      "bridge": {
+        "samples": 6,
+        "duration_s": 0.12013871000090148,
+        "start_reference_s": 3.5002584110006865,
+        "truth_rmse_xyz_yaw": [
+          9.440533452631014e-07,
+          2.7725710587992134e-05,
+          0.020483285782175672,
+          4.4327545999442465e-07
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08716971597964675,
+          "effort": 0.01442063329943576,
+          "increment": 0.0027215983920141104,
+          "total": 0.10431194767109662
+        },
+        "solver_ms": [
+          0.5464849982672604,
+          2.3054530001900275,
+          2.548528200168221,
+          2.609297000162769
+        ],
+        "runner_work_ms": [
+          1.7399650005245348,
+          3.689570999085845,
+          3.9976085985472314,
+          4.074617998412577
+        ],
+        "actual_control_period_ms": [
+          20.03693749975355,
+          20.175265998659597,
+          20.18775719752739,
+          20.190879997244338
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.1319229995715432,
+        0.19441010172158704,
+        0.5384967012287234,
+        2.609297000162769
+      ],
+      "loop_ms_percentiles": [
+        1.524359999166336,
+        2.5321993987745373,
+        2.9645795310716494,
+        4.074617998412577
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 4,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.343460581323466,
+        "g_norm": 5.647205283850067,
+        "init_penalty": 11.506980197466335,
+        "g_penalty": 0.21219953752514786
+      }
+    },
+    {
+      "case": {
+        "name": "circle-t12-init-quarter-s2-L1-53021",
+        "scene": "circle",
+        "level": 1,
+        "seed": 53021,
+        "candidate": "t12-init-quarter",
+        "weights": "s2",
+        "controller": "outer-loop-deepc",
+        "args": [
+          "--horizon",
+          "25",
+          "--mpc-config",
+          "log/phase53/configs/t12-init-quarter-s2.json",
+          "--reference",
+          "circular",
+          "--circle-radius",
+          "0.04",
+          "--circle-duration",
+          "12",
+          "--reference-mode",
+          "preview",
+          "--measurement-noise",
+          "iid-small",
+          "--noise-amplitude",
+          "1",
+          "--noise-seed",
+          "53021"
+        ]
+      },
+      "status": "completed",
+      "path": "/home/chris/drone-project/log/phase53/runs/shared/012",
+      "common_tracking": {
+        "samples": 560,
+        "duration_s": 11.200004318998253,
+        "start_reference_s": 3.900061526001082,
+        "truth_rmse_xyz_yaw": [
+          0.003362027000543711,
+          0.0030628041383184736,
+          0.0012908903966515675,
+          0.013232090161262236
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005439657460754376,
+          "effort": 0.016726478002123745,
+          "increment": 0.015759403931475548,
+          "total": 0.03792553939435366
+        },
+        "solver_ms": [
+          0.16044750009314157,
+          1.2938009505887749,
+          1.7283015190332662,
+          1.9742779986700043
+        ],
+        "runner_work_ms": [
+          1.936194499648991,
+          3.2261445019685193,
+          4.2344059803144765,
+          4.595103000610834
+        ],
+        "actual_control_period_ms": [
+          20.00016050078557,
+          20.243813101660635,
+          20.329712838683918,
+          20.451243999559665
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "unconstrained"
+        ]
+      },
+      "tracking_rmse_xyz_yaw": [
+        0.0032487808978700814,
+        0.0029734995718829153,
+        0.0032976707009776778,
+        0.012793062669121037
+      ],
+      "bridge": {
+        "samples": 12,
+        "duration_s": 0.24047921300007147,
+        "start_reference_s": 3.5001750429983076,
+        "truth_rmse_xyz_yaw": [
+          6.78084324091742e-06,
+          0.00011813854301809682,
+          0.0193007636175012,
+          1.0066057478611389e-05
+        ],
+        "physical_cost_s": {
+          "tracking": 0.09644184804164886,
+          "effort": 0.008827208529873069,
+          "increment": 0.002149976605098717,
+          "total": 0.10741903317662066
+        },
+        "solver_ms": [
+          0.61520599956566,
+          2.424231502118344,
+          3.526435901039805,
+          3.8019870007701684
+        ],
+        "runner_work_ms": [
+          1.9097575004707323,
+          4.689639350544892,
+          6.0752534722269065,
+          6.421657002647407
+        ],
+        "actual_control_period_ms": [
+          20.003808500405285,
+          20.263059501667158,
+          20.317949500240502,
+          20.331671999883838
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ]
+      },
+      "feasible": true,
+      "fallback": 0,
+      "fallback_reason": null,
+      "deadline_misses": 0,
+      "hard_input_violation_steps": 0,
+      "truth_envelope_violation_tracking_steps": 0,
+      "solver_ms_percentiles": [
+        0.16416200014646165,
+        1.2955833528394578,
+        1.7294835979919294,
+        3.8019870007701684
+      ],
+      "loop_ms_percentiles": [
+        1.94132999786234,
+        3.2738907988459673,
+        4.264960567306843,
+        6.421657002647407
+      ],
+      "soft_activation_steps": 0,
+      "input_activation_steps": 195,
+      "settling_s": null,
+      "scoring_ineligible": null,
+      "qp_overruns": [],
+      "deepc_p95": {
+        "init_slack": 1.3016640717196117,
+        "g_norm": 4.004361966366396,
+        "init_penalty": 22.238073169705913,
+        "g_penalty": 0.12582336833234434
+      }
+    }
+  ],
+  "resolved": {
+    "screen_selected": [
+      "t6-init-quarter",
+      "t12-init-quarter"
+    ],
+    "confirmed": [
+      "t6-init-quarter",
+      "t12-init-quarter"
+    ],
+    "shared": {
+      "feasible": {
+        "s1": true,
+        "s2": true
+      },
+      "fixed_mean_cost": {
+        "s1": 0.012945208270642173,
+        "s2": 0.009927216475209825
+      },
+      "controller_mean_xy_rmse": {
+        "s1": {
+          "m0": 0.00337833532803163,
+          "joint-fir6": 0.0036728883744790667,
+          "t6-init-quarter": 0.0024245561628676495,
+          "t12-init-quarter": 0.004078116831861065
+        },
+        "s2": {
+          "m0": 0.003504445250763826,
+          "joint-fir6": 0.0037670703243768877,
+          "t6-init-quarter": 0.002564270872208366,
+          "t12-init-quarter": 0.0043948965679451064
+        }
+      },
+      "recommendation": "s1"
+    }
+  }
+}

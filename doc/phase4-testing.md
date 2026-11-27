@@ -129,3 +129,20 @@ bridge and bounded outputs, and deterministic/zero noise. A future common
 tuning stage should match Q/R/S, horizon, constraint and observation profiles
 and repeat the nominal pairs before choosing controller-specific penalties
 or an identified model. Keep GNSS degradation out of tuning.
+
+## Phase 5.1 DeePC initialization and active constraints
+
+The shared development horizon stays at 25 steps. The DeePC JSON passed
+through `--mpc-config` accepts `"past": 6`, 12, 18 or 25. The default is 6.
+The bridge requires that number of actual command sends before handing
+tracking to DeePC. It uses the same incoming reference sequence during
+initialization. A repeated or stale timestamp still triggers HLC recovery.
+
+At an active state bound, a short prefactored OSQP screen can handle a
+single output axis. Its returned solution is checked against all output
+rows and the input box. The full solver uses a primal-dual method that
+eliminates the diagonal slack block during each Newton step. It retains
+the original objective and full constraint set. Both paths share the
+existing 12 ms wall-time budget, with HLC fallback on a late or
+uncertified result. For local results and reproduction commands, see
+`log/phase51/report.md`.

@@ -1,0 +1,3732 @@
+{
+  "planned": 36,
+  "original_attempts": 36,
+  "retries": 0,
+  "missing": [],
+  "extras": [],
+  "unique_fixed_controller_configurations": 1,
+  "timing": {
+    "L0": {
+      "attempted_tracking_ticks": 3280,
+      "qp_qc_samples": 3280,
+      "sent_ticks": 3280,
+      "qp_deadline_count": 0,
+      "qp_ms": [
+        0.22309650012175553,
+        0.8160649502315208,
+        0.9864012579419082,
+        4.96965699858265
+      ],
+      "runner_work_ms": [
+        1.557187999424059,
+        2.6952461525070235,
+        3.0786087084561586,
+        6.998374999966472
+      ],
+      "actual_period_ms": [
+        19.99985900147294,
+        20.05447715164337,
+        20.206852237752173,
+        21.007229999668198
+      ]
+    },
+    "L2": {
+      "attempted_tracking_ticks": 4079,
+      "qp_qc_samples": 4079,
+      "sent_ticks": 4077,
+      "qp_deadline_count": 2,
+      "qp_ms": [
+        0.8602140005677938,
+        3.003419599554036,
+        6.457300120600827,
+        12.655421000090428
+      ],
+      "runner_work_ms": [
+        1.8514129988034256,
+        4.606927400891436,
+        7.842706320661807,
+        14.277487000072142
+      ],
+      "actual_period_ms": [
+        19.99995400183252,
+        20.133076601632638,
+        20.268378278851742,
+        22.923893000552198
+      ]
+    }
+  },
+  "rows": [
+    {
+      "scene": "hover",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52010,
+      "path": "log/phase52/a/001",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.500078148998,
+        "start_reference_s": 3.9000631119997706,
+        "truth_rmse_xyz_yaw": [
+          0.00026623719231622594,
+          4.8835853961783824e-05,
+          0.0026414746904382487,
+          0.0007840495398097501
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0029803474155476227,
+          "effort": 4.41303583052275e-05,
+          "increment": 2.887392918086716e-05,
+          "total": 0.0030533517030337173
+        },
+        "solver_ms": [
+          0.14798999836784787,
+          0.2166199999919627,
+          0.291138039174257,
+          0.3188170012435876
+        ],
+        "runner_work_ms": [
+          1.310296000156086,
+          1.970904101108317,
+          2.1859768185095163,
+          2.2050740008126013
+        ],
+        "actual_control_period_ms": [
+          20.00129399675643,
+          20.30622069905803,
+          20.439472681027837,
+          20.550929999444634
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.26623719231622595,
+          0.048835853961783825,
+          2.6414746904382485
+        ],
+        "xy_mm": 0.27067911482898666,
+        "yaw_deg": 0.0449227295602731
+      },
+      "history": {
+        "snapshots": 88,
+        "max_used_state_difference": 2.2139408362154e-16,
+        "max_init_slack_difference": 4.120835617182905e-15,
+        "max_g_difference": 1.6653345369377348e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.006024499938402289,
+          0.004690776792899274,
+          0.026461806448551874,
+          0.005739915019207198,
+          0.004620017549552349,
+          0.02479814192368953,
+          0.008020041417280958,
+          0.006124758033140885,
+          0.006285318474531361
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.004657768525807492,
+          0.02932257659347176,
+          0.0319742359831175,
+          0.03377160364755503
+        ],
+        "g_norm": [
+          0.07544797664328257,
+          0.38374993418719017,
+          0.4741477404385476,
+          0.48026412649287686
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-pos",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52011,
+      "path": "log/phase52/a/002",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8003163729990774,
+        "start_reference_s": 3.9000851230011904,
+        "truth_rmse_xyz_yaw": [
+          0.0002600492272380857,
+          0.002513227012698346,
+          0.0026988738896842794,
+          0.07017215164222833
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0534337142651597,
+          "effort": 0.0012025892700488225,
+          "increment": 0.00010432485403042351,
+          "total": 0.054740628389238946
+        },
+        "solver_ms": [
+          0.14259799900173675,
+          0.2316945006896276,
+          0.25748958902113367,
+          0.3065899982175324
+        ],
+        "runner_work_ms": [
+          1.3228254993009614,
+          1.952989298843022,
+          2.1502358711950365,
+          2.1809560021210928
+        ],
+        "actual_control_period_ms": [
+          19.99947700096527,
+          20.259006900232635,
+          20.3038688396191,
+          20.30568799818866
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.2600492272380857,
+          2.513227012698346,
+          2.6988738896842794
+        ],
+        "xy_mm": 2.526645130987686,
+        "yaw_deg": 4.020568128451692
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 6.2450045135165055e-15,
+        "max_g_difference": 5.551115123125783e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.009602422342536929,
+          0.06452044166957197,
+          0.03151153563367677,
+          0.02008453792092655,
+          0.050181401596330014,
+          0.01939847114863102,
+          0.04066267407702415,
+          0.01974646056642664,
+          0.07131257288561971
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.04284265343655822,
+          0.04781860245278303,
+          0.05109506145037545,
+          0.051874100887686216
+        ],
+        "g_norm": [
+          0.7820353176458342,
+          0.8837544620243957,
+          0.892012111882319,
+          0.8925665143947984
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-neg",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52012,
+      "path": "log/phase52/a/003",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.799994772998616,
+        "start_reference_s": 3.9200617110000167,
+        "truth_rmse_xyz_yaw": [
+          0.0005148926462934474,
+          0.002440350914265821,
+          0.003116175211444034,
+          0.07058358929259305
+        ],
+        "physical_cost_s": {
+          "tracking": 0.053622029728273866,
+          "effort": 0.0010886720427133408,
+          "increment": 9.656101121853355e-05,
+          "total": 0.05480726278220573
+        },
+        "solver_ms": [
+          0.13482799840858206,
+          0.20434655052667947,
+          0.3356502096357871,
+          0.4377429977466818
+        ],
+        "runner_work_ms": [
+          1.1595110008784104,
+          1.8681883013414335,
+          2.1005396005057264,
+          2.1927970010438003
+        ],
+        "actual_control_period_ms": [
+          19.999563999590464,
+          20.026008599415945,
+          20.042934758566844,
+          20.061193998117233
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.5148926462934474,
+          2.440350914265821,
+          3.116175211444034
+        ],
+        "xy_mm": 2.4940783913031077,
+        "yaw_deg": 4.04414176935037
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 4.454769886308441e-15,
+        "max_g_difference": 4.440892098500626e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.011852377437003913,
+          0.06629856121652686,
+          0.022669562454931676,
+          0.017939661791224342,
+          0.05058112031930077,
+          0.0217516630725486,
+          0.03871787018858064,
+          0.019396948316675714,
+          0.06648666884069082
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.04332085123528849,
+          0.04638299342756285,
+          0.04739321020735592,
+          0.05189188165874375
+        ],
+        "g_norm": [
+          0.7470104048665633,
+          0.8777055638977006,
+          0.8996429086338404,
+          0.9078769074597358
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "z-pos",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52013,
+      "path": "log/phase52/a/004",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.799991202999081,
+        "start_reference_s": 3.9001717410028505,
+        "truth_rmse_xyz_yaw": [
+          0.00026427769033575453,
+          0.00015865301962485792,
+          0.011343073132086464,
+          0.0011369794868023861
+        ],
+        "physical_cost_s": {
+          "tracking": 0.034528524256453905,
+          "effort": 0.0014989194219826904,
+          "increment": 0.0003255622552952101,
+          "total": 0.0363530059337318
+        },
+        "solver_ms": [
+          0.15351350157288834,
+          0.1987388999623363,
+          0.21995659917593002,
+          0.2289990006829612
+        ],
+        "runner_work_ms": [
+          1.233829498232808,
+          1.887083100154996,
+          2.0149859796947567,
+          2.0514919997367542
+        ],
+        "actual_control_period_ms": [
+          19.999504002043977,
+          20.028804897810915,
+          20.04640890081646,
+          20.104072002141038
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.26427769033575454,
+          0.15865301962485792,
+          11.343073132086463
+        ],
+        "xy_mm": 0.3082425639740341,
+        "yaw_deg": 0.065144125986727
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.1594596770480035e-16,
+        "max_init_slack_difference": 2.7547408798511697e-15,
+        "max_g_difference": 7.771561172376096e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.009575400595373573,
+          0.01251350601116906,
+          0.024564555343023105,
+          0.010041487635798525,
+          0.012301029061133123,
+          0.03055251781495316,
+          0.015232954962374775,
+          0.013259155694381923,
+          0.010499933746348226
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": 1.3206196510000154,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.00670060124099402,
+          0.037292043153263794,
+          0.042762967191059535,
+          0.04546657237659037
+        ],
+        "g_norm": [
+          0.1320504403292772,
+          0.8712908624459711,
+          0.8906805853274924,
+          0.922925569818497
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "z-neg",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52014,
+      "path": "log/phase52/a/005",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000006879992725,
+        "start_reference_s": 3.900065875001019,
+        "truth_rmse_xyz_yaw": [
+          0.0003166174198263653,
+          0.00010236628671330719,
+          0.016211646930041287,
+          0.0004225752911844858
+        ],
+        "physical_cost_s": {
+          "tracking": 0.07126582195688122,
+          "effort": 0.0012059389463459675,
+          "increment": 0.00037206934183708033,
+          "total": 0.07284383024506427
+        },
+        "solver_ms": [
+          0.13973249951959588,
+          0.1939782996487338,
+          0.24938986192864832,
+          0.2631190000101924
+        ],
+        "runner_work_ms": [
+          1.140922498962027,
+          1.7632376004257821,
+          1.8952016013645334,
+          1.9081600003119092
+        ],
+        "actual_control_period_ms": [
+          19.999816500785528,
+          20.0259172494043,
+          20.03022319320735,
+          20.032029002322815
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.31661741982636527,
+          0.10236628671330719,
+          16.211646930041287
+        ],
+        "xy_mm": 0.33275433459682513,
+        "yaw_deg": 0.02421178071138286
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.1803305688683494e-16,
+        "max_init_slack_difference": 3.65224343823467e-15,
+        "max_g_difference": 4.440892098500626e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.006176008769605986,
+          0.008295331462227046,
+          0.022179006817257832,
+          0.006979413310533412,
+          0.00865731810373072,
+          0.015320500540713138,
+          0.00925972252159153,
+          0.008756724121584706,
+          0.00758993870206409
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": 1.4409749960032059,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.007449650181356399,
+          0.022269288526448557,
+          0.025666829335966233,
+          0.02654658458538149
+        ],
+        "g_norm": [
+          0.16074875484259926,
+          0.5754191795198913,
+          0.6413074762148456,
+          0.6435676471172206
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "circle",
+      "candidate": "t12",
+      "level": 0,
+      "seed": 52015,
+      "path": "log/phase52/a/006",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.200000773002103,
+        "start_reference_s": 3.9000674009985232,
+        "truth_rmse_xyz_yaw": [
+          0.004292526361308526,
+          0.00463954258664431,
+          0.001963725060016581,
+          0.016979435808188642
+        ],
+        "physical_cost_s": {
+          "tracking": 0.00893186107189823,
+          "effort": 0.0004992358795120732,
+          "increment": 0.00011925193306453921,
+          "total": 0.00955034888447484
+        },
+        "solver_ms": [
+          0.13352749920159113,
+          0.18138084742531646,
+          0.20758198097610142,
+          0.31624099938198924
+        ],
+        "runner_work_ms": [
+          1.436239499525982,
+          2.217124152230097,
+          2.662353388950578,
+          2.7997690012853127
+        ],
+        "actual_control_period_ms": [
+          19.999811500383657,
+          20.024402747549175,
+          20.121759328831104,
+          20.154857000306947
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          4.292526361308526,
+          4.6395425866443105,
+          1.963725060016581
+        ],
+        "xy_mm": 6.320691257751386,
+        "yaw_deg": 0.9728500103225112
+      },
+      "history": {
+        "snapshots": 588,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 4.288236432614667e-15,
+        "max_g_difference": 1.1102230246251565e-15,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.08228876288107827,
+          0.06661622622858276,
+          0.0247717865287121,
+          0.04914673897410844,
+          0.041255332617580444,
+          0.032835020391677995,
+          0.028335449220433292,
+          0.027775479959260104,
+          0.03332073941501367
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.04355150453078949,
+          0.07352835267974725,
+          0.08571915797899085,
+          0.09074343276699533
+        ],
+        "g_norm": [
+          0.9207943737119229,
+          1.6581766147140884,
+          1.7038508568031547,
+          1.7254003811295942
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "hover",
+      "candidate": "m0",
+      "level": 0,
+      "seed": 52010,
+      "path": "log/phase52/b/001",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.4999931029997242,
+        "start_reference_s": 3.900063223998586,
+        "truth_rmse_xyz_yaw": [
+          1.9515390427938486e-13,
+          4.498788533109134e-13,
+          0.003379506151596533,
+          8.881784197001252e-16
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004290705797927924,
+          "effort": 0.0008597358392745394,
+          "increment": 7.496474594617868e-05,
+          "total": 0.005225406383148639
+        },
+        "solver_ms": [
+          0.5224919987085741,
+          0.8749873002670938,
+          0.9214215198153397,
+          0.9271579983760603
+        ],
+        "runner_work_ms": [
+          1.0390239986008964,
+          1.5992000986443597,
+          1.6713038406305718,
+          1.7301959996984806
+        ],
+        "actual_control_period_ms": [
+          20.00007799870218,
+          20.10241579991998,
+          20.20604901932529,
+          20.207992998621194
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          1.9515390427938485e-10,
+          4.498788533109134e-10,
+          3.3795061515965332
+        ],
+        "xy_mm": 4.903835529581204e-10,
+        "yaw_deg": 5.088887490341627e-14
+      },
+      "history": {
+        "snapshots": 100,
+        "max_used_state_difference": 0.0
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "hover",
+      "candidate": "joint-fir6",
+      "level": 0,
+      "seed": 52010,
+      "path": "log/phase52/b/002",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.500007499998901,
+        "start_reference_s": 3.9001672020021942,
+        "truth_rmse_xyz_yaw": [
+          0.0001074937081185415,
+          6.799529976142863e-05,
+          0.004265978919630647,
+          0.00020018484917232881
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005869871078979445,
+          "effort": 6.158485111657702e-06,
+          "increment": 4.279703833039019e-07,
+          "total": 0.005876457534474409
+        },
+        "solver_ms": [
+          0.5913690001762006,
+          0.940406099834945,
+          0.9883715579780985,
+          1.017531998513732
+        ],
+        "runner_work_ms": [
+          1.181986001029145,
+          1.8177479007135844,
+          1.958781262219418,
+          1.9958930024586152
+        ],
+        "actual_control_period_ms": [
+          20.001567998406244,
+          20.1062281983468,
+          20.214530979355914,
+          20.38940999773331
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.1074937081185415,
+          0.06799529976142862,
+          4.265978919630647
+        ],
+        "xy_mm": 0.12719378158825506,
+        "yaw_deg": 0.011469746980037393
+      },
+      "history": {
+        "snapshots": 100,
+        "max_used_state_difference": 2.1506180168927035e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "hover",
+      "candidate": "t6",
+      "level": 0,
+      "seed": 52010,
+      "path": "log/phase52/b/003",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.500000544001523,
+        "start_reference_s": 3.9000613410025835,
+        "truth_rmse_xyz_yaw": [
+          0.00015109178897389705,
+          0.00023773462201751751,
+          0.0038713343866172926,
+          0.0013019486215687635
+        ],
+        "physical_cost_s": {
+          "tracking": 0.005515243730347377,
+          "effort": 2.3156932042182237e-05,
+          "increment": 3.385928853760008e-06,
+          "total": 0.005541786591243316
+        },
+        "solver_ms": [
+          0.14047800141270272,
+          0.18385620060143992,
+          0.2074786605953705,
+          0.21402100173872896
+        ],
+        "runner_work_ms": [
+          1.1220140004297718,
+          1.6703623990906635,
+          1.8691173991101098,
+          1.8974519989569671
+        ],
+        "actual_control_period_ms": [
+          19.999478998215636,
+          20.122823201018036,
+          20.192086319148075,
+          20.195884000713704
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          0.15109178897389705,
+          0.23773462201751752,
+          3.8713343866172925
+        ],
+        "xy_mm": 0.2816850709589427,
+        "yaw_deg": 0.07459616115876533
+      },
+      "history": {
+        "snapshots": 94,
+        "max_used_state_difference": 2.2055382693786374e-16,
+        "max_init_slack_difference": 9.110334014961197e-15,
+        "max_g_difference": 2.7755575615628914e-16,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.007550303840625641,
+          0.0071869554099340364,
+          0.015315773883813753,
+          0.00817295607122258,
+          0.0054067744450523895,
+          0.009704328742853837,
+          0.004724388892158359,
+          0.0033288523761081383,
+          0.0033574714729502366
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.00467118263243874,
+          0.01550728781838855,
+          0.022525358898648744,
+          0.022640584126670835
+        ],
+        "g_norm": [
+          0.11586182722579695,
+          0.45671992315528287,
+          0.6265758264792541,
+          0.6591013630357606
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "circle",
+      "candidate": "m0",
+      "level": 0,
+      "seed": 52015,
+      "path": "log/phase52/b/004",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.200009980999312,
+        "start_reference_s": 3.9000650550005957,
+        "truth_rmse_xyz_yaw": [
+          0.002860698480808878,
+          0.0021286866778910305,
+          0.0012755143850636027,
+          0.0003717759523804288
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002327479314284969,
+          "effort": 0.0002867481781860196,
+          "increment": 2.1324361219831503e-05,
+          "total": 0.0026355518536908193
+        },
+        "solver_ms": [
+          0.5434275008155964,
+          0.8764684505877084,
+          0.9599328025069552,
+          1.2972020012966823
+        ],
+        "runner_work_ms": [
+          1.6384544996981276,
+          2.6855743995838557,
+          2.9728410290044844,
+          3.453222001553513
+        ],
+        "actual_control_period_ms": [
+          19.99971650002408,
+          20.031338051558123,
+          20.118100640538614,
+          20.188162998238113
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          2.8606984808088782,
+          2.1286866778910305,
+          1.2755143850636026
+        ],
+        "xy_mm": 3.565796232362833,
+        "yaw_deg": 0.021301192995855242
+      },
+      "history": {
+        "snapshots": 600,
+        "max_used_state_difference": 2.2077744363593887e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "circle",
+      "candidate": "joint-fir6",
+      "level": 0,
+      "seed": 52015,
+      "path": "log/phase52/b/005",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.199989230000938,
+        "start_reference_s": 3.9000706509978045,
+        "truth_rmse_xyz_yaw": [
+          0.0023675019834570018,
+          0.0025122387180097597,
+          0.0016126483519830416,
+          0.000988995806359602
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0023065725088059017,
+          "effort": 4.412186239717342e-06,
+          "increment": 2.531627198380047e-07,
+          "total": 0.0023112378577654566
+        },
+        "solver_ms": [
+          0.5366929981391877,
+          0.8674239988977205,
+          0.9134707093835457,
+          0.9393529981025495
+        ],
+        "runner_work_ms": [
+          1.6273695000563748,
+          2.7513624498169498,
+          3.011857409546792,
+          3.324229001009371
+        ],
+        "actual_control_period_ms": [
+          20.000009501018212,
+          20.032675851871318,
+          20.102688858787587,
+          20.24975499807624
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          2.367501983457002,
+          2.5122387180097596,
+          1.6126483519830417
+        ],
+        "xy_mm": 3.452015211139742,
+        "yaw_deg": 0.05666528566054282
+      },
+      "history": {
+        "snapshots": 600,
+        "max_used_state_difference": 2.2192083223561377e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "circle",
+      "candidate": "t6",
+      "level": 0,
+      "seed": 52015,
+      "path": "log/phase52/b/006",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.200035377998574,
+        "start_reference_s": 3.9000891459982086,
+        "truth_rmse_xyz_yaw": [
+          0.0023252089319986844,
+          0.0013423044718965085,
+          0.0016180539980979545,
+          0.016144227298750546
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004406292662377073,
+          "effort": 0.0002676441265142992,
+          "increment": 5.628715475632e-05,
+          "total": 0.0047302239436476925
+        },
+        "solver_ms": [
+          0.16037349814723711,
+          0.31017339842946956,
+          0.42390410013467694,
+          0.6192750006448478
+        ],
+        "runner_work_ms": [
+          1.748655500705354,
+          2.8831284485931974,
+          3.088600328519532,
+          3.219762998924125
+        ],
+        "actual_control_period_ms": [
+          19.99914950101811,
+          20.055221449911187,
+          20.1174585993067,
+          21.007229999668198
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "unconstrained"
+        ],
+        "xyz_mm": [
+          2.3252089319986844,
+          1.3423044718965085,
+          1.6180539980979545
+        ],
+        "xy_mm": 2.68484224354427,
+        "yaw_deg": 0.9249960877182959
+      },
+      "history": {
+        "snapshots": 594,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 4.957839694341715e-15,
+        "max_g_difference": 3.552713678800501e-15,
+        "window_local_noise_rms_physical": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "window_local_noise_rms_scaled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "actual_init_residual_rms_scaled": [
+          0.059940573656956354,
+          0.08117262444598046,
+          0.035898590839646374,
+          0.029848898372006164,
+          0.027992467921200234,
+          0.02430179136680522,
+          0.017325705992579973,
+          0.0115094777380413,
+          0.023072287323269092
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          0.031033653635545805,
+          0.06806829338109056,
+          0.07667664948313789,
+          0.09461065366410651
+        ],
+        "g_norm": [
+          0.9589794283337055,
+          2.309997062980033,
+          2.4259147007761563,
+          2.5669092244962837
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "hover",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52010,
+      "path": "log/phase52/c/001",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.4999963520021993,
+        "start_reference_s": 3.900057935999939,
+        "truth_rmse_xyz_yaw": [
+          0.0004410226399759703,
+          0.0004456609367216144,
+          0.0033589673248169724,
+          0.00041653264679450847
+        ],
+        "physical_cost_s": {
+          "tracking": 0.004563940360522007,
+          "effort": 0.00583236733994794,
+          "increment": 0.004916584200969369,
+          "total": 0.01531289190143931
+        },
+        "solver_ms": [
+          0.5462779990921263,
+          1.147462700100731,
+          1.998009800008733,
+          2.2965850002947263
+        ],
+        "runner_work_ms": [
+          1.2361400004010648,
+          3.1712954019894806,
+          4.485966158172243,
+          6.091555998864351
+        ],
+        "actual_control_period_ms": [
+          20.00065500033088,
+          20.13729759855778,
+          20.349340399043285,
+          20.4049070016481
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.4410226399759703,
+          0.4456609367216144,
+          3.3589673248169722
+        ],
+        "xy_mm": 0.6269885481338244,
+        "yaw_deg": 0.023865562690738754
+      },
+      "history": {
+        "snapshots": 100,
+        "max_used_state_difference": 2.203098814490545e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "hover",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52010,
+      "path": "log/phase52/c/002",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.4999782209997647,
+        "start_reference_s": 3.9000666189967887,
+        "truth_rmse_xyz_yaw": [
+          0.0004614454710352803,
+          0.0005010263562472813,
+          0.004312306804999767,
+          0.00031765379904207333
+        ],
+        "physical_cost_s": {
+          "tracking": 0.006149815331678723,
+          "effort": 0.004306107703204046,
+          "increment": 0.006340940721180562,
+          "total": 0.016796863756063332
+        },
+        "solver_ms": [
+          0.5316870010574348,
+          0.6930903011379996,
+          0.7583276212244529,
+          0.7687520010222215
+        ],
+        "runner_work_ms": [
+          1.214281001011841,
+          1.4633679995313287,
+          1.516873197979294,
+          1.5527779978583567
+        ],
+        "actual_control_period_ms": [
+          19.99997299935785,
+          20.16268310144369,
+          20.23590322191012,
+          20.237714001268614
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.4614454710352803,
+          0.5010263562472812,
+          4.312306804999767
+        ],
+        "xy_mm": 0.6811456029318542,
+        "yaw_deg": 0.018200222031407594
+      },
+      "history": {
+        "snapshots": 100,
+        "max_used_state_difference": 2.1998462079730885e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "hover",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52010,
+      "path": "log/phase52/c/003",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.500005557001714,
+        "start_reference_s": 3.900060380998184,
+        "truth_rmse_xyz_yaw": [
+          0.0016384531105869803,
+          0.0008027881417384974,
+          0.0031401537365417904,
+          0.011659154529876455
+        ],
+        "physical_cost_s": {
+          "tracking": 0.011350096558647962,
+          "effort": 0.11742723119343372,
+          "increment": 0.20322659833123205,
+          "total": 0.3320039260833138
+        },
+        "solver_ms": [
+          1.2235260001034476,
+          2.1978309006954073,
+          2.474070339521859,
+          2.4790349998511374
+        ],
+        "runner_work_ms": [
+          2.5279940018663183,
+          4.085137498987024,
+          4.501317297472269,
+          4.524519998085452
+        ],
+        "actual_control_period_ms": [
+          19.999942000140436,
+          20.201697900120053,
+          20.37554218157311,
+          20.390706999023678
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box"
+        ],
+        "xyz_mm": [
+          1.6384531105869804,
+          0.8027881417384973,
+          3.1401537365417904
+        ],
+        "xy_mm": 1.824554026634482,
+        "yaw_deg": 0.6680203472527564
+      },
+      "history": {
+        "snapshots": 94,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 2.6645352591003757e-15,
+        "max_g_difference": 1.4210854715202004e-14,
+        "window_local_noise_rms_physical": [
+          0.0027695757613475196,
+          0.0024058632028818175,
+          0.002533726971333719,
+          0.008995085884530437,
+          0.010173852473785348,
+          0.009819380445507625,
+          0.001977534040154948,
+          0.002145844159812327,
+          0.0019114398586305788
+        ],
+        "window_local_noise_rms_scaled": [
+          4.151023745470679,
+          3.2754164988692165,
+          1.1412521122087185,
+          2.5611622869346,
+          2.6416785721764624,
+          0.7117917121503757,
+          0.6424340528492706,
+          0.7096060962187861,
+          0.6025282431537887
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.2091577442221286,
+          2.729684923886153,
+          0.8985618309478945,
+          2.175681261150028,
+          2.174622880424526,
+          0.4961794113910988,
+          0.45340071246220043,
+          0.4605637740558322,
+          0.6628263244003739
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 94,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.706478013010901,
+          2.3020600995404323,
+          2.5806671921540354,
+          2.7815575907858516
+        ],
+        "g_norm": [
+          10.734890273586252,
+          16.468737430676576,
+          17.51090414246624,
+          18.218272059120956
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "hover",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52010,
+      "path": "log/phase52/c/004",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 75,
+        "duration_s": 1.4998692749977636,
+        "start_reference_s": 3.9003501770021103,
+        "truth_rmse_xyz_yaw": [
+          0.001122140334125705,
+          0.005019326404140224,
+          0.002559299871720526,
+          0.003534971303717781
+        ],
+        "physical_cost_s": {
+          "tracking": 0.011290709127375414,
+          "effort": 0.14935960839447554,
+          "increment": 0.26620766463680606,
+          "total": 0.42685798215865706
+        },
+        "solver_ms": [
+          1.4397999984794296,
+          2.8371352993417527,
+          3.0805293792946036,
+          3.1747409993840847
+        ],
+        "runner_work_ms": [
+          2.6356710004620254,
+          4.261040801065974,
+          4.598474819649709,
+          4.604955000104383
+        ],
+        "actual_control_period_ms": [
+          19.999195999844233,
+          20.271893798781093,
+          20.345495861474774,
+          20.35752899973886
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box"
+        ],
+        "xyz_mm": [
+          1.122140334125705,
+          5.019326404140224,
+          2.559299871720526
+        ],
+        "xy_mm": 5.1432321045011165,
+        "yaw_deg": 0.20253893640288714
+      },
+      "history": {
+        "snapshots": 88,
+        "max_used_state_difference": 2.2098750780685794e-16,
+        "max_init_slack_difference": 8.881784197001252e-16,
+        "max_g_difference": 5.329070518200751e-15,
+        "window_local_noise_rms_physical": [
+          0.0027378886940413348,
+          0.002438686520542393,
+          0.002565997359850818,
+          0.009140204145215257,
+          0.010182188351901947,
+          0.009828194005089426,
+          0.0019893317254279187,
+          0.002184206261586355,
+          0.0018916164891004392
+        ],
+        "window_local_noise_rms_scaled": [
+          4.263529897719573,
+          3.4385910161763804,
+          1.0755433419128384,
+          2.629800494263818,
+          2.6644101586477733,
+          0.6799809393311002,
+          0.6500037199265504,
+          0.7288465679281201,
+          0.6071642918368175
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.2289702117480523,
+          2.7273580235841086,
+          0.7940053696446442,
+          2.477472337948397,
+          2.461421272857194,
+          0.613843698605007,
+          0.6524414412531067,
+          0.6558994201353726,
+          0.6065496621900268
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 88,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.8456633817861947,
+          2.3028893112811746,
+          2.4947640165137996,
+          2.5779592602811783
+        ],
+        "g_norm": [
+          10.100033222679226,
+          13.016043534949748,
+          14.084274230253325,
+          14.457491460756346
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-pos",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52011,
+      "path": "log/phase52/c/005",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000059639998653,
+        "start_reference_s": 3.9200663059964427,
+        "truth_rmse_xyz_yaw": [
+          0.00042656507673914147,
+          0.0013930714266021068,
+          0.0034574814800109243,
+          0.05684633591677506
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0368672001745547,
+          "effort": 0.006058500891025084,
+          "increment": 0.006236115590303057,
+          "total": 0.04916181665588283
+        },
+        "solver_ms": [
+          0.5749885003751842,
+          1.0637535990099423,
+          1.2807317815531853,
+          2.177137997932732
+        ],
+        "runner_work_ms": [
+          1.3138055001036264,
+          2.2511979015689576,
+          2.5011426483615646,
+          3.084017000219319
+        ],
+        "actual_control_period_ms": [
+          20.00023499931558,
+          20.04818680088647,
+          20.150188571715262,
+          20.154805002675857
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.42656507673914146,
+          1.3930714266021067,
+          3.4574814800109244
+        ],
+        "xy_mm": 1.4569165261979489,
+        "yaw_deg": 3.2570551288141565
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.220446049250313e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "yaw-pos",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52011,
+      "path": "log/phase52/c/006",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999945590017887,
+        "start_reference_s": 3.9000670079985866,
+        "truth_rmse_xyz_yaw": [
+          0.0011101466016207391,
+          0.008149234451660837,
+          0.003489896319747979,
+          0.07349638068779323
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0719119247630552,
+          "effort": 0.11624886043835043,
+          "increment": 0.20142038499813505,
+          "total": 0.38958117019954075
+        },
+        "solver_ms": [
+          1.1222435005038278,
+          2.255260800302493,
+          3.0066121413256037,
+          3.4965339982591104
+        ],
+        "runner_work_ms": [
+          2.20447450010397,
+          3.5836948993164697,
+          4.7047227517396095,
+          4.755386002216255
+        ],
+        "actual_control_period_ms": [
+          19.99932149919914,
+          20.02751589843683,
+          20.032703618817322,
+          20.03345299817738
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box"
+        ],
+        "xyz_mm": [
+          1.110146601620739,
+          8.149234451660837,
+          3.489896319747979
+        ],
+        "xy_mm": 8.224502880127526,
+        "yaw_deg": 4.211032422897363
+      },
+      "history": {
+        "snapshots": 114,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 3.3306690738754696e-15,
+        "max_g_difference": 1.7763568394002505e-14,
+        "window_local_noise_rms_physical": [
+          0.0029936274373965066,
+          0.0026550470947394487,
+          0.003081649458408285,
+          0.010193408870611388,
+          0.009193383227165142,
+          0.010016420250935677,
+          0.0020122999673100332,
+          0.0019114115874152863,
+          0.0020104702727383895
+        ],
+        "window_local_noise_rms_scaled": [
+          4.486831070358354,
+          3.61466314833178,
+          1.3880496964690876,
+          2.9023596561332203,
+          2.3870960916315207,
+          0.7260748231109646,
+          0.6537283289678015,
+          0.6320819285086092,
+          0.63374482638122
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.436479356424468,
+          2.9842507829858342,
+          0.9674974931666401,
+          2.4398891324705634,
+          1.9097065810368465,
+          0.5374592742433227,
+          0.4531650070251576,
+          0.46568758570186425,
+          0.7132832608822061
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 114,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.7527253750947538,
+          2.508756469102459,
+          2.8485509528645947,
+          2.921815615064773
+        ],
+        "g_norm": [
+          12.638191319550202,
+          17.97442197924083,
+          20.274864577819592,
+          20.8948832554794
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-pos",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52011,
+      "path": "log/phase52/c/007",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999984640009643,
+        "start_reference_s": 3.900065731999348,
+        "truth_rmse_xyz_yaw": [
+          0.0010648036559814079,
+          0.006853292168219441,
+          0.002643997722636254,
+          0.07378250164189909
+        ],
+        "physical_cost_s": {
+          "tracking": 0.07090170668637628,
+          "effort": 0.16992351323173716,
+          "increment": 0.29735897435072195,
+          "total": 0.5381841942688355
+        },
+        "solver_ms": [
+          2.0612205007637385,
+          3.3924412990018027,
+          4.109452700431575,
+          4.810212001757463
+        ],
+        "runner_work_ms": [
+          3.5297985014040023,
+          4.934576901177934,
+          5.873781070185942,
+          6.314452999504283
+        ],
+        "actual_control_period_ms": [
+          20.00019349907234,
+          20.142360799036396,
+          20.439623448692146,
+          21.363171999837505
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box"
+        ],
+        "xyz_mm": [
+          1.0648036559814078,
+          6.853292168219442,
+          2.643997722636254
+        ],
+        "xy_mm": 6.9355187526795214,
+        "yaw_deg": 4.227425945997885
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.1163626406917047e-16,
+        "max_init_slack_difference": 1.5543122344752192e-15,
+        "max_g_difference": 5.329070518200751e-15,
+        "window_local_noise_rms_physical": [
+          0.0029865774482158015,
+          0.0027185677281325957,
+          0.0031314674747610163,
+          0.010178257188505449,
+          0.009197779746675261,
+          0.009870783881839843,
+          0.00200520230786903,
+          0.0018873278987493938,
+          0.002009560635022646
+        ],
+        "window_local_noise_rms_scaled": [
+          4.650796166416703,
+          3.8332284564170447,
+          1.3125613633100657,
+          2.9284669532340564,
+          2.4068163882932434,
+          0.6829275950832884,
+          0.6551893495991978,
+          0.6297813927881658,
+          0.6450215817514383
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.483357592019102,
+          3.0534363296140987,
+          0.8964943026270595,
+          2.760326427081132,
+          2.1937873811397717,
+          0.6395133078468519,
+          0.7014969247308006,
+          0.6686373410560488,
+          0.6429513158681939
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 108,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.9377303882162535,
+          2.495767220309969,
+          2.5839778027750917,
+          2.9223893395757803
+        ],
+        "g_norm": [
+          10.693913020000743,
+          14.822328413359207,
+          16.41102218549172,
+          16.62463731389286
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-pos",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52011,
+      "path": "log/phase52/c/008",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000950329987973,
+        "start_reference_s": 3.900169177999487,
+        "truth_rmse_xyz_yaw": [
+          0.00042857552983688476,
+          0.0013574626496106782,
+          0.0028191164528221626,
+          0.03916981094815573
+        ],
+        "physical_cost_s": {
+          "tracking": 0.02017074851736352,
+          "effort": 0.016205581378689,
+          "increment": 0.0053979839331245805,
+          "total": 0.041774313829177095
+        },
+        "solver_ms": [
+          0.8989825000753626,
+          1.6088924507130287,
+          1.7283922180286027,
+          1.7684440026641823
+        ],
+        "runner_work_ms": [
+          1.7574915018485626,
+          2.6520955509113264,
+          3.0972451196430484,
+          3.203681997547392
+        ],
+        "actual_control_period_ms": [
+          20.00036650133552,
+          20.267377547861543,
+          20.422583609470166,
+          20.622968000679975
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.42857552983688474,
+          1.3574626496106783,
+          2.8191164528221626
+        ],
+        "xy_mm": 1.4235103897980548,
+        "yaw_deg": 2.2442648516546484
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.220446049250313e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 15,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "yaw-neg",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52012,
+      "path": "log/phase52/c/009",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000029569993785,
+        "start_reference_s": 3.9200595789989165,
+        "truth_rmse_xyz_yaw": [
+          0.001235201400981641,
+          0.008762099955398499,
+          0.003421156864933714,
+          0.07519605637203282
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0744453234908973,
+          "effort": 0.12859236811718427,
+          "increment": 0.20630379915255198,
+          "total": 0.40934149076063353
+        },
+        "solver_ms": [
+          1.1437925004429417,
+          3.8950645008299025,
+          6.207913378748344,
+          6.884275997435907
+        ],
+        "runner_work_ms": [
+          2.313722001417773,
+          5.018416048915241,
+          7.2728907110285945,
+          7.930743999168044
+        ],
+        "actual_control_period_ms": [
+          20.000472499305033,
+          20.019649050664157,
+          20.069246599814505,
+          20.153582998318598
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          1.235201400981641,
+          8.762099955398499,
+          3.421156864933714
+        ],
+        "xy_mm": 8.848735397184244,
+        "yaw_deg": 4.308416666145302
+      },
+      "history": {
+        "snapshots": 114,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 2.4424906541753444e-15,
+        "max_g_difference": 1.7763568394002505e-14,
+        "window_local_noise_rms_physical": [
+          0.003238828042141365,
+          0.0027013032569132302,
+          0.002758426816159484,
+          0.010383102295117734,
+          0.0099257851474634,
+          0.01027539535335629,
+          0.0020005801047509775,
+          0.002046419204935607,
+          0.0019390605436013025
+        ],
+        "window_local_noise_rms_scaled": [
+          4.854336284299296,
+          3.6776377167016223,
+          1.242462374964611,
+          2.9563708852823023,
+          2.5772669697780257,
+          0.7448475280264374,
+          0.6499209412567603,
+          0.676727401941671,
+          0.6112348957408275
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.6224775735104444,
+          3.0433589453346412,
+          0.9397443196729675,
+          2.4848834860474778,
+          2.1526100948214664,
+          0.5962344349191128,
+          0.46479304334606997,
+          0.4751203745288425,
+          0.6991247653892826
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 114,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.8517046600533047,
+          2.612467810838735,
+          2.8744951846223046,
+          3.364582366560758
+        ],
+        "g_norm": [
+          12.178889513350306,
+          18.49511878181958,
+          24.197880027132488,
+          30.571992661464662
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          1.3350793555033625e-12,
+          6.127088095263323e-12
+        ]
+      }
+    },
+    {
+      "scene": "yaw-neg",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52012,
+      "path": "log/phase52/c/010",
+      "original": true,
+      "status": "completed",
+      "feasible": false,
+      "score": null,
+      "history": {
+        "snapshots": 31,
+        "max_used_state_difference": 2.1510571102112408e-16,
+        "max_init_slack_difference": 8.881784197001252e-16,
+        "max_g_difference": 3.552713678800501e-15,
+        "window_local_noise_rms_physical": [
+          0.0032004614579930596,
+          0.003056196987913835,
+          0.0027457781222512225,
+          0.010778485114779291,
+          0.008992555639428473,
+          0.007421913352553295,
+          0.0021066040389730247,
+          0.00199090601732356,
+          0.0018916419503673518
+        ],
+        "window_local_noise_rms_scaled": [
+          4.98386334782336,
+          4.309291669012258,
+          1.1508988372181854,
+          3.101163281686654,
+          2.353114651765695,
+          0.5134981676684249,
+          0.6883218340320874,
+          0.664344317344751,
+          0.6071724643031646
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.714019466288956,
+          3.56754104186614,
+          0.8662602778036828,
+          3.015561553694973,
+          2.287290880490581,
+          0.5611687431145805,
+          0.6609916039921563,
+          0.8301621888080432,
+          0.5837428522424599
+        ]
+      },
+      "details": {
+        "fallback": 1,
+        "fallback_reason": "DeePC QP failed (budget_exhausted), elapsed=0.012020s",
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 31,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": {
+          "planned_start": 20,
+          "planned_end": 110,
+          "actual_count": 43,
+          "bridge": 12,
+          "feasible": false
+        }
+      },
+      "deepc": {
+        "init_slack_rms": [
+          2.147351004437719,
+          2.582089978634695,
+          2.630221137132479,
+          2.649038172874344
+        ],
+        "g_norm": [
+          10.2734644902007,
+          13.017109641546673,
+          13.474514583597955,
+          13.626149259440597
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "yaw-neg",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52012,
+      "path": "log/phase52/c/011",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999978170009854,
+        "start_reference_s": 3.9001199699996505,
+        "truth_rmse_xyz_yaw": [
+          0.0008860461876966324,
+          0.0004871066669146789,
+          0.0030375741190346852,
+          0.0390166737280944
+        ],
+        "physical_cost_s": {
+          "tracking": 0.019354093641143943,
+          "effort": 0.014642762579819679,
+          "increment": 0.006392444614162338,
+          "total": 0.04038930083512596
+        },
+        "solver_ms": [
+          0.5734709993703291,
+          1.3081049504762632,
+          1.497406780908932,
+          1.5539200030616485
+        ],
+        "runner_work_ms": [
+          1.2781585010088747,
+          1.908035350606951,
+          2.4859491407551104,
+          2.4974070001917426
+        ],
+        "actual_control_period_ms": [
+          19.999939999252092,
+          20.145336947462056,
+          20.22476134938188,
+          20.325495999713894
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.8860461876966323,
+          0.4871066669146789,
+          3.0375741190346854
+        ],
+        "xy_mm": 1.0111136195722337,
+        "yaw_deg": 2.2354907352587685
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.220446049250313e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 13,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "yaw-neg",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52012,
+      "path": "log/phase52/c/012",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.799972984001215,
+        "start_reference_s": 3.9200634529988747,
+        "truth_rmse_xyz_yaw": [
+          0.0010250676056036557,
+          0.00056161297639617,
+          0.003801040189342834,
+          0.056994984736676205
+        ],
+        "physical_cost_s": {
+          "tracking": 0.03756071944819373,
+          "effort": 0.006499915780156446,
+          "increment": 0.007958525481949094,
+          "total": 0.05201916071029926
+        },
+        "solver_ms": [
+          0.8710539987077937,
+          1.1971208994509652,
+          1.4983999299874993,
+          1.701732002402423
+        ],
+        "runner_work_ms": [
+          1.9026334994123317,
+          2.4488792996635307,
+          2.6720842916256515,
+          2.934936001111055
+        ],
+        "actual_control_period_ms": [
+          19.999710499178036,
+          20.07377914887911,
+          20.776023958715086,
+          22.923893000552198
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          1.0250676056036556,
+          0.56161297639617,
+          3.801040189342834
+        ],
+        "xy_mm": 1.1688339194746944,
+        "yaw_deg": 3.2655720788240923
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.1510571102112408e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "z-pos",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52013,
+      "path": "log/phase52/c/013",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000005280009646,
+        "start_reference_s": 3.9000633970026684,
+        "truth_rmse_xyz_yaw": [
+          0.002020737351831563,
+          0.011715536011531616,
+          0.0141080941787044,
+          0.010490823822397657
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0772871411282482,
+          "effort": 0.1719818790162903,
+          "increment": 0.2853869388749772,
+          "total": 0.5346559590195158
+        },
+        "solver_ms": [
+          1.5780905014253221,
+          4.956277350902374,
+          8.680172912245325,
+          9.62052999966545
+        ],
+        "runner_work_ms": [
+          2.8286779997870326,
+          6.760614548329604,
+          9.891131120530188,
+          11.311474998365156
+        ],
+        "actual_control_period_ms": [
+          19.999807998829056,
+          20.00702170043951,
+          20.029336409752432,
+          20.034704000863712
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          2.020737351831563,
+          11.715536011531617,
+          14.1080941787044
+        ],
+        "xy_mm": 11.888530753738301,
+        "yaw_deg": 0.6010799286386876
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 1.1102230246251565e-15,
+        "max_g_difference": 7.105427357601002e-15,
+        "window_local_noise_rms_physical": [
+          0.0028149177106070763,
+          0.002985021547315149,
+          0.0028076677064599207,
+          0.009767600355892423,
+          0.010701398623949848,
+          0.010351325327379712,
+          0.0018859788599769453,
+          0.0021014907357980762,
+          0.002074693825886733
+        ],
+        "window_local_noise_rms_scaled": [
+          4.383482003820424,
+          4.208933042122972,
+          1.1768399902649243,
+          2.8103136249034337,
+          2.8002737938024227,
+          0.7161747026756458,
+          0.6162337125670426,
+          0.7012452703101149,
+          0.6659278002867159
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.174678644080384,
+          3.3271263229155927,
+          0.8136029592442013,
+          2.746203516652419,
+          2.576312166306626,
+          0.6809804740716601,
+          0.724665146028207,
+          0.703438641922805,
+          0.6412537460055491
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 108,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.9683501900651277,
+          2.5317213067178947,
+          2.767224285227179,
+          2.8048036469480246
+        ],
+        "g_norm": [
+          10.625947116827183,
+          12.966712700014721,
+          14.692862333378152,
+          15.668792656535722
+        ],
+        "max_slack": [
+          0.0,
+          4.583970114331314e-14,
+          8.726671601232979e-12,
+          1.07656478484046e-11
+        ]
+      }
+    },
+    {
+      "scene": "z-pos",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52013,
+      "path": "log/phase52/c/014",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999627639983373,
+        "start_reference_s": 3.900094093998632,
+        "truth_rmse_xyz_yaw": [
+          0.0008351048332607911,
+          0.0008294098137781777,
+          0.008589035130289418,
+          0.00033493426498293637
+        ],
+        "physical_cost_s": {
+          "tracking": 0.03015120277791012,
+          "effort": 0.011493406047751759,
+          "increment": 0.005369831708747959,
+          "total": 0.04701444053440983
+        },
+        "solver_ms": [
+          0.5330969997885404,
+          0.9060154978214996,
+          0.9413478706483147,
+          1.002773002255708
+        ],
+        "runner_work_ms": [
+          1.1828624992631376,
+          1.8649443993126624,
+          1.900768609775696,
+          1.9106930012640078
+        ],
+        "actual_control_period_ms": [
+          20.000513999548275,
+          20.09595840045222,
+          20.201694488787325,
+          20.22826900065411
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.8351048332607911,
+          0.8294098137781777,
+          8.589035130289417
+        ],
+        "xy_mm": 1.1769964833112652,
+        "yaw_deg": 0.019190319797838612
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.211772431870429e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": 1.73928851600067,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "z-pos",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52013,
+      "path": "log/phase52/c/015",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999883070006035,
+        "start_reference_s": 3.920062820001476,
+        "truth_rmse_xyz_yaw": [
+          0.0008023912475596839,
+          0.0009280223608683855,
+          0.00990435348051081,
+          0.0004077436445467158
+        ],
+        "physical_cost_s": {
+          "tracking": 0.026105710821019333,
+          "effort": 0.006129465869658616,
+          "increment": 0.006637002878732679,
+          "total": 0.038872179569410636
+        },
+        "solver_ms": [
+          0.8697649991518119,
+          1.6601204994003638,
+          1.7902702926221534,
+          2.2862130026624072
+        ],
+        "runner_work_ms": [
+          1.5211245008686092,
+          2.699220049362338,
+          3.3114223293159735,
+          3.900604999216739
+        ],
+        "actual_control_period_ms": [
+          19.99975299986545,
+          20.115751798948622,
+          20.25020162054716,
+          20.39406300173141
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.8023912475596838,
+          0.9280223608683855,
+          9.90435348051081
+        ],
+        "xy_mm": 1.2268077340936996,
+        "yaw_deg": 0.02336198995580924
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.211772431870429e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "z-pos",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52013,
+      "path": "log/phase52/c/016",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999978369989549,
+        "start_reference_s": 3.920061266999255,
+        "truth_rmse_xyz_yaw": [
+          0.001792003300648261,
+          0.0030555947125621443,
+          0.013009091270629861,
+          0.005255965468527769
+        ],
+        "physical_cost_s": {
+          "tracking": 0.043962556097321685,
+          "effort": 0.12927496242785685,
+          "increment": 0.22200553133673837,
+          "total": 0.3952430498619169
+        },
+        "solver_ms": [
+          1.0897174997808179,
+          1.7976543986151223,
+          2.980689449868803,
+          6.5834050001285505
+        ],
+        "runner_work_ms": [
+          2.0509125006356044,
+          3.3007232497766377,
+          4.51722780089767,
+          7.4781509974855
+        ],
+        "actual_control_period_ms": [
+          20.00004549881851,
+          20.006454700887844,
+          20.019894809593097,
+          20.05324399942765
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          1.792003300648261,
+          3.055594712562144,
+          13.009091270629861
+        ],
+        "xy_mm": 3.542306434651299,
+        "yaw_deg": 0.3011446386131415
+      },
+      "history": {
+        "snapshots": 114,
+        "max_used_state_difference": 2.203098814490545e-16,
+        "max_init_slack_difference": 3.552713678800501e-15,
+        "max_g_difference": 2.4868995751603507e-14,
+        "window_local_noise_rms_physical": [
+          0.0027933428551935435,
+          0.0028748710480774628,
+          0.002829202708629796,
+          0.009711186496543326,
+          0.010710431153147126,
+          0.010326057509230421,
+          0.0019310168993541637,
+          0.002093384622144378,
+          0.0020560610492987488
+        ],
+        "window_local_noise_rms_scaled": [
+          4.186645724942247,
+          3.9139382703534826,
+          1.2743415544062233,
+          2.7650569361555015,
+          2.7810032186866334,
+          0.7485199494048531,
+          0.6273222041099843,
+          0.6922583277129618,
+          0.6481160504513347
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.1438122255830057,
+          3.2096212869027583,
+          0.9364336128947507,
+          2.398065910654556,
+          2.232275439448968,
+          0.5282450512408668,
+          0.5070576918653231,
+          0.47911982454472063,
+          0.7210882436289282
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 114,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.812303608118036,
+          2.402137564926868,
+          2.6098574147529123,
+          2.7661643620007594
+        ],
+        "g_norm": [
+          11.589999820192125,
+          18.189657258159983,
+          20.20840534342008,
+          22.33004272040662
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          4.731849306290163e-12
+        ]
+      }
+    },
+    {
+      "scene": "z-neg",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52014,
+      "path": "log/phase52/c/017",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.8000121449986182,
+        "start_reference_s": 3.9200588109997625,
+        "truth_rmse_xyz_yaw": [
+          0.0007798003712938422,
+          0.0013895864186863687,
+          0.014846452698746574,
+          0.0005196681519446186
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08633205359934323,
+          "effort": 0.023073231800445713,
+          "increment": 0.007049019272355568,
+          "total": 0.1164543046721445
+        },
+        "solver_ms": [
+          0.5230400001892122,
+          0.8521756497430033,
+          1.2926407893246505,
+          1.3066040010016877
+        ],
+        "runner_work_ms": [
+          1.03883249903447,
+          1.4866158518998416,
+          1.8129868492906098,
+          1.8241430007037707
+        ],
+        "actual_control_period_ms": [
+          19.999885500510572,
+          20.055451550615544,
+          20.10334741014958,
+          20.10355300080846
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.7798003712938423,
+          1.3895864186863687,
+          14.846452698746575
+        ],
+        "xy_mm": 1.5934362347039877,
+        "yaw_deg": 0.02977479185378983
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.185751579730777e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 3,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "z-neg",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52014,
+      "path": "log/phase52/c/018",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.7999990460011759,
+        "start_reference_s": 3.920060325999657,
+        "truth_rmse_xyz_yaw": [
+          0.0007346533300605773,
+          0.0014242971557067083,
+          0.01780358290825141,
+          0.0003913925419961403
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08607251181008285,
+          "effort": 0.005923058516809675,
+          "increment": 0.007560182959333835,
+          "total": 0.09955575328622636
+        },
+        "solver_ms": [
+          0.5993595004838426,
+          1.0839684489837964,
+          1.5546706710301803,
+          1.8383110000286251
+        ],
+        "runner_work_ms": [
+          1.32646299971384,
+          2.245137601130409,
+          2.5913422099984014,
+          3.051304000109667
+        ],
+        "actual_control_period_ms": [
+          20.000103999336716,
+          20.004489799066505,
+          20.00971811987256,
+          20.029380000778474
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          0.7346533300605773,
+          1.4242971557067083,
+          17.80358290825141
+        ],
+        "xy_mm": 1.602603476572828,
+        "yaw_deg": 0.02242514078927567
+      },
+      "history": {
+        "snapshots": 120,
+        "max_used_state_difference": 2.181414771040835e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "z-neg",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52014,
+      "path": "log/phase52/c/019",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.800005687000521,
+        "start_reference_s": 3.9200572169975203,
+        "truth_rmse_xyz_yaw": [
+          0.0039638180740482485,
+          0.0025116483762895195,
+          0.016671419324323915,
+          0.011096344599101063
+        ],
+        "physical_cost_s": {
+          "tracking": 0.0843880278580862,
+          "effort": 0.1420310802839467,
+          "increment": 0.24060143285761187,
+          "total": 0.4670205409996448
+        },
+        "solver_ms": [
+          1.599280500158784,
+          2.613683450545068,
+          6.791585509236029,
+          6.9922280017635785
+        ],
+        "runner_work_ms": [
+          2.6153194994549267,
+          3.7551617015196825,
+          7.725211719225626,
+          8.003472001291811
+        ],
+        "actual_control_period_ms": [
+          19.999877496957197,
+          20.004998800322937,
+          20.10816250814969,
+          20.141929999226704
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          3.9638180740482483,
+          2.5116483762895196,
+          16.671419324323914
+        ],
+        "xy_mm": 4.692571927021401,
+        "yaw_deg": 0.6357737135512764
+      },
+      "history": {
+        "snapshots": 114,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 2.6645352591003757e-15,
+        "max_g_difference": 2.4868995751603507e-14,
+        "window_local_noise_rms_physical": [
+          0.003143850146439326,
+          0.0032513055557745808,
+          0.0025219571134071747,
+          0.009993276751101203,
+          0.010611075726006364,
+          0.009402542957399998,
+          0.0020268464132592004,
+          0.0021547221234574153,
+          0.001958686202519965
+        ],
+        "window_local_noise_rms_scaled": [
+          4.711983976824532,
+          4.426427839909204,
+          1.1359506825870438,
+          2.8453762272395244,
+          2.7552052131048277,
+          0.6815758068806779,
+          0.6584539782036264,
+          0.712541937153811,
+          0.6174213387699417
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.566770823012491,
+          3.5825059247136304,
+          0.9136303264098519,
+          2.4292672220219305,
+          2.2138579175874398,
+          0.5841889920874185,
+          0.5051245518042525,
+          0.5053674220002342,
+          0.7718897522668111
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 114,
+        "settling_s": 1.1190738929981308,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.9678204723596806,
+          2.4636075445957415,
+          2.8286529915237786,
+          2.9050315309622157
+        ],
+        "g_norm": [
+          13.221687755300094,
+          19.273844013253925,
+          21.02707094018982,
+          21.76746356482582
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          2.3341236946196965e-12,
+          4.656309566463851e-12
+        ]
+      }
+    },
+    {
+      "scene": "z-neg",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52014,
+      "path": "log/phase52/c/020",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 90,
+        "duration_s": 1.800006621000648,
+        "start_reference_s": 3.9200576590010314,
+        "truth_rmse_xyz_yaw": [
+          0.003741526284302674,
+          0.005823011127178668,
+          0.016190438878170597,
+          0.006315515390781808
+        ],
+        "physical_cost_s": {
+          "tracking": 0.08597646729445213,
+          "effort": 0.1631299956917883,
+          "increment": 0.297344239027079,
+          "total": 0.5464507020133195
+        },
+        "solver_ms": [
+          2.42617749972851,
+          5.166932148677006,
+          6.496670170126889,
+          7.406025000818772
+        ],
+        "runner_work_ms": [
+          3.7956819996907143,
+          7.265176199325651,
+          8.624706931041146,
+          9.591391997673782
+        ],
+        "actual_control_period_ms": [
+          19.999684000140405,
+          20.007744600297883,
+          20.03914133983926,
+          20.041005001985468
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          3.741526284302674,
+          5.823011127178668,
+          16.190438878170596
+        ],
+        "xy_mm": 6.9214505360779945,
+        "yaw_deg": 0.3618523773417124
+      },
+      "history": {
+        "snapshots": 108,
+        "max_used_state_difference": 2.194425197110661e-16,
+        "max_init_slack_difference": 1.7763568394002505e-15,
+        "max_g_difference": 3.552713678800501e-15,
+        "window_local_noise_rms_physical": [
+          0.0031334995639107446,
+          0.003173951013176291,
+          0.0025068844082551237,
+          0.00999249640368916,
+          0.010685775561399855,
+          0.009431399915955109,
+          0.0020514677329372885,
+          0.0021493385332664945,
+          0.0019497682479424074
+        ],
+        "window_local_noise_rms_scaled": [
+          4.879588094395701,
+          4.4753269219959115,
+          1.0507660204298344,
+          2.875020247234559,
+          2.796185650357335,
+          0.6525280403233219,
+          0.6703063348731775,
+          0.7172115751326458,
+          0.6258296353035271
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.6538214306522225,
+          3.582905124244415,
+          0.7598152023306948,
+          2.7755061704144204,
+          2.551254005862947,
+          0.6461418500446351,
+          0.7451790601659191,
+          0.7737676780200003,
+          0.6444738546785345
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 108,
+        "settling_s": 1.5132098180001776,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          2.1095416430247593,
+          2.610042143524192,
+          2.774462939827106,
+          3.1610406311610775
+        ],
+        "g_norm": [
+          11.204827048930383,
+          14.0494420814213,
+          16.128713257383037,
+          16.18270296861165
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          9.533892174592713e-13,
+          2.5200184682095644e-12
+        ]
+      }
+    },
+    {
+      "scene": "circle",
+      "candidate": "joint-fir6",
+      "level": 2,
+      "seed": 52015,
+      "path": "log/phase52/c/021",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.199963324001146,
+        "start_reference_s": 3.9002899790029915,
+        "truth_rmse_xyz_yaw": [
+          0.0031016783466489006,
+          0.0016698946364036937,
+          0.0017456727340777287,
+          0.0004353755282414082
+        ],
+        "physical_cost_s": {
+          "tracking": 0.002951824507560519,
+          "effort": 0.004839981173669418,
+          "increment": 0.006706468874703571,
+          "total": 0.014498274555933511
+        },
+        "solver_ms": [
+          0.5357659993023844,
+          0.9725851989060172,
+          1.4544709799520203,
+          1.802667997253593
+        ],
+        "runner_work_ms": [
+          1.6588104990660213,
+          2.5497220018223734,
+          3.3647385383301285,
+          3.8861409993842244
+        ],
+        "actual_control_period_ms": [
+          19.99970500037307,
+          20.201157499650435,
+          20.31925378010783,
+          20.453039000130957
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          3.1016783466489004,
+          1.6698946364036937,
+          1.7456727340777287
+        ],
+        "xy_mm": 3.5226349034154083,
+        "yaw_deg": 0.02494518027151147
+      },
+      "history": {
+        "snapshots": 600,
+        "max_used_state_difference": 2.216109240560371e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    },
+    {
+      "scene": "circle",
+      "candidate": "t6",
+      "level": 2,
+      "seed": 52015,
+      "path": "log/phase52/c/022",
+      "original": true,
+      "status": "completed",
+      "feasible": false,
+      "score": null,
+      "history": {
+        "snapshots": 28,
+        "max_used_state_difference": 2.1488887058662698e-16,
+        "max_init_slack_difference": 1.3322676295501878e-15,
+        "max_g_difference": 1.0658141036401503e-14,
+        "window_local_noise_rms_physical": [
+          0.0029750753956490922,
+          0.0031139097110618893,
+          0.0027440336611176735,
+          0.008547646771362882,
+          0.008481614079861123,
+          0.010254374672640698,
+          0.0025453305268621934,
+          0.0016843955422303888,
+          0.001935589286082622
+        ],
+        "window_local_noise_rms_scaled": [
+          4.459025380080714,
+          4.239372891768777,
+          1.235979348664359,
+          2.4337633718986686,
+          2.2022825896061873,
+          0.7433237713698793,
+          0.8268919639355098,
+          0.5570103214368399,
+          0.6101406783712237
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.289952209291501,
+          3.3922487554321807,
+          0.902135404845777,
+          2.06072156762715,
+          1.9389671348863484,
+          0.5713005871558056,
+          0.48971705954191036,
+          0.37673972359221175,
+          0.675718381834068
+        ]
+      },
+      "details": {
+        "fallback": 1,
+        "fallback_reason": "DeePC QP failed (budget_exhausted), elapsed=0.012655s",
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 28,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": {
+          "planned_start": 20,
+          "planned_end": 580,
+          "actual_count": 34,
+          "bridge": 6,
+          "feasible": false
+        }
+      },
+      "deepc": {
+        "init_slack_rms": [
+          1.7631664817932875,
+          2.2849843880435015,
+          2.388677735717734,
+          2.424122336387945
+        ],
+        "g_norm": [
+          12.191282327760087,
+          16.916417621031673,
+          17.469966769221326,
+          17.668418177003083
+        ],
+        "max_slack": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scene": "circle",
+      "candidate": "t12",
+      "level": 2,
+      "seed": 52015,
+      "path": "log/phase52/c/023",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.200571876997856,
+        "start_reference_s": 3.9000580019965128,
+        "truth_rmse_xyz_yaw": [
+          0.00834129861475957,
+          0.01916503305494267,
+          0.004055562997928942,
+          0.03167343113864025
+        ],
+        "physical_cost_s": {
+          "tracking": 0.11427288471849385,
+          "effort": 0.16821299281241606,
+          "increment": 0.2718155599046862,
+          "total": 0.5543014374355961
+        },
+        "solver_ms": [
+          1.8170080002164468,
+          6.399134900675562,
+          8.333082241078952,
+          11.970806001045275
+        ],
+        "runner_work_ms": [
+          3.197041498424369,
+          7.8119978976246784,
+          10.062129249745334,
+          14.277487000072142
+        ],
+        "actual_control_period_ms": [
+          19.999860998723307,
+          20.049784002003435,
+          20.10633367099217,
+          20.712017998448573
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "box",
+          "full"
+        ],
+        "xyz_mm": [
+          8.34129861475957,
+          19.16503305494267,
+          4.055562997928942
+        ],
+        "xy_mm": 20.901573016824237,
+        "yaw_deg": 1.8147539269423276
+      },
+      "history": {
+        "snapshots": 588,
+        "max_used_state_difference": 2.220446049250313e-16,
+        "max_init_slack_difference": 3.552713678800501e-15,
+        "max_g_difference": 8.881784197001252e-15,
+        "window_local_noise_rms_physical": [
+          0.002988334435589144,
+          0.0028704702586110557,
+          0.0028473738982761946,
+          0.010788437226083244,
+          0.010307752134575224,
+          0.010106254394090308,
+          0.002077558236694874,
+          0.0020004259046520405,
+          0.002058327068925013
+        ],
+        "window_local_noise_rms_scaled": [
+          4.653532204668536,
+          4.047413704187859,
+          1.1934829264225797,
+          3.104026682417087,
+          2.6972668891020093,
+          0.6992190378470327,
+          0.6788312702976831,
+          0.6675210032321892,
+          0.6606744572028577
+        ],
+        "actual_init_residual_rms_scaled": [
+          3.5000647955157627,
+          3.256461240124316,
+          0.8297656483955935,
+          2.9363371314051525,
+          2.548864386847604,
+          0.6635673547092985,
+          0.766200118716776,
+          0.7273116014254203,
+          0.6703197367310075
+        ]
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 1,
+        "input_activation_steps": 588,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": {
+        "init_slack_rms": [
+          2.050579250130152,
+          2.628925699531898,
+          2.9383642395153244,
+          3.265663164234273
+        ],
+        "g_norm": [
+          10.977113422770376,
+          13.942766727048864,
+          15.55175281826631,
+          18.060556620613333
+        ],
+        "max_slack": [
+          0.0,
+          7.53003083546222e-13,
+          1.6163476366171133e-11,
+          1.9178639984479187e-10
+        ]
+      }
+    },
+    {
+      "scene": "circle",
+      "candidate": "m0",
+      "level": 2,
+      "seed": 52015,
+      "path": "log/phase52/c/024",
+      "original": true,
+      "status": "completed",
+      "feasible": true,
+      "score": {
+        "samples": 560,
+        "duration_s": 11.200010672000644,
+        "start_reference_s": 3.9001085789968784,
+        "truth_rmse_xyz_yaw": [
+          0.0031503119660986957,
+          0.001719955965059339,
+          0.0014684161510519463,
+          0.0006215247436560434
+        ],
+        "physical_cost_s": {
+          "tracking": 0.003806495991038587,
+          "effort": 0.006303660795491257,
+          "increment": 0.005293161081030274,
+          "total": 0.015403317867560122
+        },
+        "solver_ms": [
+          0.5303199995978503,
+          0.6959088006624369,
+          0.7991698491969145,
+          1.0684310000215191
+        ],
+        "runner_work_ms": [
+          1.5895724991423776,
+          1.9315356994411559,
+          2.5679019706512882,
+          3.1037520020618103
+        ],
+        "actual_control_period_ms": [
+          19.99984000212862,
+          20.108468750368047,
+          20.181671300269954,
+          20.215270000335295
+        ],
+        "soft_activation_ticks": 0,
+        "solver_paths": [
+          "bridge"
+        ],
+        "xyz_mm": [
+          3.1503119660986956,
+          1.719955965059339,
+          1.4684161510519462
+        ],
+        "xy_mm": 3.589249783100618,
+        "yaw_deg": 0.03561074467444167
+      },
+      "history": {
+        "snapshots": 600,
+        "max_used_state_difference": 2.220446049250313e-16
+      },
+      "details": {
+        "fallback": 0,
+        "fallback_reason": null,
+        "deadline_misses": 0,
+        "hard_input_violation_steps": 0,
+        "truth_envelope_violation_tracking_steps": 0,
+        "soft_activation_steps": 0,
+        "input_activation_steps": 0,
+        "settling_s": null,
+        "prediction_snapshots_dropped": 0,
+        "analysis_error": null,
+        "scoring_ineligible": null
+      },
+      "deepc": null
+    }
+  ]
+}
