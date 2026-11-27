@@ -1,0 +1,163 @@
+{
+  "gates": {
+    "t6-a": {
+      "G1": {
+        "passed": false,
+        "eligible": 23,
+        "total": 24
+      },
+      "G2a": {
+        "n_pairs": 17,
+        "n_ratio_eligible": 17,
+        "near_zero_pairs": [],
+        "mean_abs_diff": -0.00016305002256651816,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.8795852804982737,
+        "passed": true
+      },
+      "G2b": {
+        "passed": true,
+        "wins": 12,
+        "of": 18
+      },
+      "G2c": {
+        "passed": false,
+        "scenes_ok": 4,
+        "per_scene_gm": {
+          "hover": 0.807380132534603,
+          "yaw7-pos": 0.5480021119491936,
+          "yaw7-neg": 0.45104464614119066,
+          "z4-pos": 1.020311969124135,
+          "z4-neg": 0.9571782924377107,
+          "circle6": 3.9052975883367185
+        }
+      },
+      "G3": {
+        "n_pairs": 17,
+        "n_ratio_eligible": 17,
+        "near_zero_pairs": [],
+        "mean_abs_diff": -0.027499714750417015,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.6130169830112824,
+        "passed": true,
+        "near_zero_absolute_ok": true
+      },
+      "G4": {
+        "n_pairs": 17,
+        "n_ratio_eligible": 17,
+        "near_zero_pairs": [],
+        "mean_abs_diff": -0.0038943493022232135,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.5763721326626584,
+        "passed": true,
+        "near_zero_absolute_ok": true
+      },
+      "G5": {
+        "passed": false,
+        "P": {
+          "n_pairs": 6,
+          "n_ratio_eligible": 6,
+          "near_zero_pairs": [],
+          "mean_abs_diff": 0.0003329056309212261,
+          "rule": "geometric mean of ratio-eligible pairs",
+          "statistic": 0.9263283280898046,
+          "passed": true,
+          "near_zero_absolute_ok": true
+        },
+        "C": {
+          "n_pairs": 6,
+          "n_ratio_eligible": 6,
+          "near_zero_pairs": [],
+          "mean_abs_diff": -0.002340323527554656,
+          "rule": "geometric mean of ratio-eligible pairs",
+          "statistic": 1.191863529664163,
+          "passed": false,
+          "near_zero_absolute_ok": true
+        }
+      },
+      "all_passed": false
+    },
+    "t6-b": {
+      "G1": {
+        "passed": true,
+        "eligible": 24,
+        "total": 24
+      },
+      "G2a": {
+        "n_pairs": 18,
+        "n_ratio_eligible": 18,
+        "near_zero_pairs": [],
+        "mean_abs_diff": 0.0004829275725791867,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.9748120179444267,
+        "passed": false
+      },
+      "G2b": {
+        "passed": true,
+        "wins": 15,
+        "of": 18
+      },
+      "G2c": {
+        "passed": true,
+        "scenes_ok": 5,
+        "per_scene_gm": {
+          "hover": 0.8732234375160306,
+          "yaw7-pos": 0.566754592722192,
+          "yaw7-neg": 0.4668448880263548,
+          "z4-pos": 0.9887982146191405,
+          "z4-neg": 0.9595381787871805,
+          "circle6": 3.9143736194146843
+        }
+      },
+      "G3": {
+        "n_pairs": 18,
+        "n_ratio_eligible": 18,
+        "near_zero_pairs": [],
+        "mean_abs_diff": -0.025071838425556218,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.666826449618116,
+        "passed": true,
+        "near_zero_absolute_ok": true
+      },
+      "G4": {
+        "n_pairs": 18,
+        "n_ratio_eligible": 18,
+        "near_zero_pairs": [],
+        "mean_abs_diff": -0.004351063837441768,
+        "rule": "geometric mean of ratio-eligible pairs",
+        "statistic": 0.5546358456394147,
+        "passed": true,
+        "near_zero_absolute_ok": true
+      },
+      "G5": {
+        "passed": false,
+        "P": {
+          "n_pairs": 6,
+          "n_ratio_eligible": 6,
+          "near_zero_pairs": [],
+          "mean_abs_diff": 0.0002989085733215502,
+          "rule": "geometric mean of ratio-eligible pairs",
+          "statistic": 0.9462518160026344,
+          "passed": true,
+          "near_zero_absolute_ok": true
+        },
+        "C": {
+          "n_pairs": 6,
+          "n_ratio_eligible": 6,
+          "near_zero_pairs": [],
+          "mean_abs_diff": -0.003039902549461426,
+          "rule": "geometric mean of ratio-eligible pairs",
+          "statistic": 1.1925626610476145,
+          "passed": false,
+          "near_zero_absolute_ok": true
+        }
+      },
+      "all_passed": false
+    }
+  },
+  "recommendation": {
+    "recommendation": "t6-ref",
+    "reason": "no candidate passed all gates",
+    "t6_ref_all_eligible": true
+  }
+}

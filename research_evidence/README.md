@@ -41,3 +41,8 @@ The complete archive can be restored to a new empty directory with `tar -xzf`. F
 3. Add each decision with its candidate values, fixed conditions, metric definition, evidence IDs and limitation. Record superseded settings and their replacement. Keep the status provisional until formal approval and independent confirmation.
 4. Add new figures and source pointers to the presentation index. Draw comparisons within their registered cohort and retain failed or incomplete cases.
 5. Update the configuration YAML without changing historical thresholds or the sealed split. GNSS injection, timing, bias, recovery and paired seed definitions remain pending until separately registered.
+
+## Phase 5.4
+
+Stage A (72 registered runs) is complete; Stage B is registered but not executed; no parameter is frozen. Plan, matrix, configs, preflight and scripts are in [phase54/](phase54/plan.md); report in [phase54/stage-a/report.md](phase54/stage-a/report.md) and a self-contained [HTML version](phase54/stage-a/report.html). Raw runs remain in Git-ignored `log/phase54/`. `build_index.py` does not know Phase 5.4: after regenerating the index, run `.venv/bin/python research_evidence/phase54/index_rows.py` to restore the 76 Phase 5.4 rows (72 registered, 4 unscored incident duplicates, see [incidents](phase54/incidents.md)).
+

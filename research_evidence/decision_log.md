@@ -144,3 +144,14 @@
 - **Limitation**　条件预测精度不能代表闭环性能。L0 对最强相对正则出现代价，两个 seed 共享同一组 episode 与折；不能作为独立飞行重复。
 
 [Phase 5.3.1 报告](phase531/report.md) · [五折与种子](phase531/folds.json) · [逐折指标](phase531/fold_metrics.csv) · [原始输出](../log/phase531/results)
+
+## D14 · Phase 5.4 Stage A 闭环候选筛选
+
+- **Problem**　Phase 5.3.1 离线入围的强相对正则 A（ρ=.01，β=.0625）、B（ρ=.01，β=.125）能否在闭环中替换 T6-ref（ρ=.001，β=.25）。
+- **Hypothesis**　离线条件预测的噪声鲁棒性改善会转化为闭环 L1 跟踪和代价改善，且不牺牲名义性能。
+- **Experiment**　预登记 72 次 SITL。6 个未参与调参的新场景（hover、±7° yaw、±4 cm Z、6 cm/12 s preview 圆），各 1 次 L0 和 3 个配对 L1 seed（54111–54163）。门槛 G1–G5 与近零分母规则事先登记于 commit 506b64a。
+- **Evidence**　71/72 合格。A：G1 23/24（054 主机停顿 → deadline miss → DeePC 连续性回退），G2c 4/6，G5 代价 1.192。B：G2a .975，G5 代价 1.192。两者 L1 代价几何均值比 .61/.67，yaw RMSE 比 .58/.55，但 circle6 位置误差约为 T6-ref 的 3.9 倍。
+- **Decision**　按规则无候选通过，建议保留 T6-ref 进入 Stage B，**待用户确认**。A/B 不再在本阶段调整。不冻结。
+- **Limitation**　每场景 3 seed；无软约束激活；三配置共有 ±7° yaw 阶跃不收敛（窗末误差约 ±88 mrad），原因未验证；054 的停顿根因未确定。
+
+[Stage A 报告](phase54/stage-a/report.md) · [预登记](phase54/plan.md) · [门槛结果](phase54/stage-a/stage_a_gates.json) · [事故 I1](phase54/incidents.md)

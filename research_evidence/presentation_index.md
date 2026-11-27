@@ -14,6 +14,19 @@ Use one protocol per comparison. Where a figure contains different protocols, th
 
 For a short talk, start with F02/F01 as the baseline design, then F03/F04, and close with F05 and the realtime limitations. Report Phase 5.3 stress separately using F09.
 
+## Phase 5.4 Stage A figures
+
+Single protocol: Phase 5.4 Stage A (DeePC T6 only, 72 runs, L0 n=1 and L1 n=3 seeds per scene). Not comparable across phases without labeling. PNG, SVG, figure CSV and script are kept side by side.
+
+| ID and figure | Result to show | Supported conclusion | Inference to avoid | Source |
+|---|---|---|---|---|
+| F10 [Paired L1 tracking](phase54/stage-a/A1_paired_L1_tracking.png) | Candidate vs T6-ref 3D truth RMSE per pair; 054 unscored. | Strong regularization helps hover/yaw-step position, hurts the preview circle about 3.9×. | Candidates are globally better or worse, or statistical significance. | [Runs](phase54/stage-a/stage_a_runs.csv) · [Gates](phase54/stage-a/stage_a_gates.json) |
+| F11 [Per-scene runs](phase54/stage-a/A2_per_scene_runs.png) | Every run, position/yaw/cost per scene, ineligible marked. | Scene dependence of the trade-off. | Yaw-step yaw RMSE separates candidates (it is shared non-convergence). | [Data](phase54/stage-a/A2_per_scene_runs.csv) |
+| F12 [Cost decomposition](phase54/stage-a/A3_physical_cost_decomposition.png) | Tracking/effort/increment under original Q/R/S. | A/B remove noise-driven input chatter. | Lower tracking cost. | [Data](phase54/stage-a/A3_physical_cost_decomposition.csv) |
+| F13 [Time-domain response](phase54/stage-a/A7_timeseries_circle6.png) | Circle shrinkage under A/B; [yaw step](phase54/stage-a/A7_timeseries_yaw7-pos.png) stalls near 35 mrad of 122 mrad for all three. | Closed-loop cost of strong ridge on persistent motion. | Cause of the yaw stall is established. | [Circle data](phase54/stage-a/A7_timeseries_circle6.csv) · [Yaw data](phase54/stage-a/A7_timeseries_yaw7-pos.csv) |
+
+Appendix: [solver ECDF](phase54/stage-a/A4_solver_timing_ecdf.png) (no QP > 12 ms; 054 was a host stall, not the solver), [noise sensitivity per scene](phase54/stage-a/A5_noise_level.png), [DeePC internal terms](phase54/stage-a/A6_deepc_internal_terms.png). Full report: [Markdown](phase54/stage-a/report.md) · [HTML](phase54/stage-a/report.html).
+
 ## Appendix figures
 
 | ID and figure | Result to show | Supported conclusion | Inference to avoid | Source |

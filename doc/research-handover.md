@@ -1,6 +1,6 @@
 # Research handover · MPC vs DeePC under GNSS degradation
 
-交接快照为 2026-11-27，时区 America/Chicago。项目根目录是 /home/chris/drone-project。Phase 5.3.1 已完成。**Phase 5.4 尚未启动，需要用户批准。** 本页是接续工作的上下文入口。依次核对本页的暂定配置、[参数登记表](../research_evidence/parameter_registry.csv)和[分组 CV 报告](../research_evidence/phase531/report.md)。
+交接快照为 2026-11-27，时区 America/Chicago。项目根目录是 /home/chris/drone-project。Phase 5.3.1 已完成。**Phase 5.4 Stage A 已完成（72 次，A/B 未通过预登记门槛，规则输出保留 T6-ref）。Stage B 已登记、未执行，等待用户批准；参数未冻结。** 见 [Stage A 报告](../research_evidence/phase54/stage-a/report.md)。 本页是接续工作的上下文入口。依次核对本页的暂定配置、[参数登记表](../research_evidence/parameter_registry.csv)和[分组 CV 报告](../research_evidence/phase531/report.md)。
 
 ## 1. Research objective
 
@@ -32,6 +32,7 @@
 | 5.2 | 既有 host 噪声定义为 L0–L3。36 次预登记配对全部执行，L2 完整评分 22/24。T12 负 yaw 与 T6 圆轨迹各一次超 12 ms 后回退。 | 配对共享噪声向量已核对。L0/L1 开发、L2 独立压力、L3 协议档位。人工量测噪声与正式 GNSS 退化分开。 | [报告](../log/phase52/report.md) · [原始矩阵](../log/phase52) · [两次失败](../log/phase52/c/010) · [圆轨迹失败](../log/phase52/c/022) |
 | 5.3 | 40 次有限 noise-aware 调参均完成正式窗口，16,040 个更新无 QP 超时。降低初始化权重到 .25，筛选 L1 固定代价约下降 78%。2S 降低平均物理代价但四控制器 XY 均变差。 | 暂定 T6 主参考、T12 对照，共用 ρ=.001、β=.25，保留原始 Q/R/S。输出软约束本批未活跃。DeePC 在部分 L1 场景仍有明显较高的 effort/slew 代价。 | [计划和结果](../log/phase53/report.md) · [40 次原始](../log/phase53/runs) · [全量参数表](../research_evidence/regularization_trials.csv) |
 | 5.3.1 | 11 个 train episode 五折完整留出。25 格、L0、两组 L1；仅三组进入 L2。全时域 XYZ RMSE 两个 L1 seed 为当前 5.085/5.213、A 1.479/1.518、B 1.616/1.656 mm。A/B 两 seed 各赢五折。 | 当前闭环参考保留。A、B 是待批准的闭环确认候选，ρ 达到网格上限，停止扩网。原 development validation 与 test 都未读取。条件预测优势尚未在闭环确认。 | [CV 报告](../research_evidence/phase531/report.md) · [原始指标](../log/phase531/results) · [预登记 folds](../research_evidence/phase531/folds.json) |
+| 5.4 A | 72 次预登记闭环（T6-ref/A/B，6 个新场景，L0×1 + L1×3 seed）。71/72 合格。A/B 在悬停、yaw 阶跃和 L1 代价上更好，但 6 cm preview 圆误差约 3.9 倍，L0 代价比 1.19。三配置 ±7° yaw 阶跃均不收敛。 | 规则输出保留 T6-ref，待用户确认。054 主机停顿回退不复跑。Stage B 待批准。 | [报告](../research_evidence/phase54/stage-a/report.md) · [预登记](../research_evidence/phase54/plan.md) · [原始](../log/phase54/stage-a) |
 
 ## 3. Current parameter configuration
 

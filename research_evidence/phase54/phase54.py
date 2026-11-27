@@ -113,9 +113,13 @@ def lambdas(directory):
 
 
 def has_takeoff(run):
+    """True if the run reached the HLC TAKEOFF phase (events.csv details are CSV-quoted JSON)."""
+    import csv
     for events in run.glob("*/events.csv"):
-        if '"phase": "TAKEOFF"' in events.read_text():
-            return True
+        with open(events, newline="") as f:
+            for e in csv.DictReader(f):
+                if e["event"] == "phase_changed" and json.loads(e["details_json"] or "{}").get("phase") == "TAKEOFF":
+                    return True
     return False
 
 
@@ -153,26 +157,40 @@ def audit(run, c):
     return result
 
 
-def stage_a(directory, output, port):
+def stage_a(directory, output, port, resume=False):
+    """Execute Stage A. With resume, completed first attempts are re-audited (not re-flown),
+    directories named *-retry* from the 2026-11-27 detector incident are left untouched,
+    and execution continues at the first registered index without a first-attempt directory."""
     from tools.run_crazysim_batch import run_case
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     registered = json.loads((directory / "registered.json").read_text())["stage_a"]
-    output.mkdir()
-    (output / "matrix.json").write_text(json.dumps(registered, indent=2))
+    if resume:
+        if json.loads((output / "matrix.json").read_text()) != registered:
+            raise SystemExit("registered matrix differs from the started batch")
+    else:
+        output.mkdir()
+        (output / "matrix.json").write_text(json.dumps(registered, indent=2))
     sim, rows, retries = Path("/home/chris/CrazySim"), [], 0
     for i, c in enumerate(registered, 1):
         attempt = 0
         while True:
-            run = output / (f"{i:03d}" if attempt == 0 else f"{i:03d}-retry{attempt}")
-            run.mkdir()
-            run_case(run, c, sim, False, port, c["controller"])
+            tag = "" if attempt == 0 else f"-infra-retry{attempt}"
+            run = output / f"{i:03d}{tag}"
+            reused = resume and attempt == 0 and run.exists()
+            if reused:
+                status = json.loads((run / "experiment.json").read_text())["status"]
+                if status in ("started", "interrupted"):
+                    raise SystemExit(f"{run} is incomplete; resolve manually before resuming")
+            else:
+                run.mkdir()
+                run_case(run, c, sim, False, port, c["controller"])
             result = audit(run, c)
-            result["attempt"] = attempt
-            rows.append(result)
+            result.update(attempt=attempt, reaudited_existing=reused)
             infra = not result["takeoff"]
             result["infrastructure_failure"] = infra
-            print(f"{i:03d}{'' if not attempt else ' retry'} {c['name']} {result['status']} "
-                  f"{'eligible' if result['eligible'] else 'INELIGIBLE'} "
+            rows.append(result)
+            print(f"{i:03d}{tag} {c['name']} {result['status']} "
+                  f"{'eligible' if result['eligible'] else 'INELIGIBLE'}{' (re-audited)' if reused else ''} "
                   f"{result.get('fallback_reason') or result.get('analysis_error') or ''}", flush=True)
             (output / "summary.json").write_text(json.dumps(rows, indent=2, default=float))
             if infra and attempt == 0:
@@ -195,13 +213,14 @@ def main():
     p.add_argument("directory", type=Path)
     p.add_argument("output", type=Path, nargs="?")
     p.add_argument("--port", type=int, default=26540)
+    p.add_argument("--resume", action="store_true")
     a = p.parse_args()
     if a.command == "register":
         register(a.directory.resolve())
     elif a.command == "lambdas":
         lambdas(a.directory.resolve())
     else:
-        stage_a(a.directory.resolve(), a.output.resolve(), a.port)
+        stage_a(a.directory.resolve(), a.output.resolve(), a.port, a.resume)
 
 
 if __name__ == "__main__":

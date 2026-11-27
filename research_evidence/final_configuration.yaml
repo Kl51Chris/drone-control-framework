@@ -1,6 +1,7 @@
 status: provisional
 formal_freeze: false
 scope: "CrazySim near-hover development. Independent closed-loop confirmation pending."
+phase54_stage_a: "Complete. A/B failed preregistered gates; rule output keeps T6-ref (rho=.001, beta=.25). Awaiting user confirmation and Stage B approval. Not frozen. See phase54/stage-a/report.md"
 evidence_revision: e85310a
 evidence_revision_note: "Flight metadata records a Git HEAD. Phase 5.1–5.3 worktree changes are documented in the original audits and Phase 5.3 archive."
 shared:
