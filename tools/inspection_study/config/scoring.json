@@ -1,0 +1,31 @@
+{
+  "profiles": [
+    "nominal",
+    "position-loss",
+    "position-bias"
+  ],
+  "duration_s": 12,
+  "expected_minimum_tracking_ticks": 590,
+  "recovery_error_m": 0.015,
+  "recovery_hold_ticks": 25,
+  "weights": {
+    "rmse_m": 25,
+    "max_error_m": 10,
+    "violation_free_completion": 25,
+    "recovery_s": 15,
+    "effort_per_s": 10,
+    "solver_p99_ms": 15
+  },
+  "zero_score_at": {
+    "rmse_m": 0.04,
+    "max_error_m": 0.08,
+    "recovery_s": 3,
+    "effort_per_s": 0.05,
+    "solver_p99_ms": 12
+  },
+  "recovery_profiles": [
+    "position-loss",
+    "position-bias"
+  ],
+  "scoring_policy": "Equal scenario weight per criterion. Linear utility from 100 at zero to 0 at the fixed limit. Completion requires full tracking, completed landing, no fallback, deadline misses, hard input violations, truth envelope violations or QP over 12 ms. For an incomplete or unscorable trajectory, no points are earned for tracking, maximum deviation or effort; retain observed partial metrics. Unavailable values and unrecovered faults earn zero points and are flagged. Nominal recovery is not applicable. Solver P99 uses observed issued ticks, subject to truth-independent telemetry availability."
+}

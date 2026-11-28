@@ -57,6 +57,7 @@ the selected software configuration. Hardware execution requires the explicit
 
 ## Documentation
 
+- [Inspection navigation-degradation study](doc/inspection-study.md): experiment architecture, versioned plans, and reproduction.
 - [Getting started](doc/getting-started.md): environment setup, inspection,
   supervised demo, tests, and troubleshooting.
 - [Control design](doc/control-design.md): interfaces, equations, signs, and

@@ -6,6 +6,7 @@ import argparse
 from dataclasses import asdict, dataclass, replace
 from experiments.excitation import HoverExcitation
 from experiments.measurement_noise import MeasurementNoise
+from experiments.inspection import LineInspectionReference, NavigationFault, NavigationFaultConfig
 from velocity_control_framework.controllers.outer_loop_deepc import (
     OuterLoopDeePCConfig, OuterLoopDeePCController,
 )
@@ -69,6 +70,7 @@ DEEPC_CONTROLLER_NAME = "outer-loop-deepc"
 LQR_CONFIGURATION_NAME = "lqr-dfall-initial"
 FIXED_HOVER_REFERENCE = "fixed-hover"
 CIRCULAR_REFERENCE = "circular"
+INSPECTION_REFERENCE = "line-inspection"
 DEFAULT_URI = "radio://0/80/2M"
 DEFAULT_CRAZYSIM_URI = "udp://127.0.0.1:19850"
 HARDWARE_BACKEND = "hardware"
@@ -135,7 +137,7 @@ class ProductionFlightProgram:
         vertical_flight_config: VerticalFlightConfig | None = None,
         circular_flight_config: CircularFlightConfig | None = None,
     ) -> None:
-        if reference_name not in (FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE):
+        if reference_name not in (FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE, INSPECTION_REFERENCE):
             raise ValueError(f"unsupported reference provider: {reference_name}")
         self.controller = controller
         self.controller_name = type(controller).__name__
@@ -144,7 +146,7 @@ class ProductionFlightProgram:
         self.safety = safety or ProductionSafetyConfig(
             maximum_flight_duration_s=(
                 CIRCULAR_MAXIMUM_FLIGHT_DURATION_S
-                if reference_name == CIRCULAR_REFERENCE
+                if reference_name in (CIRCULAR_REFERENCE, INSPECTION_REFERENCE)
                 else FIXED_HOVER_MAXIMUM_FLIGHT_DURATION_S
             )
         )
@@ -174,7 +176,7 @@ class ProductionFlightProgram:
         self._fallback_reason: str | None = None
         self._tracking_start: float | None = None
         self._previous_input_valid = False
-        self.measurement_noise: MeasurementNoise | None = None
+        self.measurement_noise: MeasurementNoise | NavigationFault | None = None
         self._noise_step = 0
         self._noise_log: dict = {}
 
@@ -233,7 +235,8 @@ class ProductionFlightProgram:
                 ),
             )
         else:
-            self.reference_provider = CircularFlightReference(
+            provider = LineInspectionReference if self.reference_name == INSPECTION_REFERENCE else CircularFlightReference
+            self.reference_provider = provider(
                 initial_position=initial_state.position,
                 initial_yaw=initial_state.yaw,
                 start_time=start_time,
@@ -557,7 +560,7 @@ def assemble_program(
     if configuration_name == CRAZYSIM_CALIBRATED_CONFIGURATION_NAME:
         maximum_duration = (
             CIRCULAR_MAXIMUM_FLIGHT_DURATION_S
-            if reference_name == CIRCULAR_REFERENCE
+            if reference_name in (CIRCULAR_REFERENCE, INSPECTION_REFERENCE)
             else 9.5
         )
         program_options.setdefault(
@@ -585,7 +588,7 @@ def assemble_program(
                 landing_duration=3.0,
             ),
         )
-        if reference_name == CIRCULAR_REFERENCE:
+        if reference_name in (CIRCULAR_REFERENCE, INSPECTION_REFERENCE):
             program_options.setdefault(
                 "circular_flight_config",
                 CircularFlightConfig(
@@ -594,7 +597,7 @@ def assemble_program(
                     circle_revolutions=1.0,
                     armed_idle_duration=0.50,
                     takeoff_duration=3.0,
-                    circle_duration=15.0,
+                    circle_duration=LineInspectionReference.duration_s if reference_name == INSPECTION_REFERENCE else 15.0,
                     landing_duration=3.0,
                 ),
             )
@@ -951,7 +954,7 @@ def build_run_configuration(
         "step_axis": program.step_axis,
         "step_amplitude": program.step_amplitude if program.step_axis else None,
         "reference_mode": program.reference_mode,
-        "measurement_noise": asdict(program.measurement_noise) if program.measurement_noise is not None else None,
+        "measurement_noise": asdict(program.measurement_noise) if isinstance(program.measurement_noise, MeasurementNoise) else None,
         "excitation": (
             {"seed": program.excitation.seed, "axis": program.excitation.axis,
              "max_hz": program.excitation.max_hz, "kind": program.excitation.kind}
@@ -959,6 +962,9 @@ def build_run_configuration(
         ),
         "forced_solver_failure": program.force_solver_failure,
     }
+    if isinstance(program.measurement_noise, NavigationFault):
+        reference_configuration["navigation_fault"] = asdict(program.measurement_noise.config)
+        reference_configuration["inspection_distance_m"] = LineInspectionReference.distance_m
     if program.reference_name == FIXED_HOVER_REFERENCE:
         if program.vertical_flight_config is not None:
             reference_configuration["profile"] = asdict(
@@ -1016,7 +1022,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--reference",
-        choices=(FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE),
+        choices=(FIXED_HOVER_REFERENCE, CIRCULAR_REFERENCE, INSPECTION_REFERENCE),
         default=FIXED_HOVER_REFERENCE,
     )
     parser.add_argument("--execute", action="store_true")
@@ -1035,6 +1041,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                                               "axis-r10-p10-y16-t12"), default="m0")
     parser.add_argument("--model-evidence", type=Path, default=Path("log/phase3-offline-coordinates/results.json"))
     parser.add_argument("--measurement-noise", choices=("none","iid-small"))
+    parser.add_argument("--navigation", choices=("nominal", "position-loss", "position-bias"))
+    parser.add_argument("--navigation-scale", type=float)
+    parser.add_argument("--navigation-start-step", type=int)
     parser.add_argument("--noise-amplitude", type=float, default=1.0)
     parser.add_argument("--noise-seed", type=int, default=0)
     parser.add_argument("--step-axis", choices=("x", "y", "z", "yaw"))
@@ -1061,6 +1070,11 @@ def main(argv: list[str] | None = None) -> None:
     if args.mpc_model != "m0" and args.excitation_seed is not None:
         raise ValueError("identified candidate does not run data-collection excitation")
     use_mpc = args.controller in (MPC_CONTROLLER_NAME, DEEPC_CONTROLLER_NAME)
+    if args.reference == INSPECTION_REFERENCE:
+        if not use_mpc or args.backend != CRAZYSIM_BACKEND or args.measurement_noise is not None:
+            raise ValueError("line inspection requires a CrazySim predictive controller and its navigation profiles")
+    elif any(value is not None for value in (args.navigation, args.navigation_scale, args.navigation_start_step)):
+        raise ValueError("navigation profiles require --reference line-inspection")
     if args.measurement_noise is not None and (
         not use_mpc or args.backend != CRAZYSIM_BACKEND or args.excitation_seed is not None
     ):
@@ -1106,6 +1120,15 @@ def main(argv: list[str] | None = None) -> None:
     program.log_root = args.log_root
     if args.measurement_noise is not None:
         program.measurement_noise=MeasurementNoise(args.measurement_noise,args.noise_amplitude,args.noise_seed)
+    if args.reference == INSPECTION_REFERENCE:
+        scale = 1.0 if args.navigation_scale is None else args.navigation_scale
+        start = 150 if args.navigation_start_step is None else args.navigation_start_step
+        if not 0 < abs(scale) <= 2 or not 25 <= start <= 375:
+            raise ValueError("inspection fault requires 0 < |scale| <= 2 and start tick 25–375")
+        program.measurement_noise = NavigationFault(NavigationFaultConfig(
+            args.navigation or "nominal", start_step=start, end_step=start + 200,
+            drift_y_m_s=0.005 * scale, bias_y_m=0.025 * scale,
+        ))
     if args.flight_lifecycle == "hlc" or use_mpc:
         if (
             args.backend != CRAZYSIM_BACKEND
